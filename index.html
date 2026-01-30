@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fiber Report Pro v15</title>
+    <title>Fiber Report Pro v16</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -213,7 +213,7 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">POP / PFS</label>
+                                <label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Nodo</label>
                                 <input v-model="row.pop_pfs" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'">
                             </div>
                             <div>
@@ -409,6 +409,7 @@
                 toggleTheme() { this.darkMode = !this.darkMode; },
 
                 addSheet() {
+                    // MODIFICA DATA PER INPUT DATE
                     this.sheets.push({ id: Date.now(), name: `Foglio ${this.sheets.length+1}`, date: new Date().toISOString().split('T')[0], team: '', rows: [] });
                     this.currentSheetIdx = this.sheets.length - 1;
                     this.addRow();
@@ -455,7 +456,7 @@
 
                     const keywords = {
                         "località": "localita", "indirizzo": "indirizzo",
-                        "pop": "pop_pfs", "pfs": "pop_pfs",
+                        "pop": "pop_pfs", "pfs": "pop_pfs", "nodo": "pop_pfs",
                         "elemento": "elemento_ottico", "ottico": "elemento_ottico",
                         "permuta": "permuta", "note": "note", "nota": "note",
                         "squadra": "TEAM_FIELD", 
@@ -493,7 +494,7 @@
                     this.currentSheet.rows.forEach((r, i) => {
                         if(r.localita || r.indirizzo) {
                             msg += `*#${i+1}* 📍 ${r.localita}, ${r.indirizzo}\n`;
-                            msg += `🔌 POP: ${r.pop_pfs} | 👁 EL: ${r.elemento_ottico}\n`;
+                            msg += `🔌 Nodo: ${r.pop_pfs} | 👁 EL: ${r.elemento_ottico}\n`;
                             if(r.permuta) msg += `🔄 Permuta: ${r.permuta}\n`;
                             if(r.note) msg += `📝 Note: ${r.note}\n`;
                             if(r.materiale_list.length) { msg += `🛠 MAT:\n`; r.materiale_list.forEach(m => msg += `${m.checked?'✅':'⬜'} ${m.text}\n`); }
@@ -526,7 +527,7 @@
                     });
 
                     doc.autoTable({
-                        head: [['Località', 'Indirizzo', 'POP', 'El. Ottico', 'Permuta', 'Note / Extra', 'Materiale']],
+                        head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Note / Extra', 'Materiale']],
                         body: body, startY: 25, theme: 'grid',
                         headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' },
                         alternateRowStyles: { fillColor: [245, 245, 245] },
@@ -542,16 +543,17 @@
                     
                     this.currentSheet.rows.forEach(r => {
                         let matStr = r.materiale_list.map(m => m.text).join(", ");
+                        
                         let obj = {
-                            "Squadra": this.currentSheet.team, 
-                            "Data": dateFormatted,
                             "Località": r.localita, 
                             "Indirizzo": r.indirizzo, 
-                            "POP": r.pop_pfs, 
+                            "Nodo": r.pop_pfs, 
                             "El. Ottico": r.elemento_ottico,
                             "Permuta": r.permuta, 
-                            "Note": r.note, 
-                            "Materiale": matStr
+                            "Materiale": matStr,
+                            "Note": r.note,
+                            "Squadra": this.currentSheet.team, 
+                            "Data": dateFormatted
                         };
                         r.extras.forEach(e => obj[e.key] = e.value);
                         allData.push(obj);
