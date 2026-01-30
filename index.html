@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRO MANAGER</title>
+    <title>Fiber Report Pro v13</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -15,27 +15,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        dark: {
-                            900: '#050505', // True Black background
-                            800: '#121212', // Card background
-                            700: '#1E1E1E', // Input background
-                            600: '#2D2D2D', // Border
-                        },
-                        brand: {
-                            light: '#2563eb', // Blue standard
-                            dark: '#3b82f6', // Blue brighter
+                        fiber: {
+                            orange: '#ff8000',
+                            cyan: '#06b6d4',
+                            darkbg: '#050505',
+                            darkcard: '#121212'
                         }
                     }
                 }
@@ -43,209 +36,312 @@
         }
     </script>
     <style>
-        /* Transizioni fluide ma secche professionali */
         body { transition: background-color 0.3s ease, color 0.3s ease; }
         
-        /* Input styling */
-        .input-field {
-            transition: all 0.2s;
+        /* --- STILE INPUT --- */
+        .f-input {
+            width: 100%;
+            background: transparent;
+            border-bottom-width: 1px;
+            padding: 8px 0;
+            outline: none;
+            font-weight: 600;
+            transition: all 0.3s;
         }
-        .input-field:focus {
-            transform: translateY(-1px);
-        }
+        .f-input:focus { border-color: #ff8000 !important; }
 
-        /* Scrollbar nascosta ma funzionale */
-        ::-webkit-scrollbar { width: 6px; }
+        /* --- STILE TEXTAREA --- */
+        .f-textarea {
+            width: 100%;
+            background: transparent;
+            border: 1px solid;
+            border-radius: 8px;
+            padding: 10px;
+            outline: none;
+            resize: vertical;
+            min-height: 80px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .f-textarea:focus { border-color: #ff8000 !important; }
+
+        /* --- CHECKLIST STYLE --- */
+        .checkbox-box {
+            min-width: 22px; height: 22px;
+            border: 2px solid #06b6d4;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .checkbox-box.active { background-color: #06b6d4; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { height: 4px; width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #ff8000; border-radius: 10px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        
+        /* Animazione Microfono */
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(255, 128, 0, 0.7); transform: scale(1); }
+            50% { transform: scale(1.05); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 128, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 128, 0, 0); transform: scale(1); }
+        }
+        .mic-active { animation: pulse-ring 1.5s infinite; }
+        
+        /* Stile Data Input */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(0.5);
+        }
+        .dark input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
     </style>
 </head>
-<body class="antialiased min-h-screen pb-40">
+<body class="antialiased min-h-screen pb-48 transition-colors duration-300" 
+      :class="darkMode ? 'dark bg-fiber-darkbg text-white' : 'light bg-gray-50 text-gray-900'">
     
-    <div id="app" :class="darkMode ? 'bg-dark-900 text-gray-200' : 'bg-gray-100 text-gray-900'" class="min-h-screen transition-colors duration-300">
+    <div id="app">
 
-        <header class="sticky top-0 z-40 backdrop-blur-md border-b" 
-                :class="darkMode ? 'bg-dark-900/90 border-dark-600' : 'bg-white/90 border-gray-200'">
-            <div class="max-w-7xl mx-auto p-4">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <header class="sticky top-0 z-40 border-b shadow-lg theme-transition backdrop-blur-xl"
+                :class="darkMode ? 'bg-[#0a0a0a]/95 border-gray-800' : 'bg-white/95 border-gray-200'">
+            
+            <div class="px-4 py-3 max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-2 select-none">
+                    <div class="w-2 h-7 bg-gradient-to-b from-orange-400 to-red-600 rounded-full shadow-lg"></div>
+                    <h1 class="text-xl font-black tracking-tighter italic leading-none">
+                        <span class="text-[#ff8000]">FIBER</span><span class="text-[#06b6d4]">REPORT</span>
+                    </h1>
+                </div>
+                
+                <div class="flex gap-3 items-center">
                     
-                    <div class="flex items-center gap-3 w-full md:w-auto justify-between">
-                        <div>
-                            <h1 class="text-2xl font-extrabold tracking-tight">NEXUS <span class="text-blue-500">PRO</span></h1>
-                            <p class="text-[10px] uppercase tracking-widest opacity-60">Operations Manager</p>
-                        </div>
-                        <button @click="toggleTheme" class="md:hidden p-2 rounded-lg border" :class="darkMode ? 'border-gray-700 bg-dark-700' : 'border-gray-300 bg-gray-100'">
-                            <i :class="darkMode ? 'ph-sun text-yellow-400' : 'ph-moon text-gray-600'" class="ph text-xl"></i>
-                        </button>
+                    <div class="flex items-center rounded-full px-2 py-1 border transition-colors" 
+                         :class="darkMode ? 'bg-white/5 border-gray-700' : 'bg-gray-100 border-gray-300'">
+                        <button @click="backupData" class="p-1.5 text-gray-400 hover:text-cyan-400"><i class="ph ph-floppy-disk text-lg"></i></button>
+                        <label class="p-1.5 text-gray-400 hover:text-cyan-400 cursor-pointer"><i class="ph ph-upload-simple text-lg"></i><input type="file" @change="restoreData" class="hidden"></label>
                     </div>
 
-                    <div class="flex flex-wrap justify-center gap-2 w-full md:w-auto">
-                        <div class="flex rounded-lg overflow-hidden border" :class="darkMode ? 'border-gray-700' : 'border-gray-300'">
-                            <button @click="backupData" class="px-3 py-2 text-xs font-bold hover:bg-blue-500 hover:text-white transition-colors" title="Scarica Backup">
-                                <i class="ph ph-download-simple text-lg"></i>
-                            </button>
-                            <label class="px-3 py-2 text-xs font-bold hover:bg-blue-500 hover:text-white transition-colors cursor-pointer border-l" :class="darkMode ? 'border-gray-700' : 'border-gray-300'" title="Carica Backup">
-                                <i class="ph ph-upload-simple text-lg"></i>
-                                <input type="file" @change="restoreData" class="hidden" accept=".json">
-                            </label>
-                        </div>
+                    <button @click="showMemory = true" class="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 border"
+                        :class="darkMode ? 'bg-gray-800 border-gray-700 text-cyan-400' : 'bg-white border-gray-200 text-cyan-600 shadow-sm'">
+                        <i class="ph ph-brain text-xl"></i>
+                    </button>
 
-                        <button @click="exportExcel" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border hover:bg-green-600 hover:text-white transition-colors" :class="darkMode ? 'border-green-800 text-green-400' : 'border-green-200 text-green-700 bg-green-50'">
-                            <i class="ph ph-file-xls text-lg"></i> XLS
-                        </button>
-                        <button @click="exportPDF" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border hover:bg-red-600 hover:text-white transition-colors" :class="darkMode ? 'border-red-800 text-red-400' : 'border-red-200 text-red-700 bg-red-50'">
-                            <i class="ph ph-file-pdf text-lg"></i> PDF
-                        </button>
-                        
-                        <button @click="toggleTheme" class="hidden md:block ml-2 p-2 rounded-lg border transition-colors" :class="darkMode ? 'border-gray-700 bg-dark-700 hover:bg-dark-600' : 'border-gray-300 bg-white hover:bg-gray-100'">
-                            <i :class="darkMode ? 'ph-sun text-yellow-400' : 'ph-moon text-gray-600'" class="ph text-xl"></i>
-                        </button>
+                    <button @click="toggleTheme" class="w-12 h-8 rounded-full flex items-center transition-all px-1 border-2 relative"
+                        :class="darkMode ? 'bg-gray-800 border-yellow-500 justify-end' : 'bg-indigo-100 border-indigo-500 justify-start'">
+                        <div class="w-6 h-6 rounded-full flex items-center justify-center shadow-sm"
+                             :class="darkMode ? 'bg-yellow-400 text-black' : 'bg-indigo-500 text-white'">
+                             <i :class="darkMode ? 'ph-sun-fill' : 'ph-moon-stars-fill'" class="text-sm"></i>
+                        </div>
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="flex overflow-x-auto gap-1 px-4 pb-0 max-w-7xl mx-auto tabs-container border-b" 
+                 :class="darkMode ? 'bg-black/40 border-gray-800' : 'bg-gray-50 border-gray-200'">
+                <div v-for="(sheet, idx) in sheets" :key="sheet.id" 
+                     @click="currentSheetIdx = idx"
+                     class="px-5 py-3 text-xs font-bold whitespace-nowrap rounded-t-lg cursor-pointer transition-all relative group uppercase tracking-wide border-t border-x"
+                     :class="[
+                        darkMode ? 'border-gray-800' : 'border-gray-300',
+                        currentSheetIdx === idx 
+                            ? (darkMode ? 'bg-fiber-darkcard text-fiber-orange border-b-[#121212]' : 'bg-white text-fiber-orange border-b-white shadow-sm') 
+                            : (darkMode ? 'bg-transparent text-gray-500 border-b-gray-800 hover:text-gray-300' : 'bg-transparent text-gray-400 border-b-gray-200 hover:text-gray-600')
+                     ]">
+                    {{ sheet.name }}
+                    <button v-if="sheets.length > 1" @click.stop="removeSheet(idx)" class="ml-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                </div>
+                <button @click="addSheet" class="px-4 py-2 font-bold text-cyan-500 hover:text-cyan-400 transition-colors">
+                    <i class="ph ph-plus-circle text-lg"></i>
+                </button>
+            </div>
+
+            <div class="border-b transition-colors" :class="darkMode ? 'bg-fiber-darkcard border-gray-800' : 'bg-white border-gray-200'">
+                <div class="max-w-7xl mx-auto p-4 flex flex-wrap gap-4 justify-between items-center">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-cyan-700'">Squadra Operativa</label>
+                        <input v-model="currentSheet.team" class="w-full bg-transparent font-bold text-xl outline-none placeholder-gray-600" 
+                               :class="darkMode ? 'text-white' : 'text-gray-900'" placeholder="Inserisci Squadra...">
+                    </div>
+                    <div class="text-right">
+                        <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-cyan-700'">Data Intervento</label>
+                        <input type="date" v-model="currentSheet.date" class="bg-transparent font-mono font-bold text-lg outline-none text-right"
+                               :class="darkMode ? 'text-white' : 'text-gray-900'">
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-4">
+        <main class="max-w-7xl mx-auto p-4 md:p-6">
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 items-start">
                 
-                <div v-for="(row, index) in rows" :key="row.id" 
-                     class="relative rounded-xl border shadow-lg overflow-hidden flex flex-col"
-                     :class="darkMode ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'">
+                <div v-for="(row, rIdx) in currentSheet.rows" :key="row.id" 
+                     class="rounded-2xl p-6 shadow-xl border relative transition-all duration-300"
+                     :class="[
+                        darkMode ? 'bg-[#121212] border-gray-800 hover:border-gray-600' : 'bg-white border-gray-200 hover:border-gray-300',
+                        lastActiveRowId === row.id ? 'ring-1 ring-orange-500' : ''
+                     ]">
                     
-                    <div class="flex justify-between items-center p-3 border-b" :class="darkMode ? 'bg-dark-700/50 border-dark-600' : 'bg-gray-50 border-gray-100'">
-                        <span class="font-mono text-xs font-bold opacity-50">#{{ index + 1 }}</span>
-                        <div class="flex gap-2">
-                            <button @click="duplicateRow(row)" class="text-blue-400 hover:text-blue-500 p-1" title="Duplica"><i class="ph ph-copy"></i></button>
-                            <button @click="removeRow(index)" class="text-red-400 hover:text-red-500 p-1" title="Elimina"><i class="ph ph-trash"></i></button>
-                        </div>
+                    <div class="flex justify-between items-center mb-6 pb-2 border-b" :class="darkMode ? 'border-gray-800' : 'border-gray-100'">
+                        <span class="text-cyan-500 font-black text-xs tracking-widest bg-cyan-500/10 px-3 py-1.5 rounded-md border border-cyan-500/20">SCHEDA #{{ rIdx + 1 }}</span>
+                        <button @click="removeRow(rIdx)" class="text-gray-500 hover:text-red-500 transition-colors"><i class="ph ph-trash text-xl"></i></button>
                     </div>
 
-                    <div class="p-4 space-y-3 flex-grow">
+                    <div class="space-y-5">
                         
-                        <div class="grid grid-cols-1 gap-3">
-                            <div class="relative group">
-                                <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">Località</label>
-                                <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
-                                    <input v-model="row.localita" class="w-full bg-transparent px-3 py-2 text-sm outline-none font-medium" placeholder="Città...">
-                                    <button @click="dictate(row, 'localita')" class="px-3 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
-                                </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Località</label>
+                                <input v-model="row.localita" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="-">
                             </div>
-                            <div class="relative group">
-                                <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">Indirizzo</label>
-                                <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
-                                    <input v-model="row.indirizzo" class="w-full bg-transparent px-3 py-2 text-sm outline-none" placeholder="Via/Piazza...">
-                                    <button @click="dictate(row, 'indirizzo')" class="px-3 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
-                                </div>
+                            <div>
+                                <label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Indirizzo</label>
+                                <input v-model="row.indirizzo" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="-">
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">POP/PFS</label>
-                                <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
-                                    <input v-model="row.pop_pfs" class="w-full bg-transparent px-2 py-2 text-sm outline-none" placeholder="COD...">
-                                    <button @click="dictate(row, 'pop_pfs')" class="pr-2 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
-                                </div>
+                                <label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">POP / PFS</label>
+                                <input v-model="row.pop_pfs" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'">
                             </div>
                             <div>
-                                <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">El. Ottico</label>
-                                <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
-                                    <input v-model="row.elemento_ottico" class="w-full bg-transparent px-2 py-2 text-sm outline-none" placeholder="Valore...">
-                                    <button @click="dictate(row, 'elemento_ottico')" class="pr-2 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
-                                </div>
+                                <label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">El. Ottico</label>
+                                <input v-model="row.elemento_ottico" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'">
                             </div>
                         </div>
 
                         <div>
-                            <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">Permuta</label>
-                            <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
-                                <input v-model="row.permuta" class="w-full bg-transparent px-3 py-2 text-sm outline-none" placeholder="Dati permuta...">
-                                <button @click="dictate(row, 'permuta')" class="px-3 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
-                            </div>
+                            <label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Permuta</label>
+                            <input v-model="row.permuta" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'">
                         </div>
 
-                         <div>
-                            <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">Note Extra</label>
-                            <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
-                                <textarea v-model="row.note" rows="1" class="w-full bg-transparent px-3 py-2 text-sm outline-none resize-none" placeholder="Scrivi note..."></textarea>
-                                <button @click="dictate(row, 'note')" class="px-3 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
-                            </div>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Note</label>
+                            <textarea v-model="row.note" class="f-textarea" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="Scrivi..."></textarea>
                         </div>
 
-                        <div v-if="row.extras.length > 0" class="pt-2 border-t border-dashed space-y-2" :class="darkMode ? 'border-gray-700' : 'border-gray-300'">
-                            <p class="text-[10px] font-bold text-blue-500">PARAMETRI AGGIUNTIVI</p>
-                            <div v-for="(extra, eIdx) in row.extras" :key="eIdx" class="flex gap-2 items-center">
-                                <input v-model="extra.key" class="w-1/3 bg-transparent text-xs font-bold border-b border-dashed outline-none py-1" :class="darkMode ? 'border-gray-600 text-blue-300' : 'border-gray-400 text-blue-700'" placeholder="Nome">
-                                <input v-model="extra.value" class="w-full bg-transparent text-xs border-b border-dashed outline-none py-1" :class="darkMode ? 'border-gray-600' : 'border-gray-400'" placeholder="Valore">
-                                <button @click="removeExtra(row, eIdx)" class="text-red-500 hover:text-red-400"><i class="ph ph-x"></i></button>
+                        <div class="pt-4 mt-2 border-t" :class="darkMode ? 'border-gray-800' : 'border-gray-100'">
+                            <label class="text-[11px] uppercase font-black text-fiber-orange mb-3 block tracking-wider flex items-center gap-2">
+                                <i class="ph ph-wrench-fill"></i> Materiale
+                            </label>
+                            
+                            <div class="space-y-2 mb-4">
+                                <div v-for="(item, mIdx) in row.materiale_list" :key="mIdx" class="flex items-center gap-3 p-1 transition-colors">
+                                    <div @click="item.checked = !item.checked" class="checkbox-box flex-shrink-0" :class="{ 'active': item.checked }">
+                                        <i v-if="item.checked" class="ph ph-check text-white text-xs font-bold"></i>
+                                    </div>
+                                    <input v-model="item.text" 
+                                           class="flex-grow bg-transparent border-none outline-none text-sm font-medium"
+                                           :class="[
+                                              item.checked ? 'line-through opacity-50 text-gray-500' : (darkMode ? 'text-white' : 'text-gray-900')
+                                           ]">
+                                    <button @click="row.materiale_list.splice(mIdx, 1)" class="text-gray-500 hover:text-red-500 p-1 flex-shrink-0"><i class="ph ph-x"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 mt-2">
+                                <input v-model="row.tempMaterial" @keyup.enter="addMaterial(row)" placeholder="Aggiungi voce..." 
+                                       class="text-sm bg-transparent border-b p-2 w-full outline-none focus:border-orange-500 transition-colors"
+                                       :class="darkMode ? 'border-[#333] text-white' : 'border-gray-300 text-gray-700'">
+                                <button @click="addMaterial(row)" class="text-cyan-500 hover:text-cyan-400 p-2"><i class="ph ph-plus-circle text-xl"></i></button>
                             </div>
                         </div>
+                        
+                        <div v-if="row.extras.length > 0" class="pt-3 border-t border-dashed" :class="darkMode ? 'border-gray-800' : 'border-gray-300'">
+                             <div v-for="(extra, eIdx) in row.extras" :key="eIdx" class="flex gap-2 mb-2 items-center">
+                                <input v-model="extra.key" class="w-1/3 text-xs font-bold bg-transparent border-b border-cyan-800 text-cyan-500 outline-none p-1" placeholder="Nome">
+                                <input v-model="extra.value" class="w-full text-xs bg-transparent border-b outline-none p-1" 
+                                       :class="darkMode ? 'border-[#333] text-white' : 'border-gray-300 text-black'" placeholder="Valore">
+                                <button @click="row.extras.splice(eIdx, 1)" class="text-red-500"><i class="ph ph-x"></i></button>
+                             </div>
+                        </div>
+                        <button @click="row.extras.push({key:'', value:''})" class="text-[10px] font-bold text-cyan-600 hover:text-cyan-400 mt-2">+ EXTRA</button>
 
                     </div>
-
-                    <button @click="addExtra(row)" class="w-full py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/10 transition-colors border-t"
-                        :class="darkMode ? 'border-dark-600 text-gray-500 hover:text-blue-400' : 'border-gray-200 text-gray-500 hover:text-blue-600'">
-                        + Aggiungi Parametro
-                    </button>
                 </div>
 
-                <button @click="addRow" class="min-h-[300px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-4 transition-all opacity-60 hover:opacity-100 hover:scale-[1.02]"
-                    :class="darkMode ? 'border-dark-600 hover:border-blue-500 hover:bg-dark-800' : 'border-gray-300 hover:border-blue-500 hover:bg-white'">
-                    <i class="ph ph-plus-circle text-4xl text-blue-500"></i>
-                    <span class="font-bold uppercase tracking-widest">Nuova Riga</span>
+                <button @click="addRow" class="h-full min-h-[250px] border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 transition-all opacity-60 hover:opacity-100 hover:scale-[1.01]"
+                    :class="darkMode ? 'border-gray-800 hover:border-orange-500 bg-white/5' : 'border-gray-300 hover:border-orange-500 bg-gray-50'">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center border-2 transition-colors"
+                         :class="darkMode ? 'border-gray-700 text-gray-500' : 'border-gray-400 text-gray-400'">
+                        <i class="ph ph-plus text-3xl"></i>
+                    </div>
+                    <span class="text-xs font-black uppercase tracking-widest text-gray-500">Nuova Scheda</span>
                 </button>
 
             </div>
         </main>
 
-        <div class="fixed bottom-0 left-0 right-0 z-50 p-4 border-t shadow-2xl" 
-             :class="darkMode ? 'bg-dark-900 border-dark-600' : 'bg-white border-gray-200'">
-            <div class="max-w-3xl mx-auto flex items-center justify-between gap-4">
-                
-                <button @click="exportWhatsapp" class="flex flex-col items-center gap-1 group">
-                    <div class="p-3 rounded-full bg-green-500/10 text-green-500 group-hover:bg-green-500 group-hover:text-white transition-all">
-                        <i class="ph ph-whatsapp-logo text-2xl"></i>
-                    </div>
-                    <span class="text-[9px] font-bold uppercase opacity-60">Invia</span>
-                </button>
-
-                <div class="relative -top-8">
-                     <button @click="openMemory" class="w-16 h-16 rounded-full flex items-center justify-center shadow-lg border-4 transition-transform hover:scale-110 active:scale-95"
-                        :class="darkMode ? 'bg-blue-600 border-dark-900 text-white shadow-blue-900/50' : 'bg-blue-600 border-white text-white shadow-blue-200'">
-                        <i class="ph ph-brain text-3xl"></i>
-                     </button>
-                     <div class="text-center mt-2 text-[9px] font-bold uppercase opacity-60">Memoria</div>
+        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 p-3 backdrop-blur-2xl rounded-2xl shadow-2xl border flex items-center gap-8 px-10 transition-colors duration-300"
+             :class="darkMode ? 'bg-[#151515]/95 border-gray-700 shadow-glow-orange' : 'bg-white/95 border-gray-200 shadow-xl'">
+            
+            <button @click="exportWhatsapp" class="group flex flex-col items-center gap-1">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-green-500 to-green-700 text-white flex items-center justify-center shadow-lg group-hover:-translate-y-1 transition-transform">
+                    <i class="ph ph-whatsapp-logo text-2xl"></i>
                 </div>
+                <span class="text-[9px] font-bold opacity-60 group-hover:opacity-100 transition-opacity" :class="darkMode ? 'text-white' : 'text-black'">INVIA</span>
+            </button>
 
-                <button @click="clearAll" class="flex flex-col items-center gap-1 group">
-                    <div class="p-3 rounded-full bg-red-500/10 text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all">
-                        <i class="ph ph-trash text-2xl"></i>
+            <button @click="toggleDictation"
+                class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all -mt-10 border-4 border-transparent"
+                :class="[
+                    isListening 
+                        ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white mic-active shadow-orange-500/50' 
+                        : (darkMode ? 'bg-[#2a2a2a] text-white border-[#151515]' : 'bg-white text-gray-800 border-gray-100')
+                ]">
+                <i class="ph text-3xl" :class="isListening ? 'ph-microphone-fill' : 'ph-microphone'"></i>
+            </button>
+
+            <div class="flex gap-3">
+                <button @click="exportPDF" class="group flex flex-col items-center gap-1">
+                    <div class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all group-hover:-translate-y-1"
+                        :class="darkMode ? 'border-gray-600 bg-gray-800 text-red-400' : 'border-gray-200 bg-white text-red-500'">
+                        <i class="ph ph-file-pdf text-xl"></i>
                     </div>
-                    <span class="text-[9px] font-bold uppercase opacity-60">Reset</span>
+                     <span class="text-[9px] font-bold opacity-60 group-hover:opacity-100 transition-opacity" :class="darkMode ? 'text-white' : 'text-black'">PDF</span>
                 </button>
-
+                 <button @click="exportExcel" class="group flex flex-col items-center gap-1">
+                    <div class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all group-hover:-translate-y-1"
+                        :class="darkMode ? 'border-gray-600 bg-gray-800 text-green-400' : 'border-gray-200 bg-white text-green-600'">
+                        <i class="ph ph-file-xls text-xl"></i>
+                    </div>
+                     <span class="text-[9px] font-bold opacity-60 group-hover:opacity-100 transition-opacity" :class="darkMode ? 'text-white' : 'text-black'">XLS</span>
+                </button>
             </div>
+
         </div>
 
         <div v-if="showMemory" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="w-full max-w-md rounded-xl p-6 shadow-2xl border" :class="darkMode ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'">
-                <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph ph-brain text-blue-500"></i> Memoria Vocale</h2>
-                <div class="space-y-2 mb-4 max-h-60 overflow-y-auto">
-                    <div v-for="(val, key) in dictationMemory" :key="key" class="flex justify-between items-center p-2 rounded border" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-200'">
+            <div class="w-full max-w-md rounded-3xl p-6 shadow-2xl border transition-all" :class="darkMode ? 'bg-[#18181b] border-gray-700' : 'bg-white border-gray-200'">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold flex items-center gap-2" :class="darkMode ? 'text-white' : 'text-gray-900'">
+                        <i class="ph ph-brain text-fiber-orange"></i> Memoria AI
+                    </h3>
+                    <button @click="showMemory = false" class="p-2 hover:bg-gray-500/10 rounded-full transition-colors"><i class="ph ph-x text-xl text-gray-500"></i></button>
+                </div>
+                
+                <div class="rounded-xl p-2 max-h-60 overflow-y-auto mb-4 border" :class="darkMode?'bg-black/20 border-gray-800':'bg-gray-50 border-gray-200'">
+                    <div v-for="(val, key) in dictationMemory" :key="key" class="flex justify-between items-center p-3 border-b last:border-0" :class="darkMode?'border-gray-800':'border-gray-200'">
                         <div>
-                            <span class="text-red-400 text-xs line-through block">{{ key }}</span>
-                            <span class="text-green-500 font-bold text-sm">{{ val }}</span>
+                            <div class="text-red-400 text-xs line-through mb-0.5">{{ key }}</div>
+                            <div class="text-cyan-500 font-bold text-sm">{{ val }}</div>
                         </div>
-                        <button @click="deleteMemoryRule(key)" class="text-gray-500 hover:text-red-500"><i class="ph ph-x"></i></button>
+                        <button @click="deleteMemoryRule(key)" class="text-gray-400 hover:text-red-500 p-2"><i class="ph ph-trash text-lg"></i></button>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2 mb-4">
-                    <input v-model="newRule.wrong" placeholder="Se sente (es. 'tubo r')" class="p-2 text-sm rounded border bg-transparent" :class="darkMode ? 'border-gray-600' : 'border-gray-300'">
-                    <input v-model="newRule.right" placeholder="Scrive (es. 'Tubo Rame')" class="p-2 text-sm rounded border bg-transparent" :class="darkMode ? 'border-gray-600' : 'border-gray-300'">
+
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <input v-model="newRule.wrong" placeholder="Se sente..." class="f-input px-3 border rounded-lg bg-transparent" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'">
+                    <input v-model="newRule.right" placeholder="Scrive..." class="f-input px-3 border rounded-lg bg-transparent" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'">
                 </div>
-                <button @click="addMemoryRule" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg">Salva Regola</button>
-                <button @click="showMemory = false" class="w-full mt-2 text-sm opacity-60 hover:opacity-100">Chiudi</button>
+                <button @click="addMemoryRule" class="w-full py-3 rounded-xl font-bold bg-gradient-to-r from-orange-400 to-red-500 text-white hover:shadow-lg hover:shadow-orange-500/30 transition-all">
+                    SALVA REGOLA
+                </button>
             </div>
         </div>
 
@@ -258,214 +354,203 @@
             data() {
                 return {
                     darkMode: true,
+                    isListening: false,
                     showMemory: false,
-                    rows: [
-                        { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', extras: [] }
-                    ],
-                    dictationMemory: JSON.parse(localStorage.getItem('nexus_memory')) || {
-                        "tubo r k": "Tubo Rame (K)",
-                        "fibra uno": "Fibra 1Gb",
-                        "due per uno": "2x1"
-                    },
+                    // MODIFICA DATA INIZIALE PER INPUT DATE (YYYY-MM-DD)
+                    sheets: [ { id: 1, name: 'Foglio 1', date: new Date().toISOString().split('T')[0], team: '', rows: [] } ],
+                    currentSheetIdx: 0,
+                    lastActiveRowId: null, 
+                    recognition: null,
+                    dictationMemory: JSON.parse(localStorage.getItem('fiber_memory')) || { "tubo r k": "Tubo Rame", "fibra uno": "Fibra 1Gb" },
                     newRule: { wrong: '', right: '' }
                 }
             },
+            computed: {
+                currentSheet() { return this.sheets[this.currentSheetIdx]; }
+            },
             mounted() {
-                // Check localStorage for saved data
-                const savedRows = localStorage.getItem('nexus_rows');
-                if (savedRows) this.rows = JSON.parse(savedRows);
-                
-                // Theme check
-                if (localStorage.getItem('nexus_theme') === 'light') this.darkMode = false;
+                if (localStorage.getItem('fiber_theme') === 'light') this.darkMode = false;
+                const savedSheets = localStorage.getItem('fiber_sheets');
+                if (savedSheets) this.sheets = JSON.parse(savedSheets);
+                else this.addRow();
+
+                if ('webkitSpeechRecognition' in window) {
+                    this.recognition = new webkitSpeechRecognition();
+                    this.recognition.lang = 'it-IT';
+                    this.recognition.continuous = true;
+                    this.recognition.interimResults = false;
+                    this.recognition.onstart = () => { this.isListening = true; };
+                    this.recognition.onend = () => { if(this.isListening) try { this.recognition.start(); } catch(e){} else this.isListening = false; };
+                    this.recognition.onresult = (event) => {
+                        const transcript = event.results[event.results.length - 1][0].transcript;
+                        this.parseCommand(transcript);
+                    };
+                }
             },
             watch: {
-                rows: {
-                    handler(newVal) {
-                        localStorage.setItem('nexus_rows', JSON.stringify(newVal));
-                    },
-                    deep: true
-                },
-                darkMode(newVal) {
-                    localStorage.setItem('nexus_theme', newVal ? 'dark' : 'light');
-                }
+                sheets: { handler(v) { localStorage.setItem('fiber_sheets', JSON.stringify(v)); }, deep: true },
+                darkMode(v) { localStorage.setItem('fiber_theme', v ? 'dark' : 'light'); }
             },
             methods: {
                 toggleTheme() { this.darkMode = !this.darkMode; },
-                
-                // --- GESTIONE RIGHE ---
+
+                addSheet() {
+                    this.sheets.push({ id: Date.now(), name: `Foglio ${this.sheets.length+1}`, date: new Date().toISOString().split('T')[0], team: '', rows: [] });
+                    this.currentSheetIdx = this.sheets.length - 1;
+                    this.addRow();
+                },
+                removeSheet(i) { if(confirm("Eliminare foglio?")) { this.sheets.splice(i, 1); if(this.currentSheetIdx >= this.sheets.length) this.currentSheetIdx = this.sheets.length - 1; } },
                 addRow() {
-                    this.rows.push({ 
-                        id: Date.now(), 
-                        localita: '', indirizzo: '', pop_pfs: '', 
-                        elemento_ottico: '', permuta: '', note: '', extras: [] 
-                    });
+                    const newRow = { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', materiale_list: [], tempMaterial: '', extras: [] };
+                    this.currentSheet.rows.push(newRow);
+                    this.lastActiveRowId = newRow.id;
                 },
-                removeRow(index) {
-                    if(confirm('Eliminare riga?')) this.rows.splice(index, 1);
-                },
-                duplicateRow(row) {
-                    // Copia profonda per evitare riferimenti
-                    const newRow = JSON.parse(JSON.stringify(row));
-                    newRow.id = Date.now();
-                    this.rows.push(newRow);
-                },
-                clearAll() {
-                    if(confirm('Cancellare TUTTO?')) {
-                        this.rows = [{ id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', extras: [] }];
-                    }
+                removeRow(i) { if(confirm("Eliminare riga?")) this.currentSheet.rows.splice(i, 1); },
+                addMaterial(row, text = null) {
+                    const val = text || row.tempMaterial;
+                    if(val) { row.materiale_list.push({ text: val, checked: false }); row.tempMaterial = ''; }
                 },
 
-                // --- EXTRAS ---
-                addExtra(row) {
-                    row.extras.push({ key: '', value: '' });
-                },
-                removeExtra(row, index) {
-                    row.extras.splice(index, 1);
-                },
-
-                // --- MEMORIA & DETTATURA ---
-                openMemory() { this.showMemory = true; },
-                
                 addMemoryRule() {
                     if(this.newRule.wrong && this.newRule.right) {
                         this.dictationMemory[this.newRule.wrong.toLowerCase()] = this.newRule.right;
-                        localStorage.setItem('nexus_memory', JSON.stringify(this.dictationMemory));
+                        localStorage.setItem('fiber_memory', JSON.stringify(this.dictationMemory));
                         this.newRule = { wrong: '', right: '' };
                     }
                 },
                 deleteMemoryRule(key) {
                     delete this.dictationMemory[key];
-                    localStorage.setItem('nexus_memory', JSON.stringify(this.dictationMemory));
+                    localStorage.setItem('fiber_memory', JSON.stringify(this.dictationMemory));
                 },
 
-                dictate(row, field) {
-                    if (!('webkitSpeechRecognition' in window)) {
-                        alert("Browser non supportato per dettatura");
-                        return;
+                toggleDictation() {
+                    if(!this.recognition) return alert("Browser non supportato");
+                    if(this.isListening) { this.isListening = false; this.recognition.stop(); }
+                    else this.recognition.start();
+                },
+                parseCommand(text) {
+                    console.log("Input:", text);
+                    text = text.toLowerCase();
+                    for (const [wrong, right] of Object.entries(this.dictationMemory)) {
+                        text = text.replace(new RegExp(wrong, 'gi'), right);
                     }
-                    const recognition = new webkitSpeechRecognition();
-                    recognition.lang = 'it-IT';
-                    recognition.interimResults = false;
-                    recognition.maxAlternatives = 1;
 
-                    recognition.onresult = (event) => {
-                        let text = event.results[0][0].transcript.toLowerCase();
-                        
-                        // Applica Memoria
-                        for (const [wrong, right] of Object.entries(this.dictationMemory)) {
-                            if (text.includes(wrong)) {
-                                text = text.replace(new RegExp(wrong, 'g'), right);
-                            }
-                        }
-                        
-                        // Capitalize first letter logic base
-                        if(text.length > 0) {
-                            // Se il testo contiene sostituzioni speciali, lasciamo quelle, altrimenti capitalizza
-                            // Semplificazione:
-                            if(!Object.values(this.dictationMemory).some(v => text.includes(v))) {
-                               text = text.charAt(0).toUpperCase() + text.slice(1);
-                            }
-                        }
+                    if(this.currentSheet.rows.length === 0) this.addRow();
+                    let targetRow = this.currentSheet.rows[this.currentSheet.rows.length - 1];
+                    this.lastActiveRowId = targetRow.id;
 
-                        row[field] = text;
+                    const keywords = {
+                        "località": "localita", "indirizzo": "indirizzo",
+                        "pop": "pop_pfs", "pfs": "pop_pfs",
+                        "elemento": "elemento_ottico", "ottico": "elemento_ottico",
+                        "permuta": "permuta", "note": "note", "nota": "note",
+                        "squadra": "TEAM_FIELD", 
+                        "materiale": "MATERIAL_ADD", "lista materiale": "MATERIAL_ADD", "aggiungi materiale": "MATERIAL_ADD"
                     };
-                    recognition.start();
+
+                    let currentField = null;
+                    let buffer = "";
+                    const words = text.split(" ");
+                    
+                    words.forEach((word) => {
+                        let foundKey = Object.keys(keywords).find(k => word === k || word.startsWith(k));
+                        if (foundKey) {
+                            if (currentField && buffer.trim()) this.applyValue(targetRow, currentField, buffer.trim());
+                            currentField = keywords[foundKey];
+                            buffer = "";
+                        } else {
+                            buffer += word + " ";
+                        }
+                    });
+
+                    if (currentField && buffer.trim()) this.applyValue(targetRow, currentField, buffer.trim());
+                    else if (!currentField && buffer.trim()) targetRow.note = (targetRow.note ? targetRow.note + "\n" : "") + buffer.trim();
+                },
+                applyValue(row, field, value) {
+                    if (field === 'TEAM_FIELD') this.currentSheet.team = value.toUpperCase();
+                    else if (field === 'MATERIAL_ADD') this.addMaterial(row, value.charAt(0).toUpperCase() + value.slice(1));
+                    else if (field === 'note') row.note = (row.note ? row.note + "\n" : "") + value.charAt(0).toUpperCase() + value.slice(1);
+                    else row[field] = value.charAt(0).toUpperCase() + value.slice(1);
                 },
 
-                // --- EXPORT / IMPORT ---
-                
-                // 1. WhatsApp
                 exportWhatsapp() {
-                    let msg = "*REPORT NEXUS*\n\n";
-                    this.rows.forEach((r, i) => {
-                        if(r.indirizzo || r.pop_pfs) {
-                            msg += `📍 *${r.localita} - ${r.indirizzo}*\n`;
+                    let msg = `*FIBER REPORT PRO*\n📅 ${this.currentSheet.date} | 👷 ${this.currentSheet.team}\n\n`;
+                    this.currentSheet.rows.forEach((r, i) => {
+                        if(r.localita || r.indirizzo) {
+                            msg += `*#${i+1}* 📍 ${r.localita}, ${r.indirizzo}\n`;
                             msg += `🔌 POP: ${r.pop_pfs} | 👁 EL: ${r.elemento_ottico}\n`;
                             if(r.permuta) msg += `🔄 Permuta: ${r.permuta}\n`;
                             if(r.note) msg += `📝 Note: ${r.note}\n`;
-                            
-                            if(r.extras.length > 0) {
-                                r.extras.forEach(e => {
-                                    if(e.key) msg += `🔹 ${e.key}: ${e.value}\n`;
-                                });
-                            }
-                            msg += "_____________________\n";
+                            if(r.materiale_list.length) { msg += `🛠 MAT:\n`; r.materiale_list.forEach(m => msg += `${m.checked?'✅':'⬜'} ${m.text}\n`); }
+                            msg += "--------------------\n";
                         }
                     });
                     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                 },
 
-                // 2. Excel
-                exportExcel() {
-                    const data = this.rows.map(r => {
-                        // Base object
-                        let obj = {
-                            "Località": r.localita,
-                            "Indirizzo": r.indirizzo,
-                            "POP/PFS": r.pop_pfs,
-                            "El. Ottico": r.elemento_ottico,
-                            "Permuta": r.permuta,
-                            "Note": r.note
-                        };
-                        // Flatten Extras
-                        r.extras.forEach(e => {
-                            if(e.key) obj[`EXTRA: ${e.key}`] = e.value;
-                        });
-                        return obj;
-                    });
-                    
-                    const ws = XLSX.utils.json_to_sheet(data);
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "Report");
-                    XLSX.writeFile(wb, "Nexus_Report.xlsx");
-                },
-
-                // 3. PDF
                 exportPDF() {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
-                    
-                    doc.text("NEXUS REPORT", 10, 10);
-                    
-                    const tableData = this.rows.map(r => {
-                        let extraStr = r.extras.map(e => `${e.key}: ${e.value}`).join('\n');
-                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.note, extraStr];
+                    doc.setFillColor(6, 182, 212); 
+                    doc.rect(0, 0, 210, 20, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(16);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text("FIBER REPORT PRO", 10, 13);
+                    doc.setFontSize(10);
+                    doc.text(`Squadra: ${this.currentSheet.team}`, 130, 9);
+                    doc.text(`Data: ${this.currentSheet.date}`, 130, 15);
+
+                    const body = this.currentSheet.rows.map(r => {
+                        let matStr = r.materiale_list.map(m => `• ${m.text}`).join("\n");
+                        let extraStr = r.extras.map(e => `${e.key}: ${e.value}`).join("\n");
+                        let noteFull = r.note + (extraStr ? "\n\n" + extraStr : "");
+                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, noteFull, matStr];
                     });
 
                     doc.autoTable({
-                        head: [['Località', 'Indirizzo', 'POP', 'El. Ottico', 'Permuta', 'Note', 'Extra']],
-                        body: tableData,
-                        startY: 20,
-                        styles: { fontSize: 8 },
-                        theme: 'grid'
+                        head: [['Località', 'Indirizzo', 'POP', 'El. Ottico', 'Permuta', 'Note / Extra', 'Materiale']],
+                        body: body, startY: 25, theme: 'grid',
+                        headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' },
+                        alternateRowStyles: { fillColor: [245, 245, 245] },
+                        styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, 
+                        columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 35 }, 5: { cellWidth: 35 }, 6: { cellWidth: 35 } }
                     });
-
-                    doc.save("Nexus_Report.pdf");
+                    doc.save(`Report_${this.currentSheet.name}_${this.currentSheet.team}.pdf`);
                 },
 
-                // 4. Backup & Restore (JSON)
+                exportExcel() {
+                    let allData = [];
+                    this.currentSheet.rows.forEach(r => {
+                        let matStr = r.materiale_list.map(m => m.text).join(", ");
+                        // MODIFICA 1: ORDINE COLONNE XLS RICHIESTO
+                        let obj = {
+                            "Località": r.localita, 
+                            "Indirizzo": r.indirizzo, 
+                            "POP": r.pop_pfs, 
+                            "El. Ottico": r.elemento_ottico,
+                            "Permuta": r.permuta, 
+                            "Materiale": matStr,
+                            "Note": r.note,
+                            "Squadra": this.currentSheet.team, 
+                            "Data": this.currentSheet.date
+                        };
+                        r.extras.forEach(e => obj[e.key] = e.value);
+                        allData.push(obj);
+                    });
+                    const ws = XLSX.utils.json_to_sheet(allData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Report");
+                    XLSX.writeFile(wb, `Report_${this.currentSheet.name}.xlsx`);
+                },
                 backupData() {
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.rows));
-                    const downloadAnchorNode = document.createElement('a');
-                    downloadAnchorNode.setAttribute("href", dataStr);
-                    downloadAnchorNode.setAttribute("download", "nexus_backup_" + new Date().toISOString().slice(0,10) + ".json");
-                    document.body.appendChild(downloadAnchorNode);
-                    downloadAnchorNode.click();
-                    downloadAnchorNode.remove();
+                    const blob = new Blob([JSON.stringify(this.sheets)], {type: "application/json"});
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                    a.download = `backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
                 },
-                restoreData(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            this.rows = JSON.parse(e.target.result);
-                            alert("Backup ripristinato con successo!");
-                        } catch (err) {
-                            alert("Errore nel file di backup");
-                        }
-                    };
-                    reader.readAsText(file);
+                restoreData(e) {
+                    const f = e.target.files[0]; if(!f)return;
+                    const r = new FileReader(); r.onload=ev=>{this.sheets=JSON.parse(ev.target.result);this.currentSheetIdx=0;}; r.readAsText(f);
                 }
             }
         }).mount('#app');
