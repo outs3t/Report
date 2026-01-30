@@ -2,141 +2,111 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapportino Delta Impianti v31</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rapportino Delta Impianti v32</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
         body { background: #525659; font-family: 'Roboto', sans-serif; }
         
-        /* FOGLIO A4 BLINDATO (NO SECONDA PAGINA) */
         .a4-page {
-            width: 210mm;
-            /* 296mm invece di 297mm: 1mm di sicurezza per evitare la pagina bianca */
-            height: 296mm; 
-            background: white;
-            margin: 0 auto;
-            /* Padding ridotto in alto per alzare il logo */
+            width: 210mm; height: 296mm; background: white; margin: 0 auto;
             padding: 4mm 10mm 5mm 10mm; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden; /* Taglia via qualsiasi cosa esca fuori */
+            display: flex; flex-direction: column; justify-content: space-between;
+            position: relative; overflow: hidden;
         }
 
-        .r-input {
-            border: none;
-            border-bottom: 1px dotted #ccc;
-            width: 100%;
-            padding: 2px 0;
-            outline: none;
-            font-size: 11px;
-            background: transparent;
-            font-weight: 500;
-            color: #000;
-        }
+        .r-input { border: none; border-bottom: 1px dotted #ccc; width: 100%; padding: 2px 0; outline: none; font-size: 11px; background: transparent; font-weight: 500; color: #000; }
         .r-input:focus { border-bottom: 1px solid #000; background: #f5f5f5; }
-
-        textarea.r-input {
-            resize: none;
-            overflow: hidden;
-            min-height: 20px;
-            line-height: 1.2;
-            display: block;
-        }
-
-        /* CLASSE STAMPA (TESTO ESPANSO) */
-        .print-text {
-            font-size: 11px;
-            white-space: pre-wrap;
-            border-bottom: 1px dotted #ccc;
-            min-height: 18px;
-            padding: 2px 0;
-            color: #000;
-        }
-
-        .signature-font {
-            font-family: 'Dancing Script', cursive;
-            font-size: 1.8rem;
-            color: #000000;
-            line-height: 1;
-            display: block;
-            margin-bottom: 2px;
-        }
-
+        textarea.r-input { resize: none; overflow: hidden; min-height: 20px; line-height: 1.2; display: block; }
+        .print-text { font-size: 11px; white-space: pre-wrap; border-bottom: 1px dotted #ccc; min-height: 18px; padding: 2px 0; color: #000; }
+        .signature-font { font-family: 'Dancing Script', cursive; font-size: 1.8rem; color: #000000; line-height: 1; display: block; margin-bottom: 2px; }
         th { font-weight: 700; font-size: 9px; padding-bottom: 2px; border-bottom: 1px solid #000; color: #333; }
         td { vertical-align: top; padding-top: 2px; padding-bottom: 2px; font-size: 10px; }
 
         @media print {
             .no-print { display: none !important; }
             body { background: white; margin: 0; }
-            /* Forza altezza massima in stampa */
             .a4-page { box-shadow: none; margin: 0; width: 100%; height: 296mm; overflow: hidden; page-break-after: avoid; }
         }
         
         .btn-smart { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
         
-        .screen-wrapper { padding: 20px; display: flex; justify-content: center; }
+        /* Contenitore Mobile Friendly */
+        .screen-wrapper { padding: 10px; display: flex; justify-content: center; overflow-x: auto; }
+        /* Su mobile, l'A4 viene scalato per essere visibile */
+        @media (max-width: 800px) {
+            .screen-wrapper { justify-content: flex-start; }
+            .a4-page { transform: scale(0.6); transform-origin: top left; margin-bottom: -100mm; } 
+        }
     </style>
 </head>
 <body>
 
     <div id="app">
         
-        <div class="fixed top-0 left-0 right-0 bg-gray-900 text-white p-2 flex justify-between items-center z-50 shadow-lg no-print">
-            <div class="font-bold flex items-center gap-2 text-xs">
-                <i class="ph ph-file-text text-yellow-400"></i> RAPPORTINO v31
-            </div>
-            <div class="flex gap-3 items-center">
-                <button @click="importSmartData" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded shadow text-xs flex items-center gap-2 btn-smart border border-blue-400">
-                    <i class="ph ph-magic-wand"></i> IMPORTA DATI
-                </button>
-                <div class="w-px h-6 bg-gray-700 mx-2"></div>
-                <a href="index.html" class="px-3 py-1 text-xs font-bold text-gray-300 hover:text-white border border-gray-600 rounded flex items-center">INDIETRO</a>
-                <div class="flex gap-2">
-                    <button @click="downloadFiberPDF" class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded shadow text-xs flex items-center gap-1">
-                        <i class="ph ph-table"></i> XLS/PDF REPORT
+        <div class="fixed top-0 left-0 right-0 bg-gray-900 text-white p-2 z-50 shadow-lg no-print">
+            <div class="flex flex-wrap justify-between items-center gap-2 max-w-7xl mx-auto">
+                
+                <div class="font-bold flex items-center gap-2 text-xs">
+                    <i class="ph ph-file-text text-yellow-400 text-lg"></i> 
+                    <span class="hidden sm:inline">RAPPORTINO v32</span>
+                </div>
+
+                <div class="flex gap-2 items-center flex-1 justify-end">
+                    
+                    <button @click="importSmartData" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded shadow-lg text-[10px] flex items-center gap-1 btn-smart border border-blue-400">
+                        <i class="ph ph-magic-wand text-sm"></i> 
+                        <span class="hidden sm:inline">IMPORTA</span>
                     </button>
-                    <button @click="downloadRapportinoPDF" class="px-4 py-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded shadow text-xs flex items-center gap-1">
-                        <i class="ph ph-file-pdf"></i> RAPPORTINO A4
+                    
+                    <a href="index.html" class="px-3 py-1.5 text-[10px] font-bold text-gray-300 hover:text-white border border-gray-600 rounded flex items-center">
+                        <i class="ph ph-arrow-u-up-left text-sm sm:hidden"></i>
+                        <span class="hidden sm:inline">INDIETRO</span>
+                    </a>
+                    
+                    <div class="w-px h-6 bg-gray-700 mx-1"></div>
+
+                    <button @click="downloadFiberPDF" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded shadow-lg text-[10px] flex items-center gap-1">
+                        <i class="ph ph-table text-sm"></i> 
+                        <span class="hidden sm:inline">REPORT</span>
+                        <span class="inline sm:hidden">XLS</span>
+                    </button>
+                    
+                    <button @click="downloadRapportinoPDF" class="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded shadow-lg text-[10px] flex items-center gap-1">
+                        <i class="ph ph-file-pdf text-sm"></i> 
+                        <span class="hidden sm:inline">RAPPORTINO</span>
+                        <span class="inline sm:hidden">A4</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="h-12 no-print"></div>
+        <div class="h-14 no-print"></div>
 
         <div class="screen-wrapper">
             <div class="a4-page" id="pdf-content">
                 
                 <div id="content-body">
                     <div class="flex justify-between items-end mb-2 border-b-2 border-black pb-2">
-                        
                         <div class="w-1/3 pr-4">
                             <div class="relative group cursor-pointer" @click="triggerLogoUpload">
                                 <div class="h-24 w-full flex items-center justify-start">
-                                    <img v-if="logoSrc" :src="logoSrc" class="h-full w-auto object-contain object-left" title="Clicca per cambiare logo">
-                                    <div v-else class="w-full h-16 bg-gray-100 border border-dashed border-gray-400 flex items-center justify-center text-gray-500 text-[10px] text-center">
-                                        CARICA LOGO
-                                    </div>
+                                    <img v-if="logoSrc" :src="logoSrc" class="h-full w-auto object-contain object-left">
+                                    <div v-else class="w-full h-16 bg-gray-100 border border-dashed border-gray-400 flex items-center justify-center text-gray-500 text-[10px] text-center">CARICA LOGO</div>
                                 </div>
                                 <input type="file" ref="logoInput" @change="handleLogo" class="hidden" accept="image/*">
                             </div>
                         </div>
-
                         <div class="w-2/3 text-right">
                             <h1 class="text-2xl font-black text-black uppercase tracking-tighter leading-none mb-1">Rapportino Giornaliero</h1>
                             <div class="flex justify-end items-center gap-2"><label class="text-[10px] font-bold text-gray-600 uppercase">Data:</label><input v-model="displayDate" class="text-right font-bold text-sm outline-none border-b border-black w-24 r-input"></div>
@@ -193,7 +163,6 @@
                         <div><label class="text-[9px] text-gray-600 uppercase font-bold">KM</label><input type="number" v-model="km" class="r-input" placeholder="0"></div>
                         <div class="relative"><label class="text-[9px] text-gray-600 uppercase font-bold flex items-center gap-2">Rifornimento <input type="checkbox" v-model="showFuel" class="no-print"></label><div v-if="showFuel" class="flex gap-2 mt-1"><input v-model="fuelLitres" class="r-input" placeholder="Litri"><input v-model="fuelEuro" class="r-input" placeholder="€"></div></div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-10 items-end">
                         <div>
                             <div class="border border-black flex text-center">
@@ -217,15 +186,13 @@
 
     <script>
         const { createApp } = Vue;
-
         createApp({
             data() {
                 return {
                     logoSrc: localStorage.getItem('delta_logo') || '',
                     dataOggi: new Date().toISOString().split('T')[0],
                     displayDate: new Date().toLocaleDateString('it-IT'),
-                    cliente: 'Open Fiber',
-                    localita: '', assistente: '', 
+                    cliente: 'Open Fiber', localita: '', assistente: '', 
                     workers: [{ role: 'CS', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }, { role: 'DIP', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }],
                     works: [ { address: '', desc: '', qty: '' } ],
                     mezzo: '', targa: '', km: '', showFuel: false, fuelLitres: '', fuelEuro: '', signatureName: ''
@@ -249,24 +216,19 @@
                         if(splitNames[0]) this.workers[0].name = splitNames[0];
                         if(splitNames[1] && this.workers[1]) this.workers[1].name = splitNames[1];
                     }
-                    
                     let uniqueCities = new Set();
                     this.works = []; 
-
                     targetSheet.rows.forEach(r => {
                         if(r.localita) uniqueCities.add(r.localita.toUpperCase());
                         let fullAddress = r.indirizzo || "";
                         if(r.localita && fullAddress) fullAddress += ` (${r.localita})`;
                         else if(!fullAddress && r.localita) fullAddress = r.localita;
-
                         let finalDesc = r.note || "";
                         let lowerNote = finalDesc.toLowerCase();
-
                         if(r.permuta) {
                             if(!finalDesc.trim()) finalDesc = `Guasto Risolto - Permuta: ${r.permuta}`;
                             else finalDesc += ` - Permuta: ${r.permuta}`;
                         }
-
                         if(lowerNote.includes("giunzion") && r.elemento_ottico) {
                             let words = lowerNote.split(/\s+/);
                             let idx = words.findIndex(w => w.includes("giunzion"));
@@ -276,12 +238,10 @@
                             let alreadyHasElement = skipKeywords.some(k => nextWords.includes(k));
                             if(!alreadyHasElement) finalDesc += ` - Elemento: ${r.elemento_ottico}`;
                         }
-
                         if(fullAddress || finalDesc) {
                             this.works.push({ address: fullAddress.toUpperCase(), desc: finalDesc, qty: '1' });
                         }
                     });
-
                     this.localita = Array.from(uniqueCities).join(', ');
                     this.displayDate = new Date().toLocaleDateString('it-IT');
                     alert("Importazione completata!");
@@ -289,11 +249,8 @@
 
                 async downloadRapportinoPDF() {
                     const element = document.getElementById('pdf-content');
-                    
-                    // 1. TRASFORMAZIONE INPUT -> TESTO (Fix Taglio Note)
                     const inputs = element.querySelectorAll('input, textarea');
                     const originalStates = [];
-
                     inputs.forEach((input) => {
                         originalStates.push({ element: input, display: input.style.display });
                         const textDiv = document.createElement('div');
@@ -303,20 +260,8 @@
                         input.style.display = 'none';
                         input.parentNode.insertBefore(textDiv, input);
                     });
-
-                    // 2. GENERAZIONE PDF (NO PAGINA BIANCA)
-                    const opt = { 
-                        margin: 0, 
-                        filename: `Rapportino_${this.dataOggi}.pdf`, 
-                        image: { type: 'jpeg', quality: 0.99 }, 
-                        html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                        pagebreak: { mode: 'avoid-all' }
-                    };
-                    
+                    const opt = { margin: 0, filename: `Rapportino_${this.dataOggi}.pdf`, image: { type: 'jpeg', quality: 0.99 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: 'avoid-all' } };
                     await html2pdf().set(opt).from(element).save();
-
-                    // 3. RIPRISTINO
                     setTimeout(() => {
                         document.querySelectorAll('.print-text').forEach(el => el.remove());
                         inputs.forEach((input, i) => input.style.display = originalStates[i].display);
@@ -330,28 +275,18 @@
                     if (!savedSheets) return alert("Nessun dato Fiber Report trovato.");
                     const sheets = JSON.parse(savedSheets);
                     let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1];
-
                     doc.setFillColor(6, 182, 212); doc.rect(0, 0, 210, 20, 'F');
                     doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT PRO", 10, 13);
                     doc.setFontSize(10); doc.text(`Squadra: ${targetSheet.team}`, 130, 9);
                     let parts = targetSheet.date.split('-');
                     let dateIT = targetSheet.date.includes('-') ? `${parts[2]}/${parts[1]}/${parts[0]}` : targetSheet.date;
                     doc.text(`Data: ${dateIT}`, 130, 15);
-
                     const body = targetSheet.rows.map(r => {
                         let matStr = r.materiale_list ? r.materiale_list.map(m => `• ${m.text}`).join("\n") : "";
                         let noteFull = r.note || ""; 
                         return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, noteFull, matStr];
                     });
-
-                    doc.autoTable({
-                        head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Note', 'Materiale']],
-                        body: body, startY: 25, theme: 'grid',
-                        headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' },
-                        alternateRowStyles: { fillColor: [245, 245, 245] },
-                        styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, 
-                        columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 35 }, 5: { cellWidth: 35 }, 6: { cellWidth: 35 } }
-                    });
+                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Note', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 35 }, 5: { cellWidth: 35 }, 6: { cellWidth: 35 } } });
                     doc.save(`FiberReport_${targetSheet.date}.pdf`);
                 }
             }
