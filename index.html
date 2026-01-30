@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Manager 2125</title>
+    <title>NEXUS PRO MANAGER</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -11,175 +11,241 @@
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-    <style>
-        body { font-family: 'Rajdhani', sans-serif; transition: background 0.5s ease; }
-        h1, h2, h3 { font-family: 'Orbitron', sans-serif; }
-        
-        /* Glassmorphism Classes */
-        .glass-panel {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        /* Animazioni */
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
-
-        /* Nascondi scrollbar ma permetti scroll */
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
                     colors: {
-                        neon: '#00f3ff',
-                        purple: '#bc13fe',
+                        dark: {
+                            900: '#050505', // True Black background
+                            800: '#121212', // Card background
+                            700: '#1E1E1E', // Input background
+                            600: '#2D2D2D', // Border
+                        },
+                        brand: {
+                            light: '#2563eb', // Blue standard
+                            dark: '#3b82f6', // Blue brighter
+                        }
                     }
                 }
             }
         }
     </script>
-</head>
-<body class="antialiased min-h-screen">
-    
-    <div id="app" :class="darkMode ? 'bg-slate-900 text-cyan-50' : 'bg-gray-100 text-slate-800'" class="min-h-screen relative pb-32 transition-colors duration-500">
+    <style>
+        /* Transizioni fluide ma secche professionali */
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
         
-        <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-            <div :class="darkMode ? 'bg-blue-600' : 'bg-blue-300'" class="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-            <div :class="darkMode ? 'bg-purple-600' : 'bg-purple-300'" class="absolute bottom-[-10%] right-[-10%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style="animation-delay: 2s"></div>
-        </div>
+        /* Input styling */
+        .input-field {
+            transition: all 0.2s;
+        }
+        .input-field:focus {
+            transform: translateY(-1px);
+        }
 
-        <header class="relative z-10 p-6 flex justify-between items-center glass-panel m-4 rounded-2xl" :class="darkMode ? 'bg-slate-800/40' : 'bg-white/60'">
-            <div>
-                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
-                    NEXUS <span class="text-xs font-light tracking-widest text-current">2125</span>
-                </h1>
-                <p class="text-xs opacity-60">Sistema Gestione Avanzato</p>
+        /* Scrollbar nascosta ma funzionale */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+    </style>
+</head>
+<body class="antialiased min-h-screen pb-40">
+    
+    <div id="app" :class="darkMode ? 'bg-dark-900 text-gray-200' : 'bg-gray-100 text-gray-900'" class="min-h-screen transition-colors duration-300">
+
+        <header class="sticky top-0 z-40 backdrop-blur-md border-b" 
+                :class="darkMode ? 'bg-dark-900/90 border-dark-600' : 'bg-white/90 border-gray-200'">
+            <div class="max-w-7xl mx-auto p-4">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    
+                    <div class="flex items-center gap-3 w-full md:w-auto justify-between">
+                        <div>
+                            <h1 class="text-2xl font-extrabold tracking-tight">NEXUS <span class="text-blue-500">PRO</span></h1>
+                            <p class="text-[10px] uppercase tracking-widest opacity-60">Operations Manager</p>
+                        </div>
+                        <button @click="toggleTheme" class="md:hidden p-2 rounded-lg border" :class="darkMode ? 'border-gray-700 bg-dark-700' : 'border-gray-300 bg-gray-100'">
+                            <i :class="darkMode ? 'ph-sun text-yellow-400' : 'ph-moon text-gray-600'" class="ph text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center gap-2 w-full md:w-auto">
+                        <div class="flex rounded-lg overflow-hidden border" :class="darkMode ? 'border-gray-700' : 'border-gray-300'">
+                            <button @click="backupData" class="px-3 py-2 text-xs font-bold hover:bg-blue-500 hover:text-white transition-colors" title="Scarica Backup">
+                                <i class="ph ph-download-simple text-lg"></i>
+                            </button>
+                            <label class="px-3 py-2 text-xs font-bold hover:bg-blue-500 hover:text-white transition-colors cursor-pointer border-l" :class="darkMode ? 'border-gray-700' : 'border-gray-300'" title="Carica Backup">
+                                <i class="ph ph-upload-simple text-lg"></i>
+                                <input type="file" @change="restoreData" class="hidden" accept=".json">
+                            </label>
+                        </div>
+
+                        <button @click="exportExcel" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border hover:bg-green-600 hover:text-white transition-colors" :class="darkMode ? 'border-green-800 text-green-400' : 'border-green-200 text-green-700 bg-green-50'">
+                            <i class="ph ph-file-xls text-lg"></i> XLS
+                        </button>
+                        <button @click="exportPDF" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border hover:bg-red-600 hover:text-white transition-colors" :class="darkMode ? 'border-red-800 text-red-400' : 'border-red-200 text-red-700 bg-red-50'">
+                            <i class="ph ph-file-pdf text-lg"></i> PDF
+                        </button>
+                        
+                        <button @click="toggleTheme" class="hidden md:block ml-2 p-2 rounded-lg border transition-colors" :class="darkMode ? 'border-gray-700 bg-dark-700 hover:bg-dark-600' : 'border-gray-300 bg-white hover:bg-gray-100'">
+                            <i :class="darkMode ? 'ph-sun text-yellow-400' : 'ph-moon text-gray-600'" class="ph text-xl"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <button @click="toggleTheme" class="p-3 rounded-full hover:scale-110 transition-transform glass-panel">
-                <i v-if="darkMode" class="ph ph-sun text-yellow-400 text-xl"></i>
-                <i v-else class="ph ph-moon text-slate-600 text-xl"></i>
-            </button>
         </header>
 
-        <main class="relative z-10 px-4 space-y-4">
+        <main class="max-w-7xl mx-auto p-4">
             
-            <div v-for="(row, index) in rows" :key="row.id" 
-                 class="glass-panel rounded-2xl p-5 border-l-4"
-                 :class="darkMode ? 'bg-slate-800/30 border-cyan-500' : 'bg-white/70 border-blue-500'">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-xs font-bold uppercase tracking-widest opacity-50">Riga #{{ index + 1 }}</span>
-                    <button @click="removeRow(index)" class="text-red-400 opacity-60 hover:opacity-100 p-1">
-                        <i class="ph ph-trash text-lg"></i>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 gap-4 mb-4">
-                    <div class="relative group">
-                        <label class="text-[10px] uppercase opacity-50 ml-1">Indirizzo</label>
-                        <input v-model="row.address" type="text" placeholder="Es. Via Roma 10"
-                            class="w-full bg-transparent border-b border-gray-500/30 focus:border-cyan-400 py-2 px-1 outline-none transition-colors"
-                            :class="darkMode ? 'text-white' : 'text-slate-900'">
-                        <button @click="startDictation(row, 'address')" class="absolute right-0 bottom-2 text-cyan-500 opacity-50 hover:opacity-100">
-                            <i class="ph ph-microphone"></i>
-                        </button>
-                    </div>
-
-                    <div class="relative group">
-                        <label class="text-[10px] uppercase opacity-50 ml-1">Materiale</label>
-                        <input v-model="row.material" type="text" placeholder="Es. Tubo rame"
-                            @blur="learnCorrection('tubo r k', row.material)" 
-                            class="w-full bg-transparent border-b border-gray-500/30 focus:border-purple-400 py-2 px-1 outline-none transition-colors"
-                            :class="darkMode ? 'text-white' : 'text-slate-900'">
-                        <button @click="startDictation(row, 'material')" class="absolute right-0 bottom-2 text-purple-500 opacity-50 hover:opacity-100">
-                            <i class="ph ph-microphone"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-4 border-t border-dashed" :class="darkMode ? 'border-white/10' : 'border-black/10'">
-                    <p class="text-xs font-bold mb-2 flex items-center gap-2">
-                        <i class="ph ph-sliders"></i> PARAMETRI EXTRA
-                    </p>
+                <div v-for="(row, index) in rows" :key="row.id" 
+                     class="relative rounded-xl border shadow-lg overflow-hidden flex flex-col"
+                     :class="darkMode ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'">
                     
-                    <div v-for="(extra, eIndex) in row.extras" :key="eIndex" class="flex gap-2 mb-2 items-end animate-fade-in">
-                        <div class="flex-1">
-                            <input v-model="extra.key" placeholder="Nome (es. Colore)" 
-                                class="w-full text-xs bg-transparent border-b border-gray-500/20 focus:border-cyan-400 py-1 text-cyan-600 font-bold outline-none">
+                    <div class="flex justify-between items-center p-3 border-b" :class="darkMode ? 'bg-dark-700/50 border-dark-600' : 'bg-gray-50 border-gray-100'">
+                        <span class="font-mono text-xs font-bold opacity-50">#{{ index + 1 }}</span>
+                        <div class="flex gap-2">
+                            <button @click="duplicateRow(row)" class="text-blue-400 hover:text-blue-500 p-1" title="Duplica"><i class="ph ph-copy"></i></button>
+                            <button @click="removeRow(index)" class="text-red-400 hover:text-red-500 p-1" title="Elimina"><i class="ph ph-trash"></i></button>
                         </div>
-                        <div class="flex-[2]">
-                            <input v-model="extra.value" placeholder="Valore" 
-                                class="w-full text-sm bg-transparent border-b border-gray-500/20 focus:border-cyan-400 py-1 outline-none">
-                        </div>
-                        <button @click="removeExtra(row, eIndex)" class="text-red-400">
-                            <i class="ph ph-x-circle"></i>
-                        </button>
                     </div>
 
-                    <button @click="addExtra(row)" class="mt-2 w-full py-2 rounded-lg border border-dashed flex justify-center items-center gap-2 text-xs opacity-60 hover:opacity-100 transition-all"
-                        :class="darkMode ? 'border-white/20 hover:bg-white/5' : 'border-black/20 hover:bg-black/5'">
-                        <i class="ph ph-plus"></i> Aggiungi Parametro
+                    <div class="p-4 space-y-3 flex-grow">
+                        
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="relative group">
+                                <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">Località</label>
+                                <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
+                                    <input v-model="row.localita" class="w-full bg-transparent px-3 py-2 text-sm outline-none font-medium" placeholder="Città...">
+                                    <button @click="dictate(row, 'localita')" class="px-3 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
+                                </div>
+                            </div>
+                            <div class="relative group">
+                                <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">Indirizzo</label>
+                                <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
+                                    <input v-model="row.indirizzo" class="w-full bg-transparent px-3 py-2 text-sm outline-none" placeholder="Via/Piazza...">
+                                    <button @click="dictate(row, 'indirizzo')" class="px-3 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">POP/PFS</label>
+                                <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
+                                    <input v-model="row.pop_pfs" class="w-full bg-transparent px-2 py-2 text-sm outline-none" placeholder="COD...">
+                                    <button @click="dictate(row, 'pop_pfs')" class="pr-2 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">El. Ottico</label>
+                                <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
+                                    <input v-model="row.elemento_ottico" class="w-full bg-transparent px-2 py-2 text-sm outline-none" placeholder="Valore...">
+                                    <button @click="dictate(row, 'elemento_ottico')" class="pr-2 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">Permuta</label>
+                            <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
+                                <input v-model="row.permuta" class="w-full bg-transparent px-3 py-2 text-sm outline-none" placeholder="Dati permuta...">
+                                <button @click="dictate(row, 'permuta')" class="px-3 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
+                            </div>
+                        </div>
+
+                         <div>
+                            <label class="text-[10px] uppercase font-bold opacity-60 mb-1 block">Note Extra</label>
+                            <div class="flex items-center border rounded-md overflow-hidden" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-300'">
+                                <textarea v-model="row.note" rows="1" class="w-full bg-transparent px-3 py-2 text-sm outline-none resize-none" placeholder="Scrivi note..."></textarea>
+                                <button @click="dictate(row, 'note')" class="px-3 text-gray-400 hover:text-blue-500"><i class="ph ph-microphone"></i></button>
+                            </div>
+                        </div>
+
+                        <div v-if="row.extras.length > 0" class="pt-2 border-t border-dashed space-y-2" :class="darkMode ? 'border-gray-700' : 'border-gray-300'">
+                            <p class="text-[10px] font-bold text-blue-500">PARAMETRI AGGIUNTIVI</p>
+                            <div v-for="(extra, eIdx) in row.extras" :key="eIdx" class="flex gap-2 items-center">
+                                <input v-model="extra.key" class="w-1/3 bg-transparent text-xs font-bold border-b border-dashed outline-none py-1" :class="darkMode ? 'border-gray-600 text-blue-300' : 'border-gray-400 text-blue-700'" placeholder="Nome">
+                                <input v-model="extra.value" class="w-full bg-transparent text-xs border-b border-dashed outline-none py-1" :class="darkMode ? 'border-gray-600' : 'border-gray-400'" placeholder="Valore">
+                                <button @click="removeExtra(row, eIdx)" class="text-red-500 hover:text-red-400"><i class="ph ph-x"></i></button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <button @click="addExtra(row)" class="w-full py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/10 transition-colors border-t"
+                        :class="darkMode ? 'border-dark-600 text-gray-500 hover:text-blue-400' : 'border-gray-200 text-gray-500 hover:text-blue-600'">
+                        + Aggiungi Parametro
                     </button>
                 </div>
+
+                <button @click="addRow" class="min-h-[300px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-4 transition-all opacity-60 hover:opacity-100 hover:scale-[1.02]"
+                    :class="darkMode ? 'border-dark-600 hover:border-blue-500 hover:bg-dark-800' : 'border-gray-300 hover:border-blue-500 hover:bg-white'">
+                    <i class="ph ph-plus-circle text-4xl text-blue-500"></i>
+                    <span class="font-bold uppercase tracking-widest">Nuova Riga</span>
+                </button>
 
             </div>
-
-            <button @click="addRow" class="w-full py-4 rounded-2xl glass-panel text-center font-bold tracking-widest hover:scale-[1.02] transition-transform text-cyan-500">
-                + NUOVA RIGA
-            </button>
-
         </main>
 
-        <div class="fixed bottom-6 left-0 right-0 z-50 flex justify-center items-end px-6 pointer-events-none">
-            
-            <div class="flex items-center gap-8 pointer-events-auto">
+        <div class="fixed bottom-0 left-0 right-0 z-50 p-4 border-t shadow-2xl" 
+             :class="darkMode ? 'bg-dark-900 border-dark-600' : 'bg-white border-gray-200'">
+            <div class="max-w-3xl mx-auto flex items-center justify-between gap-4">
                 
-                <button @click="exportToWhatsapp" class="glass-panel p-4 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white transition-all shadow-lg hover:shadow-green-500/50 flex flex-col items-center">
-                    <i class="ph ph-whatsapp-logo text-2xl"></i>
-                    <span class="text-[8px] uppercase font-bold mt-1">Invia</span>
+                <button @click="exportWhatsapp" class="flex flex-col items-center gap-1 group">
+                    <div class="p-3 rounded-full bg-green-500/10 text-green-500 group-hover:bg-green-500 group-hover:text-white transition-all">
+                        <i class="ph ph-whatsapp-logo text-2xl"></i>
+                    </div>
+                    <span class="text-[9px] font-bold uppercase opacity-60">Invia</span>
                 </button>
 
-                <button @click="startGeneralDictation" 
-                    :class="isListening ? 'bg-red-500 animate-pulse scale-110' : 'bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-white'"
-                    class="glass-panel w-20 h-20 rounded-full flex items-center justify-center transition-all shadow-[0_0_30px_rgba(0,243,255,0.3)] hover:shadow-[0_0_50px_rgba(0,243,255,0.6)] -translate-y-4">
-                    <i class="ph ph-microphone text-3xl"></i>
+                <div class="relative -top-8">
+                     <button @click="openMemory" class="w-16 h-16 rounded-full flex items-center justify-center shadow-lg border-4 transition-transform hover:scale-110 active:scale-95"
+                        :class="darkMode ? 'bg-blue-600 border-dark-900 text-white shadow-blue-900/50' : 'bg-blue-600 border-white text-white shadow-blue-200'">
+                        <i class="ph ph-brain text-3xl"></i>
+                     </button>
+                     <div class="text-center mt-2 text-[9px] font-bold uppercase opacity-60">Memoria</div>
+                </div>
+
+                <button @click="clearAll" class="flex flex-col items-center gap-1 group">
+                    <div class="p-3 rounded-full bg-red-500/10 text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all">
+                        <i class="ph ph-trash text-2xl"></i>
+                    </div>
+                    <span class="text-[9px] font-bold uppercase opacity-60">Reset</span>
                 </button>
 
-                <button @click="openMemorySettings" class="glass-panel p-4 rounded-full bg-purple-500/20 text-purple-400 hover:bg-purple-500 hover:text-white transition-all shadow-lg hover:shadow-purple-500/50 flex flex-col items-center">
-                    <i class="ph ph-brain text-2xl"></i>
-                    <span class="text-[8px] uppercase font-bold mt-1">Memoria</span>
-                </button>
             </div>
         </div>
 
-        <div v-if="showMemoryModal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-purple-500/30 p-6 rounded-2xl w-full max-w-md shadow-2xl">
-                <h3 class="text-xl font-bold text-purple-400 mb-4">Memoria Vocale</h3>
-                <p class="text-sm text-gray-400 mb-4">Insegna al sistema come correggere le parole.</p>
-                
-                <div class="space-y-2 max-h-60 overflow-y-auto mb-4">
-                    <div v-for="(val, key) in speechDictionary" :key="key" class="flex justify-between bg-white/5 p-2 rounded">
-                        <span class="text-red-300 line-through text-sm">{{ key }}</span>
-                        <span class="text-green-400 text-sm">→ {{ val }}</span>
-                        <button @click="removeCorrection(key)" class="text-xs text-gray-500">X</button>
+        <div v-if="showMemory" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="w-full max-w-md rounded-xl p-6 shadow-2xl border" :class="darkMode ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph ph-brain text-blue-500"></i> Memoria Vocale</h2>
+                <div class="space-y-2 mb-4 max-h-60 overflow-y-auto">
+                    <div v-for="(val, key) in dictationMemory" :key="key" class="flex justify-between items-center p-2 rounded border" :class="darkMode ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-200'">
+                        <div>
+                            <span class="text-red-400 text-xs line-through block">{{ key }}</span>
+                            <span class="text-green-500 font-bold text-sm">{{ val }}</span>
+                        </div>
+                        <button @click="deleteMemoryRule(key)" class="text-gray-500 hover:text-red-500"><i class="ph ph-x"></i></button>
                     </div>
                 </div>
-
-                <div class="flex gap-2 mb-4">
-                    <input v-model="newCorrection.wrong" placeholder="Se sente... (es. tubo r k)" class="flex-1 bg-black/30 border border-gray-700 rounded p-2 text-sm text-white">
-                    <input v-model="newCorrection.right" placeholder="Scrivi... (es. tubo R cap)" class="flex-1 bg-black/30 border border-gray-700 rounded p-2 text-sm text-white">
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <input v-model="newRule.wrong" placeholder="Se sente (es. 'tubo r')" class="p-2 text-sm rounded border bg-transparent" :class="darkMode ? 'border-gray-600' : 'border-gray-300'">
+                    <input v-model="newRule.right" placeholder="Scrive (es. 'Tubo Rame')" class="p-2 text-sm rounded border bg-transparent" :class="darkMode ? 'border-gray-600' : 'border-gray-300'">
                 </div>
-                <button @click="addCorrection" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2 rounded-lg mb-2">Aggiungi Regola</button>
-                <button @click="showMemoryModal = false" class="w-full bg-transparent border border-white/20 text-white py-2 rounded-lg">Chiudi</button>
+                <button @click="addMemoryRule" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg">Salva Regola</button>
+                <button @click="showMemory = false" class="w-full mt-2 text-sm opacity-60 hover:opacity-100">Chiudi</button>
             </div>
         </div>
 
@@ -192,38 +258,64 @@
             data() {
                 return {
                     darkMode: true,
-                    isListening: false,
-                    showMemoryModal: false,
+                    showMemory: false,
                     rows: [
-                        { id: 1, address: '', material: '', extras: [] }
+                        { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', extras: [] }
                     ],
-                    // Carica dizionario da localStorage o usa default
-                    speechDictionary: JSON.parse(localStorage.getItem('nexus_dictionary')) || {
-                        "tubo r k": "tubo R cap",
+                    dictationMemory: JSON.parse(localStorage.getItem('nexus_memory')) || {
+                        "tubo r k": "Tubo Rame (K)",
+                        "fibra uno": "Fibra 1Gb",
                         "due per uno": "2x1"
                     },
-                    newCorrection: { wrong: '', right: '' },
-                    currentDictationTarget: null // { row: obj, field: string }
+                    newRule: { wrong: '', right: '' }
                 }
             },
             mounted() {
-                // Controlla preferenza tema utente sistema
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                    this.darkMode = false;
+                // Check localStorage for saved data
+                const savedRows = localStorage.getItem('nexus_rows');
+                if (savedRows) this.rows = JSON.parse(savedRows);
+                
+                // Theme check
+                if (localStorage.getItem('nexus_theme') === 'light') this.darkMode = false;
+            },
+            watch: {
+                rows: {
+                    handler(newVal) {
+                        localStorage.setItem('nexus_rows', JSON.stringify(newVal));
+                    },
+                    deep: true
+                },
+                darkMode(newVal) {
+                    localStorage.setItem('nexus_theme', newVal ? 'dark' : 'light');
                 }
             },
             methods: {
-                toggleTheme() {
-                    this.darkMode = !this.darkMode;
-                },
+                toggleTheme() { this.darkMode = !this.darkMode; },
+                
+                // --- GESTIONE RIGHE ---
                 addRow() {
-                    this.rows.push({ id: Date.now(), address: '', material: '', extras: [] });
+                    this.rows.push({ 
+                        id: Date.now(), 
+                        localita: '', indirizzo: '', pop_pfs: '', 
+                        elemento_ottico: '', permuta: '', note: '', extras: [] 
+                    });
                 },
                 removeRow(index) {
-                    if(confirm("Eliminare questa riga?")) this.rows.splice(index, 1);
+                    if(confirm('Eliminare riga?')) this.rows.splice(index, 1);
                 },
-                
-                // --- GESTIONE CAMPI EXTRA DINAMICI ---
+                duplicateRow(row) {
+                    // Copia profonda per evitare riferimenti
+                    const newRow = JSON.parse(JSON.stringify(row));
+                    newRow.id = Date.now();
+                    this.rows.push(newRow);
+                },
+                clearAll() {
+                    if(confirm('Cancellare TUTTO?')) {
+                        this.rows = [{ id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', extras: [] }];
+                    }
+                },
+
+                // --- EXTRAS ---
                 addExtra(row) {
                     row.extras.push({ key: '', value: '' });
                 },
@@ -231,108 +323,149 @@
                     row.extras.splice(index, 1);
                 },
 
-                // --- MEMORIA VOCALE ---
-                openMemorySettings() {
-                    this.showMemoryModal = true;
-                },
-                addCorrection() {
-                    if (this.newCorrection.wrong && this.newCorrection.right) {
-                        this.speechDictionary[this.newCorrection.wrong.toLowerCase()] = this.newCorrection.right;
-                        this.saveDictionary();
-                        this.newCorrection = { wrong: '', right: '' };
-                    }
-                },
-                removeCorrection(key) {
-                    delete this.speechDictionary[key];
-                    this.saveDictionary();
-                },
-                saveDictionary() {
-                    localStorage.setItem('nexus_dictionary', JSON.stringify(this.speechDictionary));
-                },
+                // --- MEMORIA & DETTATURA ---
+                openMemory() { this.showMemory = true; },
                 
-                // Funzione che applica la memoria al testo
-                applySmartCorrections(text) {
-                    let corrected = text.toLowerCase();
-                    // 1. Cerca match nel dizionario
-                    for (const [wrong, right] of Object.entries(this.speechDictionary)) {
-                        if (corrected.includes(wrong)) {
-                            corrected = corrected.replace(new RegExp(wrong, 'g'), right);
-                        }
+                addMemoryRule() {
+                    if(this.newRule.wrong && this.newRule.right) {
+                        this.dictationMemory[this.newRule.wrong.toLowerCase()] = this.newRule.right;
+                        localStorage.setItem('nexus_memory', JSON.stringify(this.dictationMemory));
+                        this.newRule = { wrong: '', right: '' };
                     }
-                    // 2. Capitalizza prima lettera (estetica)
-                    return corrected.charAt(0).toUpperCase() + corrected.slice(1);
+                },
+                deleteMemoryRule(key) {
+                    delete this.dictationMemory[key];
+                    localStorage.setItem('nexus_memory', JSON.stringify(this.dictationMemory));
                 },
 
-                // Per "imparare" al blur (semplificato)
-                learnCorrection(detectedPattern, finalValue) {
-                    // Questa è una funzione placeholder. 
-                    // Nella UX attuale ho messo il pannello "Memoria" manuale perché è più preciso.
-                },
-
-                // --- RICONOSCIMENTO VOCALE ---
-                startDictation(row, field) {
+                dictate(row, field) {
                     if (!('webkitSpeechRecognition' in window)) {
-                        alert("Il tuo browser non supporta la dettatura.");
+                        alert("Browser non supportato per dettatura");
                         return;
                     }
-
                     const recognition = new webkitSpeechRecognition();
                     recognition.lang = 'it-IT';
                     recognition.interimResults = false;
                     recognition.maxAlternatives = 1;
 
-                    this.isListening = true;
-
                     recognition.onresult = (event) => {
-                        const rawText = event.results[0][0].transcript;
-                        const smartText = this.applySmartCorrections(rawText);
+                        let text = event.results[0][0].transcript.toLowerCase();
                         
-                        // Assegna il valore corretto
-                        row[field] = smartText;
-                        this.isListening = false;
-                    };
+                        // Applica Memoria
+                        for (const [wrong, right] of Object.entries(this.dictationMemory)) {
+                            if (text.includes(wrong)) {
+                                text = text.replace(new RegExp(wrong, 'g'), right);
+                            }
+                        }
+                        
+                        // Capitalize first letter logic base
+                        if(text.length > 0) {
+                            // Se il testo contiene sostituzioni speciali, lasciamo quelle, altrimenti capitalizza
+                            // Semplificazione:
+                            if(!Object.values(this.dictationMemory).some(v => text.includes(v))) {
+                               text = text.charAt(0).toUpperCase() + text.slice(1);
+                            }
+                        }
 
-                    recognition.onerror = (event) => {
-                        console.error(event.error);
-                        this.isListening = false;
+                        row[field] = text;
                     };
-
-                    recognition.onend = () => {
-                        this.isListening = false;
-                    };
-
                     recognition.start();
                 },
-                
-                startGeneralDictation() {
-                    // Dettatura generica (magari per aggiungere una nota o nuova riga veloce)
-                    // Per ora fa un alert, si può espandere
-                    alert("Tieni premuto sui microfoni piccoli nelle righe per dettare campi specifici!");
-                },
 
-                // --- ESPORTAZIONE WHATSAPP ---
-                exportToWhatsapp() {
-                    let message = "*NEXUS REPORT*\n\n";
-                    
-                    this.rows.forEach((row, i) => {
-                        if(row.address || row.material) {
-                            message += `📍 *${row.address || 'N/D'}*\n`;
-                            message += `🛠 ${row.material || 'N/D'}\n`;
+                // --- EXPORT / IMPORT ---
+                
+                // 1. WhatsApp
+                exportWhatsapp() {
+                    let msg = "*REPORT NEXUS*\n\n";
+                    this.rows.forEach((r, i) => {
+                        if(r.indirizzo || r.pop_pfs) {
+                            msg += `📍 *${r.localita} - ${r.indirizzo}*\n`;
+                            msg += `🔌 POP: ${r.pop_pfs} | 👁 EL: ${r.elemento_ottico}\n`;
+                            if(r.permuta) msg += `🔄 Permuta: ${r.permuta}\n`;
+                            if(r.note) msg += `📝 Note: ${r.note}\n`;
                             
-                            // Aggiunge Extra se presenti
-                            if (row.extras.length > 0) {
-                                row.extras.forEach(extra => {
-                                    if(extra.key && extra.value) {
-                                        message += `🔹 ${extra.key}: ${extra.value}\n`;
-                                    }
+                            if(r.extras.length > 0) {
+                                r.extras.forEach(e => {
+                                    if(e.key) msg += `🔹 ${e.key}: ${e.value}\n`;
                                 });
                             }
-                            message += "------------------\n";
+                            msg += "_____________________\n";
                         }
                     });
+                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                },
 
-                    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                    window.open(url, '_blank');
+                // 2. Excel
+                exportExcel() {
+                    const data = this.rows.map(r => {
+                        // Base object
+                        let obj = {
+                            "Località": r.localita,
+                            "Indirizzo": r.indirizzo,
+                            "POP/PFS": r.pop_pfs,
+                            "El. Ottico": r.elemento_ottico,
+                            "Permuta": r.permuta,
+                            "Note": r.note
+                        };
+                        // Flatten Extras
+                        r.extras.forEach(e => {
+                            if(e.key) obj[`EXTRA: ${e.key}`] = e.value;
+                        });
+                        return obj;
+                    });
+                    
+                    const ws = XLSX.utils.json_to_sheet(data);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Report");
+                    XLSX.writeFile(wb, "Nexus_Report.xlsx");
+                },
+
+                // 3. PDF
+                exportPDF() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    doc.text("NEXUS REPORT", 10, 10);
+                    
+                    const tableData = this.rows.map(r => {
+                        let extraStr = r.extras.map(e => `${e.key}: ${e.value}`).join('\n');
+                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.note, extraStr];
+                    });
+
+                    doc.autoTable({
+                        head: [['Località', 'Indirizzo', 'POP', 'El. Ottico', 'Permuta', 'Note', 'Extra']],
+                        body: tableData,
+                        startY: 20,
+                        styles: { fontSize: 8 },
+                        theme: 'grid'
+                    });
+
+                    doc.save("Nexus_Report.pdf");
+                },
+
+                // 4. Backup & Restore (JSON)
+                backupData() {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.rows));
+                    const downloadAnchorNode = document.createElement('a');
+                    downloadAnchorNode.setAttribute("href", dataStr);
+                    downloadAnchorNode.setAttribute("download", "nexus_backup_" + new Date().toISOString().slice(0,10) + ".json");
+                    document.body.appendChild(downloadAnchorNode);
+                    downloadAnchorNode.click();
+                    downloadAnchorNode.remove();
+                },
+                restoreData(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            this.rows = JSON.parse(e.target.result);
+                            alert("Backup ripristinato con successo!");
+                        } catch (err) {
+                            alert("Errore nel file di backup");
+                        }
+                    };
+                    reader.readAsText(file);
                 }
             }
         }).mount('#app');
