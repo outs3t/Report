@@ -3,236 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapportino Delta Impianti</title>
+    <title>Rapportino Delta Impianti v31</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
         body { background: #525659; font-family: 'Roboto', sans-serif; }
         
+        /* FOGLIO A4 BLINDATO (NO SECONDA PAGINA) */
         .a4-page {
             width: 210mm;
-            min-height: 297mm;
+            /* 296mm invece di 297mm: 1mm di sicurezza per evitare la pagina bianca */
+            height: 296mm; 
             background: white;
-            margin: 20px auto;
-            padding: 15mm;
+            margin: 0 auto;
+            /* Padding ridotto in alto per alzare il logo */
+            padding: 4mm 10mm 5mm 10mm; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             position: relative;
+            overflow: hidden; /* Taglia via qualsiasi cosa esca fuori */
         }
 
         .r-input {
             border: none;
             border-bottom: 1px dotted #ccc;
             width: 100%;
-            padding: 2px;
+            padding: 2px 0;
             outline: none;
-            font-size: 14px;
-            transition: border 0.3s;
+            font-size: 11px;
+            background: transparent;
+            font-weight: 500;
+            color: #000;
         }
-        .r-input:focus { border-bottom: 1px solid #00468b; background: #f0f8ff; }
+        .r-input:focus { border-bottom: 1px solid #000; background: #f5f5f5; }
+
+        textarea.r-input {
+            resize: none;
+            overflow: hidden;
+            min-height: 20px;
+            line-height: 1.2;
+            display: block;
+        }
+
+        /* CLASSE STAMPA (TESTO ESPANSO) */
+        .print-text {
+            font-size: 11px;
+            white-space: pre-wrap;
+            border-bottom: 1px dotted #ccc;
+            min-height: 18px;
+            padding: 2px 0;
+            color: #000;
+        }
 
         .signature-font {
-            font-family: 'Great Vibes', cursive;
-            font-size: 2.5rem;
-            color: #00468b;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #000000;
             line-height: 1;
+            display: block;
+            margin-bottom: 2px;
         }
+
+        th { font-weight: 700; font-size: 9px; padding-bottom: 2px; border-bottom: 1px solid #000; color: #333; }
+        td { vertical-align: top; padding-top: 2px; padding-bottom: 2px; font-size: 10px; }
 
         @media print {
             .no-print { display: none !important; }
             body { background: white; margin: 0; }
-            .a4-page { box-shadow: none; margin: 0; }
+            /* Forza altezza massima in stampa */
+            .a4-page { box-shadow: none; margin: 0; width: 100%; height: 296mm; overflow: hidden; page-break-after: avoid; }
         }
         
-        /* Animazione per il tasto Importa */
-        @keyframes pulse-blue {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
         .btn-smart { animation: pulse-blue 2s infinite; }
+        @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        
+        .screen-wrapper { padding: 20px; display: flex; justify-content: center; }
     </style>
 </head>
 <body>
 
     <div id="app">
         
-        <div class="fixed top-0 left-0 right-0 bg-gray-900 text-white p-3 flex justify-between items-center z-50 shadow-lg no-print">
-            <div class="font-bold flex items-center gap-2">
-                <i class="ph ph-file-text text-yellow-400"></i> EDITOR RAPPORTINO
+        <div class="fixed top-0 left-0 right-0 bg-gray-900 text-white p-2 flex justify-between items-center z-50 shadow-lg no-print">
+            <div class="font-bold flex items-center gap-2 text-xs">
+                <i class="ph ph-file-text text-yellow-400"></i> RAPPORTINO v31
             </div>
-            <div class="flex gap-3">
-                <button @click="importSmartData" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded shadow-lg flex items-center gap-2 btn-smart border border-blue-400">
-                    <i class="ph ph-magic-wand text-xl"></i> IMPORTA DA FIBER
+            <div class="flex gap-3 items-center">
+                <button @click="importSmartData" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded shadow text-xs flex items-center gap-2 btn-smart border border-blue-400">
+                    <i class="ph ph-magic-wand"></i> IMPORTA DATI
                 </button>
-
-                <div class="w-px h-8 bg-gray-700 mx-2"></div>
-
-                <a href="index.html" class="px-4 py-2 text-xs font-bold text-gray-300 hover:text-white border border-gray-600 rounded flex items-center">INDIETRO</a>
-                <button @click="downloadPDF" class="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded shadow-lg flex items-center gap-2">
-                    <i class="ph ph-download-simple"></i> PDF
-                </button>
+                <div class="w-px h-6 bg-gray-700 mx-2"></div>
+                <a href="index.html" class="px-3 py-1 text-xs font-bold text-gray-300 hover:text-white border border-gray-600 rounded flex items-center">INDIETRO</a>
+                <div class="flex gap-2">
+                    <button @click="downloadFiberPDF" class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded shadow text-xs flex items-center gap-1">
+                        <i class="ph ph-table"></i> XLS/PDF REPORT
+                    </button>
+                    <button @click="downloadRapportinoPDF" class="px-4 py-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded shadow text-xs flex items-center gap-1">
+                        <i class="ph ph-file-pdf"></i> RAPPORTINO A4
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="a4-page" id="pdf-content">
-            
-            <div class="flex justify-between items-start mb-8 border-b-2 border-[#003366] pb-4">
-                <div class="w-1/3">
-                    <div class="relative group cursor-pointer" @click="triggerLogoUpload">
-                        <img v-if="logoSrc" :src="logoSrc" class="max-h-24 object-contain">
-                        <div v-else class="h-24 w-40 bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xs text-center p-2">
-                            Clicca qui per<br>caricare Logo
-                        </div>
-                        <input type="file" ref="logoInput" @change="handleLogo" class="hidden" accept="image/*">
-                    </div>
-                </div>
+        <div class="h-12 no-print"></div>
 
-                <div class="w-2/3 text-right">
-                    <h1 class="text-3xl font-black text-[#003366] uppercase tracking-tighter">Rapportino Giornaliero</h1>
-                    <div class="mt-2 flex justify-end items-center gap-2">
-                        <label class="text-xs font-bold text-gray-500 uppercase">Data:</label>
-                        <input type="date" v-model="dataOggi" class="text-right font-bold text-lg outline-none border-b border-gray-300 w-40">
-                    </div>
-                    <div class="mt-1 flex justify-end items-center gap-2">
-                        <label class="text-xs font-bold text-gray-500 uppercase">Cliente:</label>
-                        <input v-model="cliente" class="text-right font-bold outline-none border-b border-gray-300 w-48" placeholder="Es. Open Fiber">
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-8 mb-6">
-                <div>
-                    <label class="block text-xs font-bold text-[#003366] uppercase mb-1">Località / Cantiere</label>
-                    <input v-model="localita" class="r-input font-bold text-lg" placeholder="Es. Grumo Nevano">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-[#003366] uppercase mb-1">Assistente / Riferimento</label>
-                    <input v-model="assistente" class="r-input font-bold" placeholder="Es. Sergio Benaglio">
-                </div>
-            </div>
-
-            <div class="mb-8">
-                <div class="bg-[#003366] text-white px-2 py-1 text-xs font-bold uppercase tracking-widest mb-2 flex justify-between items-center">
-                    <span>Squadra Operativa</span>
-                    <button @click="addWorker" class="text-yellow-400 hover:text-white text-[10px] no-print">+ AGGIUNGI</button>
-                </div>
+        <div class="screen-wrapper">
+            <div class="a4-page" id="pdf-content">
                 
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="text-left text-gray-500 text-[10px] uppercase border-b">
-                            <th class="pb-1 w-1/12">Ruolo</th>
-                            <th class="pb-1 w-5/12">Nome e Cognome</th>
-                            <th class="pb-1 w-2/12 text-center">Ore Ord.</th>
-                            <th class="pb-1 w-2/12 text-center">Ore Str.</th>
-                            <th class="pb-1 w-2/12 text-center">Note</th>
-                            <th class="pb-1 w-10 no-print"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(worker, idx) in workers" :key="idx" class="border-b border-gray-100">
-                            <td class="py-2">
-                                <select v-model="worker.role" class="outline-none bg-transparent font-bold text-[#003366]">
-                                    <option value="CS">Caposquadra</option>
-                                    <option value="OP">Tecnico</option>
-                                </select>
-                            </td>
-                            <td class="py-2"><input v-model="worker.name" class="r-input" placeholder="Nome..."></td>
-                            <td class="py-2 text-center"><input type="number" v-model="worker.h_ord" class="r-input text-center w-12"></td>
-                            <td class="py-2 text-center"><input type="number" v-model="worker.h_str" class="r-input text-center w-12"></td>
-                            <td class="py-2"><input v-model="worker.notes" class="r-input text-xs" placeholder="-"></td>
-                            <td class="py-2 text-center no-print">
-                                <button @click="workers.splice(idx, 1)" class="text-red-400 hover:text-red-600">×</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mb-8">
-                <div class="bg-[#ff9900] text-white px-2 py-1 text-xs font-bold uppercase tracking-widest mb-2 flex justify-between items-center">
-                    <span>Descrizione Attività & Materiali</span>
-                    <div class="no-print flex gap-2">
-                        <button @click="importSmartData" class="text-blue-800 hover:text-white text-[10px] font-bold bg-white/20 px-2 rounded">AGGIORNA DATI</button>
-                        <button @click="addWork" class="text-white hover:text-black text-[10px]">+ RIGA</button>
-                    </div>
-                </div>
-
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="text-left text-gray-500 text-[10px] uppercase border-b">
-                            <th class="pb-1 w-10">N.</th>
-                            <th class="pb-1">Descrizione Lavoro / Materiale Utilizzato</th>
-                            <th class="pb-1 w-20 text-center">U.M.</th>
-                            <th class="pb-1 w-20 text-center">Q.tà</th>
-                            <th class="pb-1 w-10 no-print"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(work, idx) in works" :key="idx" class="border-b border-gray-100 align-top">
-                            <td class="py-2 font-bold text-gray-400">{{ idx + 1 }}</td>
-                            <td class="py-2">
-                                <textarea v-model="work.desc" rows="1" class="r-input resize-none overflow-hidden" 
-                                          :class="{'font-bold text-[#003366]': work.isMaterial}"
-                                          placeholder="Descrizione..." 
-                                          oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
-                            </td>
-                            <td class="py-2 text-center"><input v-model="work.um" class="r-input text-center"></td>
-                            <td class="py-2 text-center"><input type="number" v-model="work.qty" class="r-input text-center font-bold"></td>
-                            <td class="py-2 text-center no-print">
-                                <button @click="works.splice(idx, 1)" class="text-red-400 hover:text-red-600">×</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="absolute bottom-10 left-10 right-10">
-                <div class="border-t-2 border-gray-200 pt-4 mb-8">
-                    <div class="grid grid-cols-4 gap-4 text-sm">
-                        <div class="col-span-2">
-                            <label class="text-[10px] text-gray-500 uppercase font-bold">Mezzo</label>
-                            <div class="flex gap-2">
-                                <input v-model="mezzo" class="r-input" placeholder="Modello">
-                                <input v-model="targa" class="r-input w-24 uppercase" placeholder="Targa">
+                <div id="content-body">
+                    <div class="flex justify-between items-end mb-2 border-b-2 border-black pb-2">
+                        
+                        <div class="w-1/3 pr-4">
+                            <div class="relative group cursor-pointer" @click="triggerLogoUpload">
+                                <div class="h-24 w-full flex items-center justify-start">
+                                    <img v-if="logoSrc" :src="logoSrc" class="h-full w-auto object-contain object-left" title="Clicca per cambiare logo">
+                                    <div v-else class="w-full h-16 bg-gray-100 border border-dashed border-gray-400 flex items-center justify-center text-gray-500 text-[10px] text-center">
+                                        CARICA LOGO
+                                    </div>
+                                </div>
+                                <input type="file" ref="logoInput" @change="handleLogo" class="hidden" accept="image/*">
                             </div>
                         </div>
+
+                        <div class="w-2/3 text-right">
+                            <h1 class="text-2xl font-black text-black uppercase tracking-tighter leading-none mb-1">Rapportino Giornaliero</h1>
+                            <div class="flex justify-end items-center gap-2"><label class="text-[10px] font-bold text-gray-600 uppercase">Data:</label><input v-model="displayDate" class="text-right font-bold text-sm outline-none border-b border-black w-24 r-input"></div>
+                            <div class="flex justify-end items-center gap-2 mt-1"><label class="text-[10px] font-bold text-gray-600 uppercase">Cliente:</label><input v-model="cliente" class="text-right font-bold outline-none border-b border-black w-32 text-xs r-input" placeholder="Es. Open Fiber"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-1 mb-3">
+                        <div class="flex items-center gap-2"><label class="text-[10px] font-bold text-black uppercase whitespace-nowrap w-32">Località / Cantiere:</label><input v-model="localita" class="r-input font-bold text-xs uppercase text-black" placeholder="ELENCO PAESI..."></div>
+                        <div class="flex items-center gap-2"><label class="text-[10px] font-bold text-black uppercase whitespace-nowrap w-32">Assistente:</label><input v-model="assistente" class="r-input font-bold text-black" placeholder="Nome cognome..."></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="bg-black text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center"><span>Squadra Operativa</span><button @click="addWorker" class="text-yellow-400 hover:text-white no-print">+ AGGIUNGI</button></div>
+                        <table class="w-full text-xs border-collapse">
+                            <thead><tr class="text-left text-gray-600 uppercase border-b"><th class="w-24">Ruolo</th><th>Nome e Cognome</th><th class="w-10 text-center">Ord.</th><th class="w-10 text-center">Str.</th><th class="w-10 text-center">Viag.</th><th class="w-16 text-center">Note</th><th class="w-4 no-print"></th></tr></thead>
+                            <tbody>
+                                <tr v-for="(worker, idx) in workers" :key="idx">
+                                    <td><select v-model="worker.role" class="outline-none bg-transparent font-bold text-black w-full text-[10px]"><option value="CS">Caposquadra</option><option value="OP">Tecnico</option><option value="GI">Giuntista</option><option value="IM">Impiantista</option><option value="PC">Posacavi</option><option value="DIP">Dipendente</option></select></td>
+                                    <td><input v-model="worker.name" class="r-input" placeholder="Nome..."></td><td class="text-center"><input type="number" v-model="worker.h_ord" class="r-input text-center"></td><td class="text-center"><input type="number" v-model="worker.h_str" class="r-input text-center"></td><td class="text-center"><input type="number" v-model="worker.h_vg" class="r-input text-center"></td><td><input v-model="worker.notes" class="r-input text-[10px]" placeholder="-"></td><td class="text-center no-print"><button @click="workers.splice(idx, 1)" class="text-red-500 hover:text-red-700">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div>
+                        <div class="bg-gray-800 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center"><span>Descrizione Attività</span><div class="no-print flex gap-2"><button @click="importSmartData" class="text-blue-200 hover:text-white font-bold px-1 rounded">AGGIORNA</button><button @click="addWork" class="text-white hover:text-yellow-400">+ RIGA</button></div></div>
+                        <table class="w-full text-xs border-collapse">
+                            <thead>
+                                <tr class="text-left text-gray-600 uppercase border-b-2 border-black">
+                                    <th class="w-6">N.</th>
+                                    <th class="w-1/3">Indirizzo (Paese)</th>
+                                    <th>Note Lavorazione</th>
+                                    <th class="w-10 text-center">Q.tà</th>
+                                    <th class="w-4 no-print"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(work, idx) in works" :key="idx" class="align-top">
+                                    <td class="font-bold text-gray-500 pt-2 text-[10px]">{{ idx + 1 }}</td>
+                                    <td class="pr-2"><textarea v-model="work.address" rows="1" class="r-input font-bold uppercase text-[10px]" placeholder="Via..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
+                                    <td class="pr-2"><textarea v-model="work.desc" rows="1" class="r-input text-black text-[11px]" placeholder="" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
+                                    <td class="text-center pt-2"><input type="number" v-model="work.qty" class="r-input text-center font-bold"></td>
+                                    <td class="text-center no-print pt-2"><button @click="works.splice(idx, 1)" class="text-red-500 hover:text-red-700">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="content-footer" class="mt-4 pt-2 border-t-2 border-black">
+                    <div class="grid grid-cols-4 gap-4 text-xs mb-3">
+                        <div class="col-span-2"><label class="text-[9px] text-gray-600 uppercase font-bold">Mezzo</label><div class="flex gap-2"><input v-model="mezzo" class="r-input" placeholder="Modello..."><input v-model="targa" class="r-input w-20 uppercase" placeholder="Targa"></div></div>
+                        <div><label class="text-[9px] text-gray-600 uppercase font-bold">KM</label><input type="number" v-model="km" class="r-input" placeholder="0"></div>
+                        <div class="relative"><label class="text-[9px] text-gray-600 uppercase font-bold flex items-center gap-2">Rifornimento <input type="checkbox" v-model="showFuel" class="no-print"></label><div v-if="showFuel" class="flex gap-2 mt-1"><input v-model="fuelLitres" class="r-input" placeholder="Litri"><input v-model="fuelEuro" class="r-input" placeholder="€"></div></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-10 items-end">
                         <div>
-                            <label class="text-[10px] text-gray-500 uppercase font-bold">KM</label>
-                            <input type="number" v-model="km" class="r-input" placeholder="0">
+                            <div class="border border-black flex text-center">
+                                <div class="flex-1 border-r border-black p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Assist.</span></div>
+                                <div class="flex-1 border-r border-black p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Ammin.</span></div>
+                                <div class="flex-1 p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Contab.</span></div>
+                            </div>
                         </div>
                         <div class="relative">
-                            <label class="text-[10px] text-gray-500 uppercase font-bold flex items-center gap-2">
-                                Rifornimento <input type="checkbox" v-model="showFuel" class="no-print">
-                            </label>
-                            <div v-if="showFuel" class="flex gap-2 mt-1">
-                                <input v-model="fuelLitres" class="r-input" placeholder="Litri">
-                                <input v-model="fuelEuro" class="r-input" placeholder="€">
+                            <div class="text-[9px] text-gray-600 uppercase font-bold mb-1">Firma Caposquadra</div>
+                            <input v-model="signatureName" class="w-full text-center outline-none border-none text-gray-400 text-xs no-print mb-1" placeholder="Firma qui...">
+                            <div class="h-12 flex items-end justify-center border-b border-black relative">
+                                <span v-if="signatureName" class="signature-font absolute bottom-1 left-0 right-0 text-center">{{ signatureName }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-2 gap-20">
-                    <div>
-                        <div class="text-[10px] text-gray-500 uppercase font-bold mb-8">Visto Assistente</div>
-                        <div class="border-b border-gray-300 h-8"></div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] text-gray-500 uppercase font-bold mb-1">Firma Caposquadra</div>
-                        <input v-model="signatureName" class="w-full text-center outline-none border-none text-gray-400 text-xs no-print mb-1" placeholder="Scrivi nome...">
-                        <div class="h-16 flex items-end justify-center border-b border-gray-300 relative">
-                            <span v-if="signatureName" class="signature-font absolute bottom-2 transform -rotate-2">{{ signatureName }}</span>
-                        </div>
-                    </div>
-                </div>
             </div>
-
         </div>
     </div>
 
@@ -244,111 +223,136 @@
                 return {
                     logoSrc: localStorage.getItem('delta_logo') || '',
                     dataOggi: new Date().toISOString().split('T')[0],
+                    displayDate: new Date().toLocaleDateString('it-IT'),
                     cliente: 'Open Fiber',
-                    localita: '',
-                    assistente: 'Sergio Benaglio',
-                    workers: [
-                        { role: 'CS', name: '', h_ord: 8, h_str: '', notes: '' },
-                        { role: 'OP', name: '', h_ord: 8, h_str: '', notes: '' }
-                    ],
-                    works: [ { desc: '', um: '', qty: '', isMaterial: false } ],
-                    mezzo: 'Fiat Fiorino', targa: '', km: '', showFuel: false, fuelLitres: '', fuelEuro: '', signatureName: ''
+                    localita: '', assistente: '', 
+                    workers: [{ role: 'CS', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }, { role: 'DIP', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }],
+                    works: [ { address: '', desc: '', qty: '' } ],
+                    mezzo: '', targa: '', km: '', showFuel: false, fuelLitres: '', fuelEuro: '', signatureName: ''
                 }
             },
             methods: {
                 triggerLogoUpload() { this.$refs.logoInput.click(); },
-                handleLogo(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => { this.logoSrc = e.target.result; localStorage.setItem('delta_logo', this.logoSrc); };
-                        reader.readAsDataURL(file);
-                    }
-                },
-                addWorker() { this.workers.push({ role: 'OP', name: '', h_ord: 8, h_str: '', notes: '' }); },
-                addWork() { this.works.push({ desc: '', um: '', qty: '', isMaterial: false }); },
+                handleLogo(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { this.logoSrc = e.target.result; localStorage.setItem('delta_logo', this.logoSrc); }; reader.readAsDataURL(file); } },
+                addWorker() { this.workers.push({ role: 'OP', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }); },
+                addWork() { this.works.push({ address: '', desc: '', qty: '' }); },
                 
-                // --- IL CERVELLO: IMPORTAZIONE INTELLIGENTE ---
                 importSmartData() {
                     const savedSheets = localStorage.getItem('fiber_sheets');
-                    if (!savedSheets) { alert("Nessun dato trovato in Fiber Report!"); return; }
-                    
+                    if (!savedSheets) { alert("Nessun dato trovato!"); return; }
                     const sheets = JSON.parse(savedSheets);
-                    // Cerca il foglio con la data di oggi, altrimenti l'ultimo modificato
-                    let targetSheet = sheets.find(s => s.date === new Date().toLocaleDateString('it-IT'));
-                    if (!targetSheet) targetSheet = sheets[sheets.length - 1]; // Fallback all'ultimo
-
+                    let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1]; 
                     if (!targetSheet) { alert("Nessun foglio trovato."); return; }
 
-                    // 1. Aggiorna Intestazione
-                    if(targetSheet.team) this.workers[0].name = targetSheet.team + " (Caposquadra)"; // Mette il nome squadra come CS provvisorio
+                    if(targetSheet.team) {
+                        let splitNames = targetSheet.team.split(/\s*[-/]\s*/);
+                        if(splitNames[0]) this.workers[0].name = splitNames[0];
+                        if(splitNames[1] && this.workers[1]) this.workers[1].name = splitNames[1];
+                    }
                     
-                    // 2. Analisi Dati per Riassunto
-                    let locations = new Set();
-                    let pops = new Set();
-                    let materials = [];
-                    let notes = [];
+                    let uniqueCities = new Set();
+                    this.works = []; 
 
                     targetSheet.rows.forEach(r => {
-                        if(r.localita) locations.add(r.localita);
-                        if(r.pop_pfs) pops.add(r.pop_pfs);
-                        if(r.note) notes.push(r.note);
-                        
-                        // Raccogli materiali
-                        r.materiale_list.forEach(m => {
-                            materials.push(m.text);
-                        });
+                        if(r.localita) uniqueCities.add(r.localita.toUpperCase());
+                        let fullAddress = r.indirizzo || "";
+                        if(r.localita && fullAddress) fullAddress += ` (${r.localita})`;
+                        else if(!fullAddress && r.localita) fullAddress = r.localita;
+
+                        let finalDesc = r.note || "";
+                        let lowerNote = finalDesc.toLowerCase();
+
+                        if(r.permuta) {
+                            if(!finalDesc.trim()) finalDesc = `Guasto Risolto - Permuta: ${r.permuta}`;
+                            else finalDesc += ` - Permuta: ${r.permuta}`;
+                        }
+
+                        if(lowerNote.includes("giunzion") && r.elemento_ottico) {
+                            let words = lowerNote.split(/\s+/);
+                            let idx = words.findIndex(w => w.includes("giunzion"));
+                            let nextWords = "";
+                            if(idx !== -1 && idx < words.length - 1) nextWords = words.slice(idx + 1, idx + 4).join(" ");
+                            const skipKeywords = ["pta", "pte", "roe", "pd", "pfs", "pfp"];
+                            let alreadyHasElement = skipKeywords.some(k => nextWords.includes(k));
+                            if(!alreadyHasElement) finalDesc += ` - Elemento: ${r.elemento_ottico}`;
+                        }
+
+                        if(fullAddress || finalDesc) {
+                            this.works.push({ address: fullAddress.toUpperCase(), desc: finalDesc, qty: '1' });
+                        }
                     });
 
-                    // 3. Costruzione Righe Intelligenti
-                    this.works = []; // Resetta righe
-
-                    // RIGA 1: Luoghi e Attività Generale
-                    let locString = Array.from(locations).join(', ');
-                    let popString = Array.from(pops).join(', ');
-                    
-                    let descAttivita = `Intervento tecnico eseguito presso: ${locString}. `;
-                    if(popString) descAttivita += `Lavorazioni su nodi ottici: ${popString}. `;
-                    descAttivita += "Verifica, installazione e collaudo elementi di rete.";
-                    
-                    this.works.push({ desc: descAttivita, um: 'A corpo', qty: '1', isMaterial: false });
-
-                    // RIGA 2: MATERIALE (Aggregato per scarico magazzino)
-                    if (materials.length > 0) {
-                        // Rimuovi duplicati semplici o lasciali tutti se servono le quantità (qui facciamo lista unica)
-                        let uniqueMaterials = [...new Set(materials)]; 
-                        let matString = uniqueMaterials.join(" - ");
-                        
-                        this.works.push({ 
-                            desc: `MATERIALE UTILIZZATO PER PRODUZIONE: ${matString}`, 
-                            um: '', 
-                            qty: '', 
-                            isMaterial: true // Questo lo renderà in grassetto blu
-                        });
-                    } else {
-                        this.works.push({ desc: "Nessun materiale di consumo rilevato.", um: '', qty: '', isMaterial: true });
-                    }
-
-                    // RIGA 3: Note Importanti (se ci sono)
-                    if (notes.length > 0) {
-                        this.works.push({ desc: `NOTE OPERATIVE: ${notes.join('. ')}`, um: '', qty: '', isMaterial: false });
-                    }
-
-                    // Aggiorna località nel campo in alto
-                    this.localita = locString;
-                    
-                    alert("Dati importati con successo dal Fiber Report!");
+                    this.localita = Array.from(uniqueCities).join(', ');
+                    this.displayDate = new Date().toLocaleDateString('it-IT');
+                    alert("Importazione completata!");
                 },
 
-                downloadPDF() {
+                async downloadRapportinoPDF() {
                     const element = document.getElementById('pdf-content');
-                    const opt = {
-                        margin: 0, filename: `Rapportino_${this.localita}_${this.dataOggi}.pdf`,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2, useCORS: true },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    
+                    // 1. TRASFORMAZIONE INPUT -> TESTO (Fix Taglio Note)
+                    const inputs = element.querySelectorAll('input, textarea');
+                    const originalStates = [];
+
+                    inputs.forEach((input) => {
+                        originalStates.push({ element: input, display: input.style.display });
+                        const textDiv = document.createElement('div');
+                        textDiv.innerText = input.value;
+                        textDiv.className = input.className + ' print-text';
+                        if(input.tagName === 'TEXTAREA') textDiv.style.minHeight = input.scrollHeight + 'px';
+                        input.style.display = 'none';
+                        input.parentNode.insertBefore(textDiv, input);
+                    });
+
+                    // 2. GENERAZIONE PDF (NO PAGINA BIANCA)
+                    const opt = { 
+                        margin: 0, 
+                        filename: `Rapportino_${this.dataOggi}.pdf`, 
+                        image: { type: 'jpeg', quality: 0.99 }, 
+                        html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: 'avoid-all' }
                     };
-                    html2pdf().set(opt).from(element).save();
+                    
+                    await html2pdf().set(opt).from(element).save();
+
+                    // 3. RIPRISTINO
+                    setTimeout(() => {
+                        document.querySelectorAll('.print-text').forEach(el => el.remove());
+                        inputs.forEach((input, i) => input.style.display = originalStates[i].display);
+                    }, 500);
+                },
+
+                downloadFiberPDF() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const savedSheets = localStorage.getItem('fiber_sheets');
+                    if (!savedSheets) return alert("Nessun dato Fiber Report trovato.");
+                    const sheets = JSON.parse(savedSheets);
+                    let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1];
+
+                    doc.setFillColor(6, 182, 212); doc.rect(0, 0, 210, 20, 'F');
+                    doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT PRO", 10, 13);
+                    doc.setFontSize(10); doc.text(`Squadra: ${targetSheet.team}`, 130, 9);
+                    let parts = targetSheet.date.split('-');
+                    let dateIT = targetSheet.date.includes('-') ? `${parts[2]}/${parts[1]}/${parts[0]}` : targetSheet.date;
+                    doc.text(`Data: ${dateIT}`, 130, 15);
+
+                    const body = targetSheet.rows.map(r => {
+                        let matStr = r.materiale_list ? r.materiale_list.map(m => `• ${m.text}`).join("\n") : "";
+                        let noteFull = r.note || ""; 
+                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, noteFull, matStr];
+                    });
+
+                    doc.autoTable({
+                        head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Note', 'Materiale']],
+                        body: body, startY: 25, theme: 'grid',
+                        headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' },
+                        alternateRowStyles: { fillColor: [245, 245, 245] },
+                        styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, 
+                        columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 35 }, 5: { cellWidth: 35 }, 6: { cellWidth: 35 } }
+                    });
+                    doc.save(`FiberReport_${targetSheet.date}.pdf`);
                 }
             }
         }).mount('#app');
