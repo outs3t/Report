@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fiber Report Pro v13</title>
+    <title>Fiber Report Pro v15</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -118,6 +118,13 @@
                 
                 <div class="flex gap-3 items-center">
                     
+                    <a href="rapportino.html" target="_blank" 
+                       class="w-10 h-10 rounded-full border flex items-center justify-center transition-all hover:scale-105"
+                       :class="darkMode ? 'border-orange-500 text-orange-500 bg-orange-500/10' : 'border-orange-600 text-orange-600 bg-orange-50'"
+                       title="Apri Rapportino">
+                        <i class="ph ph-clipboard-text text-xl"></i>
+                    </a>
+
                     <div class="flex items-center rounded-full px-2 py-1 border transition-colors" 
                          :class="darkMode ? 'bg-white/5 border-gray-700' : 'bg-gray-100 border-gray-300'">
                         <button @click="backupData" class="p-1.5 text-gray-400 hover:text-cyan-400"><i class="ph ph-floppy-disk text-lg"></i></button>
@@ -392,6 +399,13 @@
                 darkMode(v) { localStorage.setItem('fiber_theme', v ? 'dark' : 'light'); }
             },
             methods: {
+                // Funzione Helper per formattare la data all'Italiana
+                formatDateIT(dateStr) {
+                    if (!dateStr) return '';
+                    const parts = dateStr.split('-');
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                },
+
                 toggleTheme() { this.darkMode = !this.darkMode; },
 
                 addSheet() {
@@ -474,7 +488,8 @@
                 },
 
                 exportWhatsapp() {
-                    let msg = `*FIBER REPORT PRO*\n📅 ${this.currentSheet.date} | 👷 ${this.currentSheet.team}\n\n`;
+                    let dateFormatted = this.formatDateIT(this.currentSheet.date);
+                    let msg = `*FIBER REPORT PRO*\n📅 ${dateFormatted} | 👷 ${this.currentSheet.team}\n\n`;
                     this.currentSheet.rows.forEach((r, i) => {
                         if(r.localita || r.indirizzo) {
                             msg += `*#${i+1}* 📍 ${r.localita}, ${r.indirizzo}\n`;
@@ -499,7 +514,9 @@
                     doc.text("FIBER REPORT PRO", 10, 13);
                     doc.setFontSize(10);
                     doc.text(`Squadra: ${this.currentSheet.team}`, 130, 9);
-                    doc.text(`Data: ${this.currentSheet.date}`, 130, 15);
+                    
+                    let dateFormatted = this.formatDateIT(this.currentSheet.date);
+                    doc.text(`Data: ${dateFormatted}`, 130, 15);
 
                     const body = this.currentSheet.rows.map(r => {
                         let matStr = r.materiale_list.map(m => `• ${m.text}`).join("\n");
@@ -521,19 +538,20 @@
 
                 exportExcel() {
                     let allData = [];
+                    let dateFormatted = this.formatDateIT(this.currentSheet.date);
+                    
                     this.currentSheet.rows.forEach(r => {
                         let matStr = r.materiale_list.map(m => m.text).join(", ");
-                        // MODIFICA 1: ORDINE COLONNE XLS RICHIESTO
                         let obj = {
+                            "Squadra": this.currentSheet.team, 
+                            "Data": dateFormatted,
                             "Località": r.localita, 
                             "Indirizzo": r.indirizzo, 
                             "POP": r.pop_pfs, 
                             "El. Ottico": r.elemento_ottico,
                             "Permuta": r.permuta, 
-                            "Materiale": matStr,
-                            "Note": r.note,
-                            "Squadra": this.currentSheet.team, 
-                            "Data": this.currentSheet.date
+                            "Note": r.note, 
+                            "Materiale": matStr
                         };
                         r.extras.forEach(e => obj[e.key] = e.value);
                         allData.push(obj);
