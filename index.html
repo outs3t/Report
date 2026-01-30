@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fiber Report Pro v17</title>
+    <title>Fiber Report Pro v18</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -16,12 +16,7 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { fiber: { orange: '#ff8000', cyan: '#06b6d4', darkbg: '#050505', darkcard: '#121212' } }
-                }
-            }
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { fiber: { orange: '#ff8000', cyan: '#06b6d4', darkbg: '#050505', darkcard: '#121212' } } } }
         }
     </script>
     <style>
@@ -44,25 +39,32 @@
 <body class="antialiased min-h-screen pb-48 transition-colors duration-300" :class="darkMode ? 'dark bg-fiber-darkbg text-white' : 'light bg-gray-50 text-gray-900'">
     <div id="app">
         <header class="sticky top-0 z-40 border-b shadow-lg theme-transition backdrop-blur-xl" :class="darkMode ? 'bg-[#0a0a0a]/95 border-gray-800' : 'bg-white/95 border-gray-200'">
-            <div class="px-4 py-3 max-w-7xl mx-auto flex justify-between items-center">
+            <div class="px-4 py-3 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
+                
                 <div class="flex items-center gap-2 select-none">
                     <div class="w-2 h-7 bg-gradient-to-b from-orange-400 to-red-600 rounded-full shadow-lg"></div>
                     <h1 class="text-xl font-black tracking-tighter italic leading-none"><span class="text-[#ff8000]">FIBER</span><span class="text-[#06b6d4]">REPORT</span></h1>
                 </div>
-                <div class="flex gap-3 items-center">
-                    <button @click="openRapportino" class="w-10 h-10 rounded-full border flex items-center justify-center transition-all hover:scale-105" :class="darkMode ? 'border-orange-500 text-orange-500 bg-orange-500/10' : 'border-orange-600 text-orange-600 bg-orange-50'" title="Apri Rapportino">
-                        <i class="ph ph-clipboard-text text-xl"></i>
+                
+                <div class="flex gap-2 items-center flex-wrap sm:flex-nowrap ml-auto">
+                    
+                    <button @click="openRapportino" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition-all hover:scale-105" :class="darkMode ? 'border-orange-500 text-orange-500 bg-orange-500/10' : 'border-orange-600 text-orange-600 bg-orange-50'" title="Apri Rapportino">
+                        <i class="ph ph-clipboard-text text-lg sm:text-xl"></i>
                     </button>
-                    <div class="flex items-center rounded-full px-2 py-1 border transition-colors" :class="darkMode ? 'bg-white/5 border-gray-700' : 'bg-gray-100 border-gray-300'">
+
+                    <div class="flex items-center rounded-full px-2 py-1 border transition-colors h-9 sm:h-10" :class="darkMode ? 'bg-white/5 border-gray-700' : 'bg-gray-100 border-gray-300'">
                         <button @click="backupData" class="p-1.5 text-gray-400 hover:text-cyan-400"><i class="ph ph-floppy-disk text-lg"></i></button>
                         <label class="p-1.5 text-gray-400 hover:text-cyan-400 cursor-pointer"><i class="ph ph-upload-simple text-lg"></i><input type="file" @change="restoreData" class="hidden"></label>
                     </div>
-                    <button @click="showMemory = true" class="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 border" :class="darkMode ? 'bg-gray-800 border-gray-700 text-cyan-400' : 'bg-white border-gray-200 text-cyan-600 shadow-sm'"><i class="ph ph-brain text-xl"></i></button>
-                    <button @click="toggleTheme" class="w-12 h-8 rounded-full flex items-center transition-all px-1 border-2 relative" :class="darkMode ? 'bg-gray-800 border-yellow-500 justify-end' : 'bg-indigo-100 border-indigo-500 justify-start'">
+
+                    <button @click="showMemory = true" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 border" :class="darkMode ? 'bg-gray-800 border-gray-700 text-cyan-400' : 'bg-white border-gray-200 text-cyan-600 shadow-sm'"><i class="ph ph-brain text-lg sm:text-xl"></i></button>
+                    
+                    <button @click="toggleTheme" class="w-12 h-8 rounded-full flex items-center transition-all px-1 border-2 relative ml-1" :class="darkMode ? 'bg-gray-800 border-yellow-500 justify-end' : 'bg-indigo-100 border-indigo-500 justify-start'">
                         <div class="w-6 h-6 rounded-full flex items-center justify-center shadow-sm" :class="darkMode ? 'bg-yellow-400 text-black' : 'bg-indigo-500 text-white'"><i :class="darkMode ? 'ph-sun-fill' : 'ph-moon-stars-fill'" class="text-sm"></i></div>
                     </button>
                 </div>
             </div>
+
             <div class="flex overflow-x-auto gap-1 px-4 pb-0 max-w-7xl mx-auto tabs-container border-b" :class="darkMode ? 'bg-black/40 border-gray-800' : 'bg-gray-50 border-gray-200'">
                 <div v-for="(sheet, idx) in sheets" :key="sheet.id" @click="currentSheetIdx = idx" class="px-5 py-3 text-xs font-bold whitespace-nowrap rounded-t-lg cursor-pointer transition-all relative group uppercase tracking-wide border-t border-x" :class="[darkMode ? 'border-gray-800' : 'border-gray-300', currentSheetIdx === idx ? (darkMode ? 'bg-fiber-darkcard text-fiber-orange border-b-[#121212]' : 'bg-white text-fiber-orange border-b-white shadow-sm') : (darkMode ? 'bg-transparent text-gray-500 border-b-gray-800 hover:text-gray-300' : 'bg-transparent text-gray-400 border-b-gray-200 hover:text-gray-600')]">
                     {{ sheet.name }}
@@ -180,11 +182,7 @@
             methods: {
                 formatDateIT(dateStr) { if (!dateStr) return ''; const parts = dateStr.split('-'); return `${parts[2]}/${parts[1]}/${parts[0]}`; },
                 toggleTheme() { this.darkMode = !this.darkMode; },
-                openRapportino() {
-                    // FORZA SALVATAGGIO PRIMA DI APRIRE
-                    localStorage.setItem('fiber_sheets', JSON.stringify(this.sheets));
-                    window.open('rapportino.html', '_blank');
-                },
+                openRapportino() { localStorage.setItem('fiber_sheets', JSON.stringify(this.sheets)); window.open('rapportino.html', '_blank'); },
                 addSheet() { this.sheets.push({ id: Date.now(), name: `Foglio ${this.sheets.length+1}`, date: new Date().toISOString().split('T')[0], team: '', rows: [] }); this.currentSheetIdx = this.sheets.length - 1; this.addRow(); },
                 removeSheet(i) { if(confirm("Eliminare foglio?")) { this.sheets.splice(i, 1); if(this.currentSheetIdx >= this.sheets.length) this.currentSheetIdx = this.sheets.length - 1; } },
                 addRow() { const newRow = { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', materiale_list: [], tempMaterial: '', extras: [] }; this.currentSheet.rows.push(newRow); this.lastActiveRowId = newRow.id; },
