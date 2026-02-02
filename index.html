@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fiber Report Pro v18</title>
+    <title>Fiber Report Pro v19</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -40,31 +40,20 @@
     <div id="app">
         <header class="sticky top-0 z-40 border-b shadow-lg theme-transition backdrop-blur-xl" :class="darkMode ? 'bg-[#0a0a0a]/95 border-gray-800' : 'bg-white/95 border-gray-200'">
             <div class="px-4 py-3 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
-                
                 <div class="flex items-center gap-2 select-none">
                     <div class="w-2 h-7 bg-gradient-to-b from-orange-400 to-red-600 rounded-full shadow-lg"></div>
                     <h1 class="text-xl font-black tracking-tighter italic leading-none"><span class="text-[#ff8000]">FIBER</span><span class="text-[#06b6d4]">REPORT</span></h1>
                 </div>
-                
                 <div class="flex gap-2 items-center flex-wrap sm:flex-nowrap ml-auto">
-                    
-                    <button @click="openRapportino" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition-all hover:scale-105" :class="darkMode ? 'border-orange-500 text-orange-500 bg-orange-500/10' : 'border-orange-600 text-orange-600 bg-orange-50'" title="Apri Rapportino">
-                        <i class="ph ph-clipboard-text text-lg sm:text-xl"></i>
-                    </button>
-
+                    <button @click="openRapportino" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition-all hover:scale-105" :class="darkMode ? 'border-orange-500 text-orange-500 bg-orange-500/10' : 'border-orange-600 text-orange-600 bg-orange-50'" title="Apri Rapportino"><i class="ph ph-clipboard-text text-lg sm:text-xl"></i></button>
                     <div class="flex items-center rounded-full px-2 py-1 border transition-colors h-9 sm:h-10" :class="darkMode ? 'bg-white/5 border-gray-700' : 'bg-gray-100 border-gray-300'">
                         <button @click="backupData" class="p-1.5 text-gray-400 hover:text-cyan-400"><i class="ph ph-floppy-disk text-lg"></i></button>
                         <label class="p-1.5 text-gray-400 hover:text-cyan-400 cursor-pointer"><i class="ph ph-upload-simple text-lg"></i><input type="file" @change="restoreData" class="hidden"></label>
                     </div>
-
                     <button @click="showMemory = true" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 border" :class="darkMode ? 'bg-gray-800 border-gray-700 text-cyan-400' : 'bg-white border-gray-200 text-cyan-600 shadow-sm'"><i class="ph ph-brain text-lg sm:text-xl"></i></button>
-                    
-                    <button @click="toggleTheme" class="w-12 h-8 rounded-full flex items-center transition-all px-1 border-2 relative ml-1" :class="darkMode ? 'bg-gray-800 border-yellow-500 justify-end' : 'bg-indigo-100 border-indigo-500 justify-start'">
-                        <div class="w-6 h-6 rounded-full flex items-center justify-center shadow-sm" :class="darkMode ? 'bg-yellow-400 text-black' : 'bg-indigo-500 text-white'"><i :class="darkMode ? 'ph-sun-fill' : 'ph-moon-stars-fill'" class="text-sm"></i></div>
-                    </button>
+                    <button @click="toggleTheme" class="w-12 h-8 rounded-full flex items-center transition-all px-1 border-2 relative ml-1" :class="darkMode ? 'bg-gray-800 border-yellow-500 justify-end' : 'bg-indigo-100 border-indigo-500 justify-start'"><div class="w-6 h-6 rounded-full flex items-center justify-center shadow-sm" :class="darkMode ? 'bg-yellow-400 text-black' : 'bg-indigo-500 text-white'"><i :class="darkMode ? 'ph-sun-fill' : 'ph-moon-stars-fill'" class="text-sm"></i></div></button>
                 </div>
             </div>
-
             <div class="flex overflow-x-auto gap-1 px-4 pb-0 max-w-7xl mx-auto tabs-container border-b" :class="darkMode ? 'bg-black/40 border-gray-800' : 'bg-gray-50 border-gray-200'">
                 <div v-for="(sheet, idx) in sheets" :key="sheet.id" @click="currentSheetIdx = idx" class="px-5 py-3 text-xs font-bold whitespace-nowrap rounded-t-lg cursor-pointer transition-all relative group uppercase tracking-wide border-t border-x" :class="[darkMode ? 'border-gray-800' : 'border-gray-300', currentSheetIdx === idx ? (darkMode ? 'bg-fiber-darkcard text-fiber-orange border-b-[#121212]' : 'bg-white text-fiber-orange border-b-white shadow-sm') : (darkMode ? 'bg-transparent text-gray-500 border-b-gray-800 hover:text-gray-300' : 'bg-transparent text-gray-400 border-b-gray-200 hover:text-gray-600')]">
                     {{ sheet.name }}
@@ -88,11 +77,26 @@
 
         <main class="max-w-7xl mx-auto p-4 md:p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 items-start">
-                <div v-for="(row, rIdx) in currentSheet.rows" :key="row.id" class="rounded-2xl p-6 shadow-xl border relative transition-all duration-300" :class="[darkMode ? 'bg-[#121212] border-gray-800 hover:border-gray-600' : 'bg-white border-gray-200 hover:border-gray-300', lastActiveRowId === row.id ? 'ring-1 ring-orange-500' : '']">
-                    <div class="flex justify-between items-center mb-6 pb-2 border-b" :class="darkMode ? 'border-gray-800' : 'border-gray-100'">
+                <div v-for="(row, rIdx) in currentSheet.rows" :key="row.id" 
+                     class="rounded-2xl p-6 shadow-xl border-2 relative transition-all duration-300" 
+                     :class="getRowClass(row)">
+                    
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode ? 'border-gray-800' : 'border-gray-100'">
                         <span class="text-cyan-500 font-black text-xs tracking-widest bg-cyan-500/10 px-3 py-1.5 rounded-md border border-cyan-500/20">SCHEDA #{{ rIdx + 1 }}</span>
-                        <button @click="removeRow(rIdx)" class="text-gray-500 hover:text-red-500 transition-colors"><i class="ph ph-trash text-xl"></i></button>
+                        
+                        <select v-model="row.stato" class="ml-2 text-xs font-bold uppercase rounded-lg px-2 py-1 outline-none border cursor-pointer"
+                                :class="darkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'">
+                            <option value="">-- STATO --</option>
+                            <option value="DA_SBLOCCARE">🟢 Da Sbloccare</option>
+                            <option value="OCCORRE_ASSISTENTE">🟡 Occorre Assistente</option>
+                            <option value="NEGATO_ACCESSO">🔴 Negato Accesso</option>
+                            <option value="NON_REALIZZATO">🔴 Non Realizzato</option>
+                            <option value="OCCORRE_MATERIALE">🟠 Occorre Materiale</option>
+                        </select>
+
+                        <button @click="removeRow(rIdx)" class="text-gray-500 hover:text-red-500 transition-colors ml-2"><i class="ph ph-trash text-xl"></i></button>
                     </div>
+
                     <div class="space-y-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Località</label><input v-model="row.localita" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="-"></div>
@@ -185,9 +189,30 @@
                 openRapportino() { localStorage.setItem('fiber_sheets', JSON.stringify(this.sheets)); window.open('rapportino.html', '_blank'); },
                 addSheet() { this.sheets.push({ id: Date.now(), name: `Foglio ${this.sheets.length+1}`, date: new Date().toISOString().split('T')[0], team: '', rows: [] }); this.currentSheetIdx = this.sheets.length - 1; this.addRow(); },
                 removeSheet(i) { if(confirm("Eliminare foglio?")) { this.sheets.splice(i, 1); if(this.currentSheetIdx >= this.sheets.length) this.currentSheetIdx = this.sheets.length - 1; } },
-                addRow() { const newRow = { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', materiale_list: [], tempMaterial: '', extras: [] }; this.currentSheet.rows.push(newRow); this.lastActiveRowId = newRow.id; },
+                
+                // AGGIUNTO STATO DEFAULT
+                addRow() { 
+                    const newRow = { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', stato: '', materiale_list: [], tempMaterial: '', extras: [] }; 
+                    this.currentSheet.rows.push(newRow); 
+                    this.lastActiveRowId = newRow.id; 
+                },
+                
                 removeRow(i) { if(confirm("Eliminare riga?")) this.currentSheet.rows.splice(i, 1); },
                 addMaterial(row, text = null) { const val = text || row.tempMaterial; if(val) { row.materiale_list.push({ text: val, checked: false }); row.tempMaterial = ''; } },
+                
+                // GESTIONE COLORI STATO
+                getRowClass(row) {
+                    if (!row.stato) return this.darkMode ? 'bg-[#121212] border-gray-800' : 'bg-white border-gray-200';
+                    switch(row.stato) {
+                        case 'DA_SBLOCCARE': return this.darkMode ? 'bg-green-900/10 border-green-500' : 'bg-green-50 border-green-500';
+                        case 'OCCORRE_ASSISTENTE': return this.darkMode ? 'bg-yellow-900/10 border-yellow-500' : 'bg-yellow-50 border-yellow-500';
+                        case 'NEGATO_ACCESSO': return this.darkMode ? 'bg-red-900/10 border-red-500' : 'bg-red-50 border-red-500';
+                        case 'NON_REALIZZATO': return this.darkMode ? 'bg-red-900/20 border-red-700' : 'bg-red-100 border-red-700';
+                        case 'OCCORRE_MATERIALE': return this.darkMode ? 'bg-orange-900/10 border-orange-500' : 'bg-orange-50 border-orange-500';
+                        default: return this.darkMode ? 'bg-[#121212] border-gray-800' : 'bg-white border-gray-200';
+                    }
+                },
+
                 addMemoryRule() { if(this.newRule.wrong && this.newRule.right) { this.dictationMemory[this.newRule.wrong.toLowerCase()] = this.newRule.right; localStorage.setItem('fiber_memory', JSON.stringify(this.dictationMemory)); this.newRule = { wrong: '', right: '' }; } },
                 deleteMemoryRule(key) { delete this.dictationMemory[key]; localStorage.setItem('fiber_memory', JSON.stringify(this.dictationMemory)); },
                 toggleDictation() { if(!this.recognition) return alert("Browser non supportato"); if(this.isListening) { this.isListening = false; this.recognition.stop(); } else this.recognition.start(); },
@@ -206,7 +231,9 @@
                 exportWhatsapp() {
                     let dateFormatted = this.formatDateIT(this.currentSheet.date);
                     let msg = `*FIBER REPORT PRO*\n📅 ${dateFormatted} | 👷 ${this.currentSheet.team}\n\n`;
-                    this.currentSheet.rows.forEach((r, i) => { if(r.localita || r.indirizzo) { msg += `*#${i+1}* 📍 ${r.localita}, ${r.indirizzo}\n`; msg += `🔌 Nodo: ${r.pop_pfs} | 👁 EL: ${r.elemento_ottico}\n`; if(r.permuta) msg += `🔄 Permuta: ${r.permuta}\n`; if(r.note) msg += `📝 Note: ${r.note}\n`; if(r.materiale_list.length) { msg += `🛠 MAT:\n`; r.materiale_list.forEach(m => msg += `${m.checked?'✅':'⬜'} ${m.text}\n`); } msg += "--------------------\n"; } });
+                    this.currentSheet.rows.forEach((r, i) => { if(r.localita || r.indirizzo) { msg += `*#${i+1}* 📍 ${r.localita}, ${r.indirizzo}\n`; msg += `🔌 Nodo: ${r.pop_pfs} | 👁 EL: ${r.elemento_ottico}\n`; if(r.permuta) msg += `🔄 Permuta: ${r.permuta}\n`; if(r.note) msg += `📝 Note: ${r.note}\n`; 
+                    if(r.stato) msg += `🚦 Stato: ${r.stato.replace(/_/g, ' ')}\n`;
+                    if(r.materiale_list.length) { msg += `🛠 MAT:\n`; r.materiale_list.forEach(m => msg += `${m.checked?'✅':'⬜'} ${m.text}\n`); } msg += "--------------------\n"; } });
                     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                 },
                 exportPDF() {
@@ -215,13 +242,13 @@
                     doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT PRO", 10, 13);
                     doc.setFontSize(10); doc.text(`Squadra: ${this.currentSheet.team}`, 130, 9);
                     let dateFormatted = this.formatDateIT(this.currentSheet.date); doc.text(`Data: ${dateFormatted}`, 130, 15);
-                    const body = this.currentSheet.rows.map(r => { let matStr = r.materiale_list.map(m => `• ${m.text}`).join("\n"); let extraStr = r.extras.map(e => `${e.key}: ${e.value}`).join("\n"); let noteFull = r.note + (extraStr ? "\n\n" + extraStr : ""); return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, noteFull, matStr]; });
-                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Note / Extra', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 35 }, 5: { cellWidth: 35 }, 6: { cellWidth: 35 } } });
+                    const body = this.currentSheet.rows.map(r => { let matStr = r.materiale_list.map(m => `• ${m.text}`).join("\n"); let extraStr = r.extras.map(e => `${e.key}: ${e.value}`).join("\n"); let noteFull = r.note + (extraStr ? "\n\n" + extraStr : ""); return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr]; });
+                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note / Extra', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 30 }, 6: { cellWidth: 30 }, 7: { cellWidth: 30 } } });
                     doc.save(`Report_${this.currentSheet.name}_${this.currentSheet.team}.pdf`);
                 },
                 exportExcel() {
                     let allData = []; let dateFormatted = this.formatDateIT(this.currentSheet.date);
-                    this.currentSheet.rows.forEach(r => { let matStr = r.materiale_list.map(m => m.text).join(", "); let obj = { "Località": r.localita, "Indirizzo": r.indirizzo, "Nodo": r.pop_pfs, "El. Ottico": r.elemento_ottico, "Permuta": r.permuta, "Materiale": matStr, "Note": r.note, "Squadra": this.currentSheet.team, "Data": dateFormatted }; r.extras.forEach(e => obj[e.key] = e.value); allData.push(obj); });
+                    this.currentSheet.rows.forEach(r => { let matStr = r.materiale_list.map(m => m.text).join(", "); let obj = { "Località": r.localita, "Indirizzo": r.indirizzo, "Nodo": r.pop_pfs, "El. Ottico": r.elemento_ottico, "Permuta": r.permuta, "Stato": r.stato, "Materiale": matStr, "Note": r.note, "Squadra": this.currentSheet.team, "Data": dateFormatted }; r.extras.forEach(e => obj[e.key] = e.value); allData.push(obj); });
                     const ws = XLSX.utils.json_to_sheet(allData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Report"); XLSX.writeFile(wb, `Report_${this.currentSheet.name}.xlsx`);
                 },
                 backupData() { const blob = new Blob([JSON.stringify(this.sheets)], {type: "application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); },
