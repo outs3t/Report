@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapportino Delta Impianti v34</title>
+    <title>Rapportino Delta Impianti v35</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -22,7 +22,7 @@
         /* FOGLIO A4 BLINDATO */
         .a4-page {
             width: 210mm;
-            /* 296mm per sicurezza contro pagina bianca */
+            /* 296mm altezza sicura */
             height: 296mm; 
             background: white;
             margin: 0 auto;
@@ -56,7 +56,7 @@
             display: block;
         }
 
-        /* CLASSE STAMPA */
+        /* CLASSE STAMPA PER PDF */
         .print-text {
             font-size: 11px;
             white-space: pre-wrap;
@@ -64,6 +64,8 @@
             min-height: 18px;
             padding: 2px 0;
             color: #000;
+            display: block;
+            width: 100%;
         }
 
         .signature-font {
@@ -81,13 +83,12 @@
         @media print {
             .no-print { display: none !important; }
             body { background: white; margin: 0; }
-            .a4-page { box-shadow: none; margin: 0; width: 100%; height: 296mm; overflow: hidden; page-break-after: avoid; }
+            .a4-page { box-shadow: none; margin: 0; width: 100%; height: 100%; page-break-after: avoid; }
         }
         
         .btn-smart { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
         
-        /* Contenitore Responsive per Mobile */
         .screen-wrapper { 
             padding: 20px; 
             display: flex; 
@@ -108,7 +109,7 @@
         
         <div class="fixed top-0 left-0 right-0 bg-gray-900 text-white p-2 flex justify-between items-center z-50 shadow-lg no-print">
             <div class="font-bold flex items-center gap-2 text-xs">
-                <i class="ph ph-file-text text-yellow-400"></i> RAPPORTINO v34
+                <i class="ph ph-file-text text-yellow-400"></i> RAPPORTINO v35
             </div>
             
             <div class="flex gap-2 items-center overflow-x-auto">
@@ -138,7 +139,6 @@
                 
                 <div id="content-body">
                     <div class="flex justify-between items-end mb-2 border-b-2 border-black pb-2">
-                        
                         <div class="w-1/3 pr-4">
                             <div class="relative group cursor-pointer" @click="triggerLogoUpload">
                                 <div class="h-24 w-full flex items-center justify-start">
@@ -293,42 +293,70 @@
                     alert("Importazione completata!");
                 },
 
+                // EXPORT RAPPORTINO (METODO CLONE PER MOBILE FIX)
                 async downloadRapportinoPDF() {
-                    // FIX DATA ITALIANA NEL NOME FILE
-                    let dateIT = this.displayDate.replace(/\//g, '-');
-                    const element = document.getElementById('pdf-content');
+                    // FIX NOME FILE CON TRATTINI
+                    let cleanDate = this.displayDate.replace(/\//g, '-');
                     
-                    // SCROLLA IN CIMA PER EVITARE BIANCO SU MOBILE
-                    window.scrollTo(0,0);
+                    // 1. CLONAZIONE "STILE COMPUTER"
+                    const original = document.getElementById('pdf-content');
+                    const clone = original.cloneNode(true);
 
-                    // TRASFORMA INPUT IN TESTO
-                    const inputs = element.querySelectorAll('input, textarea');
-                    const originalStates = [];
-                    inputs.forEach((input) => {
-                        originalStates.push({ element: input, display: input.style.display });
+                    // 2. STILI FORZATI PER CLONE
+                    clone.style.width = '794px';  // Larghezza fissa A4 (96dpi)
+                    clone.style.height = '1123px'; // Altezza fissa A4
+                    clone.style.position = 'absolute';
+                    clone.style.top = '-9999px'; // Nascondilo fuori schermo
+                    clone.style.left = '0';
+                    clone.style.background = 'white';
+                    clone.style.margin = '0';
+                    clone.style.padding = '10mm'; // Padding di sicurezza stampante
+
+                    // 3. TRASFORMAZIONE INPUT IN TESTO NEL CLONE
+                    const originalInputs = original.querySelectorAll('input, textarea, select');
+                    const cloneInputs = clone.querySelectorAll('input, textarea, select');
+
+                    cloneInputs.forEach((cInput, i) => {
+                        const oInput = originalInputs[i];
+                        const val = oInput.value;
+                        
                         const textDiv = document.createElement('div');
-                        textDiv.innerText = input.value;
-                        textDiv.className = input.className + ' print-text';
-                        if(input.tagName === 'TEXTAREA') textDiv.style.minHeight = input.scrollHeight + 'px';
-                        input.style.display = 'none';
-                        input.parentNode.insertBefore(textDiv, input);
+                        textDiv.innerText = val;
+                        textDiv.className = cInput.className + ' print-text';
+                        textDiv.style.display = 'block'; // Assicura che sia visibile
+                        
+                        if(cInput.tagName === 'TEXTAREA') {
+                            textDiv.style.minHeight = Math.max(oInput.scrollHeight, 20) + 'px';
+                            textDiv.style.whiteSpace = 'pre-wrap';
+                        }
+                        
+                        cInput.parentNode.replaceChild(textDiv, cInput);
                     });
 
+                    // 4. APPEND AL BODY
+                    document.body.appendChild(clone);
+
+                    // 5. GENERAZIONE PDF
                     const opt = { 
                         margin: 0, 
-                        filename: `Rapportino_${dateIT}.pdf`, // NOME FILE CORRETTO
+                        filename: `Rapportino_${cleanDate}.pdf`, 
                         image: { type: 'jpeg', quality: 0.99 }, 
-                        html2canvas: { scale: 2, useCORS: true, scrollY: 0, windowWidth: 794 }, 
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
-                        pagebreak: { mode: 'avoid-all' } 
+                        html2canvas: { 
+                            scale: 2, 
+                            useCORS: true, 
+                            scrollY: 0,
+                            windowWidth: 794,
+                            width: 794
+                        }, 
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                     };
                     
-                    await html2pdf().set(opt).from(element).save();
-
-                    setTimeout(() => {
-                        document.querySelectorAll('.print-text').forEach(el => el.remove());
-                        inputs.forEach((input, i) => input.style.display = originalStates[i].display);
-                    }, 500);
+                    try {
+                        await html2pdf().set(opt).from(clone).save();
+                    } finally {
+                        // 6. RIMUOVI IL CLONE DOPO AVER FINITO
+                        document.body.removeChild(clone);
+                    }
                 },
 
                 downloadFiberPDF() {
@@ -347,9 +375,9 @@
                     const body = targetSheet.rows.map(r => {
                         let matStr = r.materiale_list ? r.materiale_list.map(m => `• ${m.text}`).join("\n") : "";
                         let noteFull = r.note || ""; 
-                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr];
+                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, noteFull, matStr];
                     });
-                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 30 }, 6: { cellWidth: 30 }, 7: { cellWidth: 30 } } });
+                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Note', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 35 }, 5: { cellWidth: 35 }, 6: { cellWidth: 35 } } });
                     doc.save(`FiberReport_${targetSheet.date}.pdf`);
                 }
             }
