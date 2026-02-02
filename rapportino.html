@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapportino Delta Impianti v33</title>
+    <title>Rapportino Delta Impianti v34</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -92,19 +92,13 @@
             padding: 20px; 
             display: flex; 
             justify-content: center; 
-            /* Permette lo scroll orizzontale su mobile invece di schiacciare il foglio */
             overflow-x: auto; 
             -webkit-overflow-scrolling: touch;
         }
         
-        /* Su mobile assicuriamo che il foglio non venga schiacciato visivamente */
         @media (max-width: 800px) {
-            .a4-page {
-                min-width: 210mm; /* Forza larghezza fisica */
-            }
-            .screen-wrapper {
-                justify-content: flex-start; /* Allinea a sinistra per scrollare */
-            }
+            .a4-page { min-width: 210mm; }
+            .screen-wrapper { justify-content: flex-start; }
         }
     </style>
 </head>
@@ -114,7 +108,7 @@
         
         <div class="fixed top-0 left-0 right-0 bg-gray-900 text-white p-2 flex justify-between items-center z-50 shadow-lg no-print">
             <div class="font-bold flex items-center gap-2 text-xs">
-                <i class="ph ph-file-text text-yellow-400"></i> RAPPORTINO v33
+                <i class="ph ph-file-text text-yellow-400"></i> RAPPORTINO v34
             </div>
             
             <div class="flex gap-2 items-center overflow-x-auto">
@@ -300,15 +294,14 @@
                 },
 
                 async downloadRapportinoPDF() {
+                    // FIX DATA ITALIANA NEL NOME FILE
+                    let dateIT = this.displayDate.replace(/\//g, '-');
                     const element = document.getElementById('pdf-content');
                     
-                    // 1. SCROLLA IN CIMA (Importante per il mobile!)
+                    // SCROLLA IN CIMA PER EVITARE BIANCO SU MOBILE
                     window.scrollTo(0,0);
 
-                    // 2. FORZA LARGHEZZA A4 (TRUCCO MOBILE)
-                    const originalWidth = element.style.width;
-                    element.style.width = '794px'; // Forza larghezza PC
-
+                    // TRASFORMA INPUT IN TESTO
                     const inputs = element.querySelectorAll('input, textarea');
                     const originalStates = [];
                     inputs.forEach((input) => {
@@ -323,25 +316,18 @@
 
                     const opt = { 
                         margin: 0, 
-                        filename: `Rapportino_${this.dataOggi}.pdf`, 
+                        filename: `Rapportino_${dateIT}.pdf`, // NOME FILE CORRETTO
                         image: { type: 'jpeg', quality: 0.99 }, 
-                        html2canvas: { 
-                            scale: 2, 
-                            useCORS: true, 
-                            scrollY: 0,
-                            windowWidth: 794 // SIMULA PC ANCHE SU MOBILE
-                        }, 
+                        html2canvas: { scale: 2, useCORS: true, scrollY: 0, windowWidth: 794 }, 
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
                         pagebreak: { mode: 'avoid-all' } 
                     };
                     
                     await html2pdf().set(opt).from(element).save();
 
-                    // 3. RIPRISTINA
                     setTimeout(() => {
                         document.querySelectorAll('.print-text').forEach(el => el.remove());
                         inputs.forEach((input, i) => input.style.display = originalStates[i].display);
-                        element.style.width = originalWidth; // Ripristina larghezza
                     }, 500);
                 },
 
@@ -361,9 +347,9 @@
                     const body = targetSheet.rows.map(r => {
                         let matStr = r.materiale_list ? r.materiale_list.map(m => `• ${m.text}`).join("\n") : "";
                         let noteFull = r.note || ""; 
-                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, noteFull, matStr];
+                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr];
                     });
-                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Note', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 35 }, 5: { cellWidth: 35 }, 6: { cellWidth: 35 } } });
+                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 30 }, 6: { cellWidth: 30 }, 7: { cellWidth: 30 } } });
                     doc.save(`FiberReport_${targetSheet.date}.pdf`);
                 }
             }
