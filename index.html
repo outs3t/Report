@@ -2,154 +2,159 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapportino Tecnico v43</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fiber Report Pro v22</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { fiber: { orange: '#ff8000', cyan: '#06b6d4', darkbg: '#050505', darkcard: '#121212' } } } }
+        }
+    </script>
     <style>
-        body { background: #111827; font-family: 'Inter', sans-serif; }
+        /* BODY BACKGROUND FIX */
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
+        .dark body { background-color: #050505; color: white; }
         
-        .a4-page {
-            width: 210mm; height: 296mm; background: white; margin: 0 auto;
-            /* Margini leggermente ritoccati per accomodare il logo più grande */
-            padding: 8mm 10mm; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column; position: relative; overflow: hidden; 
-        }
-
-        .r-input {
-            width: 100%; background: transparent; border: none; outline: none;
-            font-size: 11px; font-weight: 600; color: #111827; padding: 0; margin: 0;
-            text-transform: capitalize; 
-        }
-        .r-input::placeholder { color: #d1d5db; font-weight: 400; text-transform: none; }
+        .smart-caps { text-transform: capitalize; }
         
-        textarea.r-input { resize: none; overflow: hidden; min-height: 18px; line-height: 1.3; display: block; }
-
-        .tech-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; padding: 6px 8px; margin-bottom: 6px; }
-        .tech-label { font-family: 'JetBrains Mono', monospace; font-size: 8px; text-transform: uppercase; color: #6b7280; display: block; margin-bottom: 2px; }
-
-        .tech-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-        .tech-table th { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #6b7280; text-transform: uppercase; padding: 4px 0; border-bottom: 2px solid #111827; }
-        .tech-table td { padding: 6px 4px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
-        .tech-table tr:last-child td { border-bottom: none; }
-
-        .mono { font-family: 'JetBrains Mono', monospace; }
-
-        .print-text {
-            font-size: 11px; font-weight: 600; color: #000; white-space: pre-wrap; line-height: 1.3;
-            text-transform: capitalize; 
-        }
-
-        .signature-font { font-family: 'Dancing Script', cursive; font-size: 1.8rem; line-height: 1; }
-        .header-bar { border-left: 4px solid #2563eb; padding-left: 10px; }
-
-        @media print { .no-print { display: none !important; } body { background: white; margin: 0; } .a4-page { margin: 0; box-shadow: none; height: 100%; page-break-after: avoid; } }
-        .screen-wrapper { padding: 40px 10px; display: flex; justify-content: center; overflow-x: auto; }
-        @media (max-width: 800px) { .a4-page { min-width: 210mm; } .screen-wrapper { justify-content: flex-start; } }
+        .f-input { width: 100%; background: transparent; border-bottom-width: 1px; padding: 8px 0; outline: none; font-weight: 600; transition: all 0.3s; }
+        .f-input:focus { border-color: #ff8000 !important; }
+        .f-textarea { width: 100%; background: transparent; border: 1px solid; border-radius: 8px; padding: 10px; outline: none; resize: vertical; min-height: 80px; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+        .f-textarea:focus { border-color: #ff8000 !important; }
+        .checkbox-box { min-width: 22px; height: 22px; border: 2px solid #06b6d4; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .checkbox-box.active { background-color: #06b6d4; }
+        ::-webkit-scrollbar { height: 4px; width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #ff8000; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 128, 0, 0.7); } 50% { transform: scale(1.05); } 100% { box-shadow: 0 0 0 0 rgba(255, 128, 0, 0); transform: scale(1); } }
+        .mic-active { animation: pulse-ring 1.5s infinite; }
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(0.5); }
+        .dark input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
 </head>
-<body>
-
+<body class="antialiased min-h-screen pb-48 transition-colors duration-300" :class="darkMode ? 'dark bg-[#050505] text-white' : 'light bg-gray-50 text-gray-900'">
     <div id="app">
-        <div class="fixed top-0 left-0 right-0 bg-[#0f172a] text-white px-4 py-2 flex justify-between items-center z-50 border-b border-gray-800 no-print">
-            <div class="font-bold flex items-center gap-2 text-xs tracking-widest font-mono"><span class="text-blue-500">///</span> FIBER REPORT v43</div>
-            <div class="flex gap-3 items-center overflow-x-auto">
-                <button @click="importSmartData" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded text-[10px] uppercase tracking-wide whitespace-nowrap">Importa Dati</button>
-                <a href="index.html" class="px-3 py-1 border border-gray-600 text-gray-300 hover:text-white rounded text-[10px] uppercase tracking-wide whitespace-nowrap">Indietro</a>
-                <div class="flex gap-1">
-                    <button @click="downloadFiberPDF" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded text-[10px] uppercase whitespace-nowrap">XLS</button>
-                    <button @click="downloadRapportinoPDF" class="px-4 py-1 bg-white text-black hover:bg-gray-200 font-bold rounded text-[10px] uppercase flex items-center gap-2 whitespace-nowrap"><i class="ph ph-file-pdf"></i> PDF A4</button>
+        <header class="sticky top-0 z-40 border-b shadow-lg theme-transition backdrop-blur-xl" :class="darkMode ? 'bg-[#0a0a0a]/95 border-gray-800' : 'bg-white/95 border-gray-200'">
+            <div class="px-4 py-3 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-2 select-none">
+                    <div class="w-2 h-7 bg-gradient-to-b from-orange-400 to-red-600 rounded-full shadow-lg"></div>
+                    <h1 class="text-xl font-black tracking-tighter italic leading-none"><span class="text-[#ff8000]">FIBER</span><span class="text-[#06b6d4]">REPORT</span></h1>
                 </div>
+                <div class="flex gap-2 items-center flex-wrap sm:flex-nowrap ml-auto">
+                    <button @click="openRapportino" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition-all hover:scale-105" :class="darkMode ? 'border-orange-500 text-orange-500 bg-orange-500/10' : 'border-orange-600 text-orange-600 bg-orange-50'" title="Apri Rapportino"><i class="ph ph-clipboard-text text-lg sm:text-xl"></i></button>
+                    <div class="flex items-center rounded-full px-2 py-1 border transition-colors h-9 sm:h-10" :class="darkMode ? 'bg-white/5 border-gray-700' : 'bg-gray-100 border-gray-300'">
+                        <button @click="backupData" class="p-1.5 text-gray-400 hover:text-cyan-400"><i class="ph ph-floppy-disk text-lg"></i></button>
+                        <label class="p-1.5 text-gray-400 hover:text-cyan-400 cursor-pointer"><i class="ph ph-upload-simple text-lg"></i><input type="file" @change="restoreData" class="hidden"></label>
+                    </div>
+                    <button @click="showMemory = true" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 border" :class="darkMode ? 'bg-gray-800 border-gray-700 text-cyan-400' : 'bg-white border-gray-200 text-cyan-600 shadow-sm'"><i class="ph ph-brain text-lg sm:text-xl"></i></button>
+                    <button @click="toggleTheme" class="w-12 h-8 rounded-full flex items-center transition-all px-1 border-2 relative ml-1" :class="darkMode ? 'bg-gray-800 border-yellow-500 justify-end' : 'bg-indigo-100 border-indigo-500 justify-start'"><div class="w-6 h-6 rounded-full flex items-center justify-center shadow-sm" :class="darkMode ? 'bg-yellow-400 text-black' : 'bg-indigo-500 text-white'"><i :class="darkMode ? 'ph-sun-fill' : 'ph-moon-stars-fill'" class="text-sm"></i></div></button>
+                </div>
+            </div>
+            <div class="flex overflow-x-auto gap-1 px-4 pb-0 max-w-7xl mx-auto tabs-container border-b" :class="darkMode ? 'bg-black/40 border-gray-800' : 'bg-gray-50 border-gray-200'">
+                <div v-for="(sheet, idx) in sheets" :key="sheet.id" @click="currentSheetIdx = idx" class="px-5 py-3 text-xs font-bold whitespace-nowrap rounded-t-lg cursor-pointer transition-all relative group uppercase tracking-wide border-t border-x" :class="[darkMode ? 'border-gray-800' : 'border-gray-300', currentSheetIdx === idx ? (darkMode ? 'bg-fiber-darkcard text-fiber-orange border-b-[#121212]' : 'bg-white text-fiber-orange border-b-white shadow-sm') : (darkMode ? 'bg-transparent text-gray-500 border-b-gray-800 hover:text-gray-300' : 'bg-transparent text-gray-400 border-b-gray-200 hover:text-gray-600')]">
+                    {{ sheet.name }}
+                    <button v-if="sheets.length > 1" @click.stop="removeSheet(idx)" class="ml-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                </div>
+                <button @click="addSheet" class="px-4 py-2 font-bold text-cyan-500 hover:text-cyan-400 transition-colors"><i class="ph ph-plus-circle text-lg"></i></button>
+            </div>
+            <div class="border-b transition-colors" :class="darkMode ? 'bg-fiber-darkcard border-gray-800' : 'bg-white border-gray-200'">
+                <div class="max-w-7xl mx-auto p-4 flex flex-wrap gap-4 justify-between items-center">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-cyan-700'">Squadra Operativa</label>
+                        <input v-model="currentSheet.team" class="w-full bg-transparent font-bold text-xl outline-none placeholder-gray-600 smart-caps" :class="darkMode ? 'text-white' : 'text-gray-900'" placeholder="Inserisci Squadra...">
+                    </div>
+                    <div class="text-right">
+                        <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-cyan-700'">Data Intervento</label>
+                        <input type="date" v-model="currentSheet.date" class="bg-transparent font-mono font-bold text-lg outline-none text-right" :class="darkMode ? 'text-white' : 'text-gray-900'">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-4 md:p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 items-start">
+                <div v-for="(row, rIdx) in currentSheet.rows" :key="row.id" 
+                     class="rounded-2xl p-6 shadow-xl border-2 relative transition-all duration-300" 
+                     :class="getRowClass(row)">
+                    
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode ? 'border-gray-800' : 'border-gray-100'">
+                        <span class="text-cyan-500 font-black text-xs tracking-widest bg-cyan-500/10 px-3 py-1.5 rounded-md border border-cyan-500/20">SCHEDA #{{ rIdx + 1 }}</span>
+                        
+                        <select v-model="row.stato" class="ml-2 text-xs font-bold uppercase rounded-lg px-2 py-1 outline-none border cursor-pointer"
+                                :class="darkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'">
+                            <option value="">-- STATO --</option>
+                            <option value="DA_SBLOCCARE">🟢 Da Sbloccare</option>
+                            <option value="OCCORRE_ASSISTENTE">🟡 Occorre Assistente</option>
+                            <option value="NEGATO_ACCESSO">🔴 Negato Accesso</option>
+                            <option value="NON_REALIZZATO">🔴 Non Realizzato</option>
+                            <option value="OCCORRE_MATERIALE">🟠 Occorre Materiale</option>
+                        </select>
+
+                        <button @click="removeRow(rIdx)" class="text-gray-500 hover:text-red-500 transition-colors ml-2"><i class="ph ph-trash text-xl"></i></button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Località</label><input v-model="row.localita" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="-"></div>
+                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Indirizzo</label><input v-model="row.indirizzo" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="-"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Nodo</label><input v-model="row.pop_pfs" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'"></div>
+                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">El. Ottico</label><input v-model="row.elemento_ottico" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'"></div>
+                        </div>
+                        <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Permuta</label><input v-model="row.permuta" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'"></div>
+                        <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Note</label><textarea v-model="row.note" class="f-textarea smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="Scrivi..."></textarea></div>
+                        <div class="pt-4 mt-2 border-t" :class="darkMode ? 'border-gray-800' : 'border-gray-100'">
+                            <label class="text-[11px] uppercase font-black text-fiber-orange mb-3 block tracking-wider flex items-center gap-2"><i class="ph ph-wrench-fill"></i> Materiale</label>
+                            <div class="space-y-2 mb-4">
+                                <div v-for="(item, mIdx) in row.materiale_list" :key="mIdx" class="flex items-center gap-3 p-1 transition-colors">
+                                    <div @click="item.checked = !item.checked" class="checkbox-box flex-shrink-0" :class="{ 'active': item.checked }"><i v-if="item.checked" class="ph ph-check text-white text-xs font-bold"></i></div>
+                                    <input v-model="item.text" class="flex-grow bg-transparent border-none outline-none text-sm font-medium smart-caps" :class="[item.checked ? 'line-through opacity-50 text-gray-500' : (darkMode ? 'text-white' : 'text-gray-900')]">
+                                    <button @click="row.materiale_list.splice(mIdx, 1)" class="text-gray-500 hover:text-red-500 p-1 flex-shrink-0"><i class="ph ph-x"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <input v-model="row.tempMaterial" @keyup.enter="addMaterial(row)" placeholder="Aggiungi voce..." class="text-sm bg-transparent border-b p-2 w-full outline-none focus:border-orange-500 transition-colors smart-caps" :class="darkMode ? 'border-[#333] text-white' : 'border-gray-300 text-gray-700'">
+                                <button @click="addMaterial(row)" class="text-cyan-500 hover:text-cyan-400 p-2"><i class="ph ph-plus-circle text-xl"></i></button>
+                            </div>
+                        </div>
+                        <div v-if="row.extras.length > 0" class="pt-3 border-t border-dashed" :class="darkMode ? 'border-gray-800' : 'border-gray-300'">
+                             <div v-for="(extra, eIdx) in row.extras" :key="eIdx" class="flex gap-2 mb-2 items-center">
+                                <input v-model="extra.key" class="w-1/3 text-xs font-bold bg-transparent border-b border-cyan-800 text-cyan-500 outline-none p-1 smart-caps" placeholder="Nome">
+                                <input v-model="extra.value" class="w-full text-xs bg-transparent border-b outline-none p-1 smart-caps" :class="darkMode ? 'border-[#333] text-white' : 'border-gray-300 text-black'" placeholder="Valore">
+                                <button @click="row.extras.splice(eIdx, 1)" class="text-red-500"><i class="ph ph-x"></i></button>
+                             </div>
+                        </div>
+                        <button @click="row.extras.push({key:'', value:''})" class="text-[10px] font-bold text-cyan-600 hover:text-cyan-400 mt-2">+ EXTRA</button>
+                    </div>
+                </div>
+                <button @click="addRow" class="h-full min-h-[250px] border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 transition-all opacity-60 hover:opacity-100 hover:scale-[1.01]" :class="darkMode ? 'border-gray-800 hover:border-orange-500 bg-white/5' : 'border-gray-300 hover:border-orange-500 bg-gray-50'"><div class="w-16 h-16 rounded-full flex items-center justify-center border-2 transition-colors" :class="darkMode ? 'border-gray-700 text-gray-500' : 'border-gray-400 text-gray-400'"><i class="ph ph-plus text-3xl"></i></div><span class="text-xs font-black uppercase tracking-widest text-gray-500">Nuova Scheda</span></button>
+            </div>
+        </main>
+
+        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 p-3 backdrop-blur-2xl rounded-2xl shadow-2xl border flex items-center gap-8 px-10 transition-colors duration-300" :class="darkMode ? 'bg-[#151515]/95 border-gray-700 shadow-glow-orange' : 'bg-white/95 border-gray-200 shadow-xl'">
+            <button @click="exportWhatsapp" class="group flex flex-col items-center gap-1"><div class="w-11 h-11 rounded-xl bg-gradient-to-br from-green-500 to-green-700 text-white flex items-center justify-center shadow-lg group-hover:-translate-y-1 transition-transform"><i class="ph ph-whatsapp-logo text-2xl"></i></div><span class="text-[9px] font-bold opacity-60 group-hover:opacity-100 transition-opacity" :class="darkMode ? 'text-white' : 'text-black'">INVIA</span></button>
+            <button @click="toggleDictation" class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all -mt-10 border-4 border-transparent" :class="[isListening ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white mic-active shadow-orange-500/50' : (darkMode ? 'bg-[#2a2a2a] text-white border-[#151515]' : 'bg-white text-gray-800 border-gray-100')]"><i class="ph text-3xl" :class="isListening ? 'ph-microphone-fill' : 'ph-microphone'"></i></button>
+            <div class="flex gap-3">
+                <button @click="exportPDF" class="group flex flex-col items-center gap-1"><div class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all group-hover:-translate-y-1" :class="darkMode ? 'border-gray-600 bg-gray-800 text-red-400' : 'border-gray-200 bg-white text-red-500'"><i class="ph ph-file-pdf text-xl"></i></div><span class="text-[9px] font-bold opacity-60 group-hover:opacity-100 transition-opacity" :class="darkMode ? 'text-white' : 'text-black'">PDF</span></button>
+                <button @click="exportExcel" class="group flex flex-col items-center gap-1"><div class="w-11 h-11 rounded-xl border flex items-center justify-center transition-all group-hover:-translate-y-1" :class="darkMode ? 'border-gray-600 bg-gray-800 text-green-400' : 'border-gray-200 bg-white text-green-600'"><i class="ph ph-file-xls text-xl"></i></div><span class="text-[9px] font-bold opacity-60 group-hover:opacity-100 transition-opacity" :class="darkMode ? 'text-white' : 'text-black'">XLS</span></button>
             </div>
         </div>
 
-        <div class="h-12 no-print"></div>
-
-        <div class="screen-wrapper">
-            <div class="a4-page" id="pdf-content">
-                <div class="flex-grow">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-1/3">
-                            <div class="relative group cursor-pointer" @click="triggerLogoUpload">
-                                <div class="h-24 w-full flex items-center justify-start">
-                                    <img v-if="logoSrc" :src="logoSrc" class="h-full w-auto object-contain object-left">
-                                    <div v-else class="w-32 h-10 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-[9px] mono">LOGO</div>
-                                </div>
-                                <input type="file" ref="logoInput" @change="handleLogo" class="hidden" accept="image/*">
-                            </div>
-                        </div>
-                        <div class="text-right header-bar mt-2">
-                            <h1 class="text-2xl font-black text-gray-900 uppercase tracking-tighter leading-none">Rapporto Giornaliero</h1>
-                            <div class="text-[10px] text-gray-500 font-mono mt-1">REF: INTERVENTO TECNICO</div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-12 gap-2 mb-4">
-                        <div class="col-span-3 tech-box"><span class="tech-label">DATA INTERVENTO</span><input v-model="displayDate" class="r-input mono text-sm"></div>
-                        <div class="col-span-3 tech-box"><span class="tech-label">CLIENTE</span><input v-model="cliente" class="r-input text-sm" placeholder="Es. Open Fiber"></div>
-                        <div class="col-span-6 tech-box"><span class="tech-label">ASSISTENTE DI RIFERIMENTO</span><input v-model="assistente" class="r-input text-sm" placeholder="Nome Cognome"></div>
-                    </div>
-
-                    <div class="tech-box mb-6"><span class="tech-label">LOCALITÀ / CANTIERI</span><input v-model="localita" class="r-input uppercase" placeholder="INSERIRE COMUNI..."></div>
-
-                    <div class="mb-6">
-                        <div class="flex justify-between items-end border-b border-gray-300 mb-2 pb-1"><span class="text-[10px] font-bold uppercase tracking-widest text-gray-900">01. Squadra Operativa</span><button @click="addWorker" class="text-[9px] text-blue-600 font-bold no-print">+ ADD</button></div>
-                        <div class="bg-gray-50 border border-gray-200 rounded p-2">
-                            <table class="tech-table">
-                                <thead><tr><th class="w-24">RUOLO</th><th>TECNICO</th><th class="w-10 text-center">ORD</th><th class="w-10 text-center">STR</th><th class="w-10 text-center">VIG</th><th class="w-24">NOTE</th><th class="w-4 no-print"></th></tr></thead>
-                                <tbody>
-                                    <tr v-for="(worker, idx) in workers" :key="idx">
-                                        <td><select v-model="worker.role" class="bg-transparent font-bold text-[10px] text-gray-900 w-full outline-none"><option value="CS">CAPOSQUADRA</option><option value="OP">TECNICO</option><option value="GI">GIUNTISTA</option><option value="IM">IMPIANTISTA</option><option value="PC">POSACAVI</option><option value="DIP">DIPENDENTE</option></select></td>
-                                        <td><input v-model="worker.name" class="r-input" placeholder="..."></td><td class="text-center"><input type="number" v-model="worker.h_ord" class="r-input text-center mono"></td><td class="text-center"><input type="number" v-model="worker.h_str" class="r-input text-center mono"></td><td class="text-center"><input type="number" v-model="worker.h_vg" class="r-input text-center mono"></td><td><input v-model="worker.notes" class="r-input" placeholder="-"></td><td class="text-center no-print"><button @click="workers.splice(idx, 1)" class="text-red-400">×</button></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="flex justify-between items-end border-b border-gray-300 mb-2 pb-1"><span class="text-[10px] font-bold uppercase tracking-widest text-gray-900">02. Dettaglio Lavorazioni</span><div class="flex gap-2 no-print"><button @click="importSmartData" class="text-[9px] text-blue-600 font-bold">AGGIORNA</button><button @click="addWork" class="text-[9px] text-green-600 font-bold">+ RIGA</button></div></div>
-                        <table class="tech-table">
-                            <thead><tr><th class="w-8">N.</th><th class="w-1/3">INDIRIZZO (LOCALITÀ)</th><th>DESCRIZIONE / NOTE TECNICHE</th><th class="w-10 text-center">Q.TÀ</th><th class="w-4 no-print"></th></tr></thead>
-                            <tbody>
-                                <tr v-for="(work, idx) in works" :key="idx">
-                                    <td class="font-bold text-gray-400 mono">{{ idx + 1 }}</td>
-                                    <td class="pr-3"><textarea v-model="work.address" rows="1" class="r-input font-bold uppercase" placeholder="VIA..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
-                                    <td class="pr-3"><textarea v-model="work.desc" rows="1" class="r-input text-gray-700" placeholder="Dettagli..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
-                                    <td class="text-center"><input type="number" v-model="work.qty" class="r-input text-center font-bold mono"></td>
-                                    <td class="text-center no-print"><button @click="works.splice(idx, 1)" class="text-red-400">×</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="mt-auto border-t-2 border-gray-900 pt-4">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="flex gap-4">
-                            <div class="tech-box w-32"><span class="tech-label">MEZZO</span><input v-model="mezzo" class="r-input" placeholder="Modello"></div>
-                            <div class="tech-box w-24"><span class="tech-label">TARGA</span><input v-model="targa" class="r-input uppercase mono" placeholder="TARGA"></div>
-                            <div class="tech-box w-20"><span class="tech-label">KM</span><input type="number" v-model="km" class="r-input mono text-right" placeholder="0"></div>
-                        </div>
-                        <div class="flex flex-col items-end">
-                            <label class="flex items-center gap-2 cursor-pointer no-print mb-1"><span class="tech-label text-blue-600">RIFORNIMENTO</span><input type="checkbox" v-model="showFuel" class="accent-black"></label>
-                            <div v-if="showFuel" class="flex gap-2"><div class="tech-box w-16"><span class="tech-label">LITRI</span><input v-model="fuelLitres" class="r-input text-center mono"></div><div class="tech-box w-16"><span class="tech-label">EURO</span><input v-model="fuelEuro" class="r-input text-center mono"></div></div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-10">
-                        <div class="border border-gray-300 rounded flex text-center bg-gray-50 h-16"><div class="flex-1 border-r border-gray-300 p-1 flex flex-col justify-between"><span class="tech-label">VISTO ASSISTENTE</span></div><div class="flex-1 border-r border-gray-300 p-1 flex flex-col justify-between"><span class="tech-label">VISTO AMMIN.</span></div><div class="flex-1 p-1 flex flex-col justify-between"><span class="tech-label">VISTO CONTAB.</span></div></div>
-                        <div class="relative border-b border-gray-900 h-16 flex items-end justify-center"><span class="tech-label absolute top-0 left-0">FIRMA CAPOSQUADRA</span><input v-model="signatureName" class="absolute inset-0 opacity-0 cursor-text z-10 w-full h-full text-center" placeholder="Firma"><span v-if="!signatureName" class="text-gray-300 text-xs mb-2 no-print select-none">Clicca per firmare</span><span v-else class="signature-font mb-1">{{ signatureName }}</span></div>
-                    </div>
-                </div>
+        <div v-if="showMemory" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="w-full max-w-md rounded-3xl p-6 shadow-2xl border transition-all" :class="darkMode ? 'bg-[#18181b] border-gray-700' : 'bg-white border-gray-200'">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold flex items-center gap-2" :class="darkMode ? 'text-white' : 'text-gray-900'"><i class="ph ph-brain text-fiber-orange"></i> Memoria AI</h3><button @click="showMemory = false" class="p-2 hover:bg-gray-500/10 rounded-full transition-colors"><i class="ph ph-x text-xl text-gray-500"></i></button></div>
+                <div class="rounded-xl p-2 max-h-60 overflow-y-auto mb-4 border" :class="darkMode?'bg-black/20 border-gray-800':'bg-gray-50 border-gray-200'"><div v-for="(val, key) in dictationMemory" :key="key" class="flex justify-between items-center p-3 border-b last:border-0" :class="darkMode?'border-gray-800':'border-gray-200'"><div><div class="text-red-400 text-xs line-through mb-0.5">{{ key }}</div><div class="text-cyan-500 font-bold text-sm">{{ val }}</div></div><button @click="deleteMemoryRule(key)" class="text-gray-400 hover:text-red-500 p-2"><i class="ph ph-trash text-lg"></i></button></div></div>
+                <div class="grid grid-cols-2 gap-3 mb-4"><input v-model="newRule.wrong" placeholder="Se sente..." class="f-input px-3 border rounded-lg bg-transparent" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'"><input v-model="newRule.right" placeholder="Scrive..." class="f-input px-3 border rounded-lg bg-transparent" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'"></div><button @click="addMemoryRule" class="w-full py-3 rounded-xl font-bold bg-gradient-to-r from-orange-400 to-red-500 text-white hover:shadow-lg hover:shadow-orange-500/30 transition-all">SALVA REGOLA</button>
             </div>
         </div>
     </div>
@@ -159,20 +164,39 @@
         createApp({
             data() {
                 return {
-                    logoSrc: localStorage.getItem('delta_logo') || '',
-                    dataOggi: new Date().toISOString().split('T')[0],
-                    displayDate: new Date().toLocaleDateString('it-IT'),
-                    cliente: 'Open Fiber', localita: '', assistente: '', 
-                    workers: [{ role: 'CS', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }, { role: 'DIP', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }],
-                    works: [ { address: '', desc: '', qty: '' } ],
-                    mezzo: '', targa: '', km: '', showFuel: false, fuelLitres: '', fuelEuro: '', signatureName: ''
+                    darkMode: true, isListening: false, showMemory: false,
+                    sheets: [ { id: 1, name: 'Foglio 1', date: new Date().toISOString().split('T')[0], team: '', rows: [] } ],
+                    currentSheetIdx: 0, lastActiveRowId: null, recognition: null,
+                    dictationMemory: JSON.parse(localStorage.getItem('fiber_memory')) || { "tubo r k": "Tubo Rame", "fibra uno": "Fibra 1Gb" },
+                    newRule: { wrong: '', right: '' }
                 }
             },
+            computed: { currentSheet() { return this.sheets[this.currentSheetIdx]; } },
+            mounted() {
+                if (localStorage.getItem('fiber_theme') === 'light') this.darkMode = false;
+                const savedSheets = localStorage.getItem('fiber_sheets');
+                if (savedSheets) this.sheets = JSON.parse(savedSheets);
+                else this.addRow();
+                if ('webkitSpeechRecognition' in window) {
+                    this.recognition = new webkitSpeechRecognition();
+                    this.recognition.lang = 'it-IT';
+                    this.recognition.continuous = true;
+                    this.recognition.interimResults = false;
+                    this.recognition.onstart = () => { this.isListening = true; };
+                    this.recognition.onend = () => { if(this.isListening) try { this.recognition.start(); } catch(e){} else this.isListening = false; };
+                    this.recognition.onresult = (event) => { const transcript = event.results[event.results.length - 1][0].transcript; this.parseCommand(transcript); };
+                }
+            },
+            watch: { sheets: { handler(v) { localStorage.setItem('fiber_sheets', JSON.stringify(v)); }, deep: true }, darkMode(v) { localStorage.setItem('fiber_theme', v ? 'dark' : 'light'); } },
             methods: {
-                triggerLogoUpload() { this.$refs.logoInput.click(); },
-                handleLogo(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { this.logoSrc = e.target.result; localStorage.setItem('delta_logo', this.logoSrc); }; reader.readAsDataURL(file); } },
-                addWorker() { this.workers.push({ role: 'OP', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }); },
-                addWork() { this.works.push({ address: '', desc: '', qty: '' }); },
+                formatDateIT(dateStr) { if (!dateStr) return ''; const parts = dateStr.split('-'); return `${parts[2]}/${parts[1]}/${parts[0]}`; },
+                toggleTheme() { this.darkMode = !this.darkMode; },
+                openRapportino() { localStorage.setItem('fiber_sheets', JSON.stringify(this.sheets)); window.open('rapportino.html', '_blank'); },
+                addSheet() { this.sheets.push({ id: Date.now(), name: `Foglio ${this.sheets.length+1}`, date: new Date().toISOString().split('T')[0], team: '', rows: [] }); this.currentSheetIdx = this.sheets.length - 1; this.addRow(); },
+                removeSheet(i) { if(confirm("Eliminare foglio?")) { this.sheets.splice(i, 1); if(this.currentSheetIdx >= this.sheets.length) this.currentSheetIdx = this.sheets.length - 1; } },
+                addRow() { const newRow = { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', stato: '', materiale_list: [], tempMaterial: '', extras: [] }; this.currentSheet.rows.push(newRow); this.lastActiveRowId = newRow.id; },
+                removeRow(i) { if(confirm("Eliminare riga?")) this.currentSheet.rows.splice(i, 1); },
+                addMaterial(row, text = null) { const val = text || row.tempMaterial; if(val) { row.materiale_list.push({ text: val, checked: false }); row.tempMaterial = ''; } },
                 
                 smartFormat(text) {
                     if (!text) return '';
@@ -182,99 +206,116 @@
                     });
                 },
 
-                importSmartData() {
-                    const savedSheets = localStorage.getItem('fiber_sheets');
-                    if (!savedSheets) { alert("Nessun dato!"); return; }
-                    const sheets = JSON.parse(savedSheets);
-                    let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1]; 
-                    if(targetSheet.team) {
-                        let splitNames = targetSheet.team.split(/\s*[-/]\s*/);
-                        if(splitNames[0]) this.workers[0].name = splitNames[0];
-                        if(splitNames[1] && this.workers[1]) this.workers[1].name = splitNames[1];
+                getRowClass(row) {
+                    if (!row.stato) return this.darkMode ? 'bg-[#121212] border-gray-800' : 'bg-white border-gray-200';
+                    if (this.darkMode) {
+                        switch(row.stato) {
+                            case 'DA_SBLOCCARE': return 'bg-green-950/60 border-green-600 shadow-[0_0_15px_-3px_rgba(22,163,74,0.2)]';
+                            case 'OCCORRE_ASSISTENTE': return 'bg-yellow-950/60 border-yellow-600 shadow-[0_0_15px_-3px_rgba(202,138,4,0.2)]';
+                            case 'NEGATO_ACCESSO': return 'bg-red-950/60 border-red-600 shadow-[0_0_15px_-3px_rgba(220,38,38,0.2)]';
+                            case 'NON_REALIZZATO': return 'bg-red-950/80 border-red-800 shadow-[0_0_15px_-3px_rgba(153,27,27,0.3)]';
+                            case 'OCCORRE_MATERIALE': return 'bg-orange-950/60 border-orange-600 shadow-[0_0_15px_-3px_rgba(234,88,12,0.2)]';
+                            default: return 'bg-[#121212] border-gray-800';
+                        }
+                    } else {
+                        switch(row.stato) {
+                            case 'DA_SBLOCCARE': return 'bg-green-50 border-green-500';
+                            case 'OCCORRE_ASSISTENTE': return 'bg-yellow-50 border-yellow-500';
+                            case 'NEGATO_ACCESSO': return 'bg-red-50 border-red-500';
+                            case 'NON_REALIZZATO': return 'bg-red-100 border-red-700';
+                            case 'OCCORRE_MATERIALE': return 'bg-orange-50 border-orange-500';
+                            default: return 'bg-white border-gray-200';
+                        }
                     }
-                    let uniqueCities = new Set();
-                    this.works = []; 
-                    targetSheet.rows.forEach(r => {
-                        if(r.localita) uniqueCities.add(r.localita.toUpperCase());
-                        let fullAddress = r.indirizzo || "";
-                        if(r.localita && fullAddress) fullAddress += ` (${r.localita})`;
-                        else if(!fullAddress && r.localita) fullAddress = r.localita;
-                        let finalDesc = r.note || "";
-                        let lowerNote = finalDesc.toLowerCase();
-                        if(r.permuta) {
-                            if(!finalDesc.trim()) finalDesc = `Guasto Risolto - Permuta: ${r.permuta}`;
-                            else finalDesc += ` - Permuta: ${r.permuta}`;
-                        }
-                        if(lowerNote.includes("giunzion") && r.elemento_ottico) {
-                            let words = lowerNote.split(/\s+/);
-                            let idx = words.findIndex(w => w.includes("giunzion"));
-                            let nextWords = "";
-                            if(idx !== -1 && idx < words.length - 1) nextWords = words.slice(idx + 1, idx + 4).join(" ");
-                            const skipKeywords = ["pta", "pte", "roe", "pd", "pfs", "pfp"];
-                            if(!skipKeywords.some(k => nextWords.includes(k))) finalDesc += ` - Elemento: ${r.elemento_ottico}`;
-                        }
-                        if(fullAddress || finalDesc) {
-                            this.works.push({ address: fullAddress.toUpperCase(), desc: finalDesc, qty: '1' });
-                        }
-                    });
-                    this.localita = Array.from(uniqueCities).join(', ');
-                    this.displayDate = new Date().toLocaleDateString('it-IT');
-                    alert("Dati Importati!");
                 },
 
-                async downloadRapportinoPDF() {
-                    const element = document.getElementById('pdf-content');
-                    window.scrollTo(0,0);
-                    let dateFilename = this.displayDate.replace(/\//g, '-'); 
-
-                    const inputs = element.querySelectorAll('input, textarea, select');
-                    const originalStates = [];
-                    const btns = document.querySelectorAll('.no-print');
-                    btns.forEach(b => b.style.opacity = '0');
-
-                    inputs.forEach((input) => {
-                        originalStates.push({ element: input, display: input.style.display });
-                        const textDiv = document.createElement('div');
-                        if (input.tagName === 'SELECT') { textDiv.innerText = input.options[input.selectedIndex].text; } 
-                        else { textDiv.innerText = input.value; }
-                        if(input.type === 'checkbox') return;
-                        textDiv.className = input.className + ' print-text';
-                        if(input.tagName === 'TEXTAREA') textDiv.style.minHeight = Math.max(18, input.scrollHeight) + 'px';
-                        input.style.display = 'none';
-                        input.parentNode.insertBefore(textDiv, input);
-                    });
-
-                    const opt = { margin: 0, filename: `Rapportino_${dateFilename}.pdf`, image: { type: 'jpeg', quality: 0.99 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: 'avoid-all' }};
-                    await html2pdf().set(opt).from(element).save();
-
-                    setTimeout(() => {
-                        document.querySelectorAll('.print-text').forEach(el => el.remove());
-                        inputs.forEach((input, i) => input.style.display = originalStates[i].display);
-                        btns.forEach(b => b.style.opacity = '1');
-                    }, 500);
+                addMemoryRule() { if(this.newRule.wrong && this.newRule.right) { this.dictationMemory[this.newRule.wrong.toLowerCase()] = this.newRule.right; localStorage.setItem('fiber_memory', JSON.stringify(this.dictationMemory)); this.newRule = { wrong: '', right: '' }; } },
+                deleteMemoryRule(key) { delete this.dictationMemory[key]; localStorage.setItem('fiber_memory', JSON.stringify(this.dictationMemory)); },
+                toggleDictation() { if(!this.recognition) return alert("Browser non supportato"); if(this.isListening) { this.isListening = false; this.recognition.stop(); } else this.recognition.start(); },
+                parseCommand(text) {
+                    console.log("Input:", text); text = text.toLowerCase();
+                    for (const [wrong, right] of Object.entries(this.dictationMemory)) { text = text.replace(new RegExp(wrong, 'gi'), right); }
+                    if(this.currentSheet.rows.length === 0) this.addRow();
+                    let targetRow = this.currentSheet.rows[this.currentSheet.rows.length - 1];
+                    this.lastActiveRowId = targetRow.id;
+                    const keywords = { "località": "localita", "indirizzo": "indirizzo", "pop": "pop_pfs", "pfs": "pop_pfs", "nodo": "pop_pfs", "elemento": "elemento_ottico", "ottico": "elemento_ottico", "permuta": "permuta", "note": "note", "nota": "note", "squadra": "TEAM_FIELD", "materiale": "MATERIAL_ADD", "lista materiale": "MATERIAL_ADD", "aggiungi materiale": "MATERIAL_ADD" };
+                    let currentField = null; let buffer = ""; const words = text.split(" ");
+                    words.forEach((word) => { let foundKey = Object.keys(keywords).find(k => word === k || word.startsWith(k)); if (foundKey) { if (currentField && buffer.trim()) this.applyValue(targetRow, currentField, buffer.trim()); currentField = keywords[foundKey]; buffer = ""; } else { buffer += word + " "; } });
+                    if (currentField && buffer.trim()) this.applyValue(targetRow, currentField, buffer.trim()); else if (!currentField && buffer.trim()) targetRow.note = (targetRow.note ? targetRow.note + "\n" : "") + buffer.trim();
                 },
-
-                downloadFiberPDF() {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    const savedSheets = localStorage.getItem('fiber_sheets');
-                    if (!savedSheets) return alert("Nessun dato.");
-                    const sheets = JSON.parse(savedSheets);
-                    let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1];
-                    let parts = targetSheet.date.split('-');
-                    let dateIT = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                    let dateFile = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                    doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 20, 'F');
-                    doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT", 10, 13);
-                    doc.setFontSize(10); doc.text(`SQUADRA: ${this.smartFormat(targetSheet.team)}`, 130, 9);
-                    doc.text(`DATA: ${dateIT}`, 130, 15);
-                    const body = targetSheet.rows.map(r => {
-                        let matStr = r.materiale_list ? r.materiale_list.map(m => `• ${this.smartFormat(m.text)}`).join("\n") : "";
-                        return [this.smartFormat(r.localita), this.smartFormat(r.indirizzo), this.smartFormat(r.pop_pfs), this.smartFormat(r.elemento_ottico), this.smartFormat(r.permuta), r.stato ? r.stato.replace(/_/g, ' ') : '', this.smartFormat(r.note), matStr];
+                applyValue(row, field, value) { if (field === 'TEAM_FIELD') this.currentSheet.team = value.toUpperCase(); else if (field === 'MATERIAL_ADD') this.addMaterial(row, value.charAt(0).toUpperCase() + value.slice(1)); else if (field === 'note') row.note = (row.note ? row.note + "\n" : "") + value.charAt(0).toUpperCase() + value.slice(1); else row[field] = value.charAt(0).toUpperCase() + value.slice(1); },
+                
+                exportWhatsapp() {
+                    let dateFormatted = this.formatDateIT(this.currentSheet.date);
+                    let msg = `*FIBER REPORT PRO*\n📅 ${dateFormatted} | 👷 ${this.smartFormat(this.currentSheet.team)}\n\n`;
+                    this.currentSheet.rows.forEach((r, i) => { if(r.localita || r.indirizzo) { 
+                        msg += `*#${i+1}* 📍 ${this.smartFormat(r.localita)}, ${this.smartFormat(r.indirizzo)}\n`; 
+                        msg += `🔌 Nodo: ${this.smartFormat(r.pop_pfs)} | 👁 EL: ${this.smartFormat(r.elemento_ottico)}\n`; 
+                        if(r.permuta) msg += `🔄 Permuta: ${this.smartFormat(r.permuta)}\n`; 
+                        if(r.note) msg += `📝 Note: ${this.smartFormat(r.note)}\n`; 
+                        if(r.stato) msg += `🚦 Stato: ${r.stato.replace(/_/g, ' ')}\n`;
+                        if(r.materiale_list.length) { msg += `🛠 MAT:\n`; r.materiale_list.forEach(m => msg += `${m.checked?'✅':'⬜'} ${this.smartFormat(m.text)}\n`); } 
+                        msg += "--------------------\n"; } });
+                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                },
+                
+                exportPDF() {
+                    const { jsPDF } = window.jspdf; const doc = new jsPDF();
+                    doc.setFillColor(6, 182, 212); doc.rect(0, 0, 210, 20, 'F');
+                    doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT PRO", 10, 13);
+                    doc.setFontSize(10); doc.text(`Squadra: ${this.smartFormat(this.currentSheet.team)}`, 130, 9);
+                    let dateFormatted = this.formatDateIT(this.currentSheet.date); doc.text(`Data: ${dateFormatted}`, 130, 15);
+                    const body = this.currentSheet.rows.map(r => { 
+                        let matStr = r.materiale_list.map(m => `• ${this.smartFormat(m.text)}`).join("\n"); 
+                        let extraStr = r.extras.map(e => `${this.smartFormat(e.key)}: ${this.smartFormat(e.value)}`).join("\n"); 
+                        let noteFull = this.smartFormat(r.note) + (extraStr ? "\n\n" + extraStr : ""); 
+                        return [this.smartFormat(r.localita), this.smartFormat(r.indirizzo), this.smartFormat(r.pop_pfs), this.smartFormat(r.elemento_ottico), this.smartFormat(r.permuta), r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr]; 
                     });
-                    doc.autoTable({ head: [['LOC.', 'INDIRIZZO', 'NODO', 'OTTICO', 'PERMUTA', 'STATO', 'NOTE', 'MATERIALE']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold', fontSize: 8 }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 35 }, 6: { cellWidth: 35 }, 7: { cellWidth: 30 } }, didParseCell: function(data) { if (data.section === 'body') { let st = data.row.raw[5]; if (st === 'DA_SBLOCCARE') data.cell.styles.fillColor = [220, 252, 231]; if (st === 'OCCORRE_ASSISTENTE') data.cell.styles.fillColor = [254, 249, 195]; if (st === 'NEGATO_ACCESSO') data.cell.styles.fillColor = [254, 226, 226]; if (st === 'NON_REALIZZATO') data.cell.styles.fillColor = [254, 202, 202]; if (st === 'OCCORRE_MATERIALE') data.cell.styles.fillColor = [255, 237, 213]; } } });
-                    doc.save(`FiberReport_${dateFile}.pdf`);
-                }
+                    
+                    doc.autoTable({ 
+                        head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note / Extra', 'Materiale']], 
+                        body: body, startY: 25, theme: 'grid', 
+                        headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, 
+                        alternateRowStyles: { fillColor: [245, 245, 245] }, 
+                        styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, 
+                        columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 30 }, 6: { cellWidth: 30 }, 7: { cellWidth: 30 } },
+                        didParseCell: function(data) {
+                            if (data.section === 'body') {
+                                let row = data.row;
+                                let stato = row.raw[5];
+                                if (stato === 'DA_SBLOCCARE') data.cell.styles.fillColor = [220, 252, 231];
+                                if (stato === 'OCCORRE_ASSISTENTE') data.cell.styles.fillColor = [254, 249, 195];
+                                if (stato === 'NEGATO_ACCESSO') data.cell.styles.fillColor = [254, 226, 226];
+                                if (stato === 'NON_REALIZZATO') data.cell.styles.fillColor = [254, 202, 202];
+                                if (stato === 'OCCORRE_MATERIALE') data.cell.styles.fillColor = [255, 237, 213];
+                            }
+                        }
+                    });
+                    doc.save(`Report_${this.currentSheet.name}_${this.currentSheet.team}.pdf`);
+                },
+                exportExcel() {
+                    let allData = []; let dateFormatted = this.formatDateIT(this.currentSheet.date);
+                    this.currentSheet.rows.forEach(r => { 
+                        let matStr = r.materiale_list.map(m => this.smartFormat(m.text)).join(", "); 
+                        let obj = { 
+                            "Località": this.smartFormat(r.localita), 
+                            "Indirizzo": this.smartFormat(r.indirizzo), 
+                            "Nodo": this.smartFormat(r.pop_pfs), 
+                            "El. Ottico": this.smartFormat(r.elemento_ottico), 
+                            "Permuta": this.smartFormat(r.permuta), 
+                            "Stato": r.stato, 
+                            "Materiale": matStr, 
+                            "Note": this.smartFormat(r.note), 
+                            "Squadra": this.smartFormat(this.currentSheet.team), 
+                            "Data": dateFormatted 
+                        }; 
+                        r.extras.forEach(e => obj[this.smartFormat(e.key)] = this.smartFormat(e.value)); 
+                        allData.push(obj); 
+                    });
+                    const ws = XLSX.utils.json_to_sheet(allData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Report"); XLSX.writeFile(wb, `Report_${this.currentSheet.name}.xlsx`);
+                },
+                backupData() { const blob = new Blob([JSON.stringify(this.sheets)], {type: "application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); },
+                restoreData(e) { const f = e.target.files[0]; if(!f)return; const r = new FileReader(); r.onload=ev=>{this.sheets=JSON.parse(ev.target.result);this.currentSheetIdx=0;}; r.readAsText(f); }
             }
         }).mount('#app');
     </script>
