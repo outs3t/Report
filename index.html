@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fiber Report Pro v19</title>
+    <title>Fiber Report Pro v20</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -30,7 +30,7 @@
         ::-webkit-scrollbar { height: 4px; width: 4px; }
         ::-webkit-scrollbar-thumb { background: #ff8000; border-radius: 10px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 128, 0, 0.7); transform: scale(1); } 50% { transform: scale(1.05); } 70% { box-shadow: 0 0 0 20px rgba(255, 128, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 128, 0, 0); transform: scale(1); } }
+        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 128, 0, 0.7); } 50% { transform: scale(1.05); } 100% { box-shadow: 0 0 0 0 rgba(255, 128, 0, 0); transform: scale(1); } }
         .mic-active { animation: pulse-ring 1.5s infinite; }
         input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(0.5); }
         .dark input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
@@ -190,7 +190,7 @@
                 addSheet() { this.sheets.push({ id: Date.now(), name: `Foglio ${this.sheets.length+1}`, date: new Date().toISOString().split('T')[0], team: '', rows: [] }); this.currentSheetIdx = this.sheets.length - 1; this.addRow(); },
                 removeSheet(i) { if(confirm("Eliminare foglio?")) { this.sheets.splice(i, 1); if(this.currentSheetIdx >= this.sheets.length) this.currentSheetIdx = this.sheets.length - 1; } },
                 
-                // AGGIUNTO STATO DEFAULT
+                // ROW STRUCTURE WITH STATO
                 addRow() { 
                     const newRow = { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', stato: '', materiale_list: [], tempMaterial: '', extras: [] }; 
                     this.currentSheet.rows.push(newRow); 
@@ -200,15 +200,17 @@
                 removeRow(i) { if(confirm("Eliminare riga?")) this.currentSheet.rows.splice(i, 1); },
                 addMaterial(row, text = null) { const val = text || row.tempMaterial; if(val) { row.materiale_list.push({ text: val, checked: false }); row.tempMaterial = ''; } },
                 
-                // GESTIONE COLORI STATO
+                // COLORI SCURI/CHIARI PER DARK MODE
                 getRowClass(row) {
                     if (!row.stato) return this.darkMode ? 'bg-[#121212] border-gray-800' : 'bg-white border-gray-200';
                     switch(row.stato) {
-                        case 'DA_SBLOCCARE': return this.darkMode ? 'bg-green-900/10 border-green-500' : 'bg-green-50 border-green-500';
-                        case 'OCCORRE_ASSISTENTE': return this.darkMode ? 'bg-yellow-900/10 border-yellow-500' : 'bg-yellow-50 border-yellow-500';
-                        case 'NEGATO_ACCESSO': return this.darkMode ? 'bg-red-900/10 border-red-500' : 'bg-red-50 border-red-500';
-                        case 'NON_REALIZZATO': return this.darkMode ? 'bg-red-900/20 border-red-700' : 'bg-red-100 border-red-700';
-                        case 'OCCORRE_MATERIALE': return this.darkMode ? 'bg-orange-900/10 border-orange-500' : 'bg-orange-50 border-orange-500';
+                        // DARK MODE: Sfondo scuro colorato + Bordo colorato
+                        // LIGHT MODE: Sfondo pastello + Bordo colorato
+                        case 'DA_SBLOCCARE': return this.darkMode ? 'bg-green-900/20 border-green-600' : 'bg-green-50 border-green-500';
+                        case 'OCCORRE_ASSISTENTE': return this.darkMode ? 'bg-yellow-900/20 border-yellow-600' : 'bg-yellow-50 border-yellow-500';
+                        case 'NEGATO_ACCESSO': return this.darkMode ? 'bg-red-900/20 border-red-600' : 'bg-red-50 border-red-500';
+                        case 'NON_REALIZZATO': return this.darkMode ? 'bg-red-900/30 border-red-800' : 'bg-red-100 border-red-700';
+                        case 'OCCORRE_MATERIALE': return this.darkMode ? 'bg-orange-900/20 border-orange-600' : 'bg-orange-50 border-orange-500';
                         default: return this.darkMode ? 'bg-[#121212] border-gray-800' : 'bg-white border-gray-200';
                     }
                 },
@@ -236,14 +238,43 @@
                     if(r.materiale_list.length) { msg += `🛠 MAT:\n`; r.materiale_list.forEach(m => msg += `${m.checked?'✅':'⬜'} ${m.text}\n`); } msg += "--------------------\n"; } });
                     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                 },
+                
+                // EXPORT PDF CON COLORI E DATA
                 exportPDF() {
                     const { jsPDF } = window.jspdf; const doc = new jsPDF();
                     doc.setFillColor(6, 182, 212); doc.rect(0, 0, 210, 20, 'F');
                     doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT PRO", 10, 13);
                     doc.setFontSize(10); doc.text(`Squadra: ${this.currentSheet.team}`, 130, 9);
                     let dateFormatted = this.formatDateIT(this.currentSheet.date); doc.text(`Data: ${dateFormatted}`, 130, 15);
-                    const body = this.currentSheet.rows.map(r => { let matStr = r.materiale_list.map(m => `• ${m.text}`).join("\n"); let extraStr = r.extras.map(e => `${e.key}: ${e.value}`).join("\n"); let noteFull = r.note + (extraStr ? "\n\n" + extraStr : ""); return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr]; });
-                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note / Extra', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 30 }, 6: { cellWidth: 30 }, 7: { cellWidth: 30 } } });
+                    const body = this.currentSheet.rows.map(r => { 
+                        let matStr = r.materiale_list.map(m => `• ${m.text}`).join("\n"); 
+                        let extraStr = r.extras.map(e => `${e.key}: ${e.value}`).join("\n"); 
+                        let noteFull = r.note + (extraStr ? "\n\n" + extraStr : ""); 
+                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr]; 
+                    });
+                    
+                    doc.autoTable({ 
+                        head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note / Extra', 'Materiale']], 
+                        body: body, 
+                        startY: 25, theme: 'grid', 
+                        headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, 
+                        alternateRowStyles: { fillColor: [245, 245, 245] }, 
+                        styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, 
+                        columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 30 }, 6: { cellWidth: 30 }, 7: { cellWidth: 30 } },
+                        
+                        // LOGICA COLORI RIGHE PDF
+                        didParseCell: function(data) {
+                            if (data.section === 'body') {
+                                let row = data.row;
+                                let stato = row.raw[5]; // Indice colonna Stato
+                                if (stato === 'DA_SBLOCCARE') data.cell.styles.fillColor = [220, 252, 231]; // Green Light
+                                if (stato === 'OCCORRE_ASSISTENTE') data.cell.styles.fillColor = [254, 249, 195]; // Yellow Light
+                                if (stato === 'NEGATO_ACCESSO') data.cell.styles.fillColor = [254, 226, 226]; // Red Light
+                                if (stato === 'NON_REALIZZATO') data.cell.styles.fillColor = [254, 202, 202]; // Red Stronger
+                                if (stato === 'OCCORRE_MATERIALE') data.cell.styles.fillColor = [255, 237, 213]; // Orange Light
+                            }
+                        }
+                    });
                     doc.save(`Report_${this.currentSheet.name}_${this.currentSheet.team}.pdf`);
                 },
                 exportExcel() {
