@@ -3,81 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapportino Delta Impianti v36</title>
+    <title>Rapportino Delta Impianti v39</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
         body { background: #525659; font-family: 'Roboto', sans-serif; }
         
-        /* FOGLIO A4 */
+        /* FOGLIO A4 BLINDATO */
         .a4-page {
             width: 210mm;
-            height: 296mm; /* Altezza fissa */
+            height: 296mm; 
             background: white;
             margin: 0 auto;
-            padding: 5mm 10mm;
+            padding: 4mm 10mm 5mm 10mm; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            display: flex; flex-direction: column; justify-content: space-between;
-            position: relative; overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden; 
         }
 
         .r-input {
-            border: none; border-bottom: 1px dotted #ccc; width: 100%; padding: 2px 0;
-            outline: none; font-size: 11px; background: transparent; font-weight: 500; color: #000;
+            border: none;
+            border-bottom: 1px dotted #ccc;
+            width: 100%;
+            padding: 2px 0;
+            outline: none;
+            font-size: 11px;
+            background: transparent;
+            font-weight: 500;
+            color: #000;
         }
         .r-input:focus { border-bottom: 1px solid #000; background: #f5f5f5; }
-        textarea.r-input { resize: none; overflow: hidden; min-height: 20px; line-height: 1.2; display: block; }
 
-        /* CLASSE STAMPA: Sostituisce gli input con testo puro per il PDF */
-        .print-text {
-            font-size: 11px; white-space: pre-wrap; border-bottom: 1px dotted #ccc;
-            min-height: 18px; padding: 2px 0; color: #000; display: block; width: 100%;
+        textarea.r-input {
+            resize: none;
+            overflow: hidden;
+            min-height: 20px;
+            line-height: 1.2;
+            display: block;
         }
 
-        .signature-font { font-family: 'Dancing Script', cursive; font-size: 1.8rem; color: #000; line-height: 1; display: block; margin-bottom: 2px; }
+        /* CLASSE STAMPA */
+        .print-text {
+            font-size: 11px;
+            white-space: pre-wrap;
+            border-bottom: 1px dotted #ccc;
+            min-height: 18px;
+            padding: 2px 0;
+            color: #000;
+            display: block;
+            width: 100%;
+        }
+
+        .signature-font {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #000000;
+            line-height: 1;
+            display: block;
+            margin-bottom: 2px;
+        }
+
         th { font-weight: 700; font-size: 9px; padding-bottom: 2px; border-bottom: 1px solid #000; color: #333; }
         td { vertical-align: top; padding-top: 2px; padding-bottom: 2px; font-size: 10px; }
 
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; margin: 0; }
+            .a4-page { box-shadow: none; margin: 0; width: 100%; height: 100%; page-break-after: avoid; }
+        }
+        
         .btn-smart { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
         
-        .screen-wrapper { padding: 20px; display: flex; justify-content: center; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        @media (max-width: 800px) { .a4-page { min-width: 210mm; } .screen-wrapper { justify-content: flex-start; } }
+        .screen-wrapper { 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        @media (max-width: 800px) {
+            .a4-page { min-width: 210mm; }
+            .screen-wrapper { justify-content: flex-start; }
+        }
     </style>
 </head>
 <body>
 
     <div id="app">
-        <div class="fixed top-0 left-0 right-0 bg-gray-900 text-white p-2 flex justify-between items-center z-50 shadow-lg">
-            <div class="font-bold flex items-center gap-2 text-xs"><i class="ph ph-file-text text-yellow-400"></i> v36</div>
+        
+        <div class="fixed top-0 left-0 right-0 bg-gray-900 text-white p-2 flex justify-between items-center z-50 shadow-lg no-print">
+            <div class="font-bold flex items-center gap-2 text-xs">
+                <i class="ph ph-file-text text-yellow-400"></i> RAPPORTINO v39
+            </div>
+            
             <div class="flex gap-2 items-center overflow-x-auto">
-                <button @click="importSmartData" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded shadow text-[10px] flex items-center gap-1 btn-smart border border-blue-400 whitespace-nowrap"><i class="ph ph-magic-wand"></i> IMPORTA</button>
+                <button @click="importSmartData" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded shadow text-[10px] flex items-center gap-1 btn-smart border border-blue-400 whitespace-nowrap">
+                    <i class="ph ph-magic-wand"></i> IMPORTA
+                </button>
+                
                 <div class="w-px h-6 bg-gray-700 mx-1"></div>
+                
                 <a href="index.html" class="px-3 py-1 text-[10px] font-bold text-gray-300 hover:text-white border border-gray-600 rounded flex items-center whitespace-nowrap">INDIETRO</a>
-                <button @click="downloadRapportinoPDF" class="px-4 py-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded shadow text-[10px] flex items-center gap-1 whitespace-nowrap"><i class="ph ph-file-pdf"></i> SCARICA PDF</button>
+                
+                <div class="flex gap-1">
+                    <button @click="downloadFiberPDF" class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded shadow text-[10px] flex items-center gap-1 whitespace-nowrap">
+                        <i class="ph ph-table"></i> XLS
+                    </button>
+                    <button @click="downloadRapportinoPDF" class="px-4 py-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded shadow text-[10px] flex items-center gap-1 whitespace-nowrap">
+                        <i class="ph ph-file-pdf"></i> PDF A4
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="h-12"></div>
+        <div class="h-12 no-print"></div>
 
         <div class="screen-wrapper">
             <div class="a4-page" id="pdf-content">
+                
                 <div id="content-body">
                     <div class="flex justify-between items-end mb-2 border-b-2 border-black pb-2">
                         <div class="w-1/3 pr-4">
                             <div class="relative group cursor-pointer" @click="triggerLogoUpload">
                                 <div class="h-24 w-full flex items-center justify-start">
-                                    <img v-if="logoSrc" :src="logoSrc" class="h-full w-auto object-contain object-left">
-                                    <div v-else class="w-full h-16 bg-gray-100 border border-dashed border-gray-400 flex items-center justify-center text-gray-500 text-[10px] text-center">CARICA LOGO</div>
+                                    <img v-if="logoSrc" :src="logoSrc" class="h-full w-auto object-contain object-left" title="Clicca per cambiare logo">
+                                    <div v-else class="w-full h-16 bg-gray-100 border border-dashed border-gray-400 flex items-center justify-center text-gray-500 text-[10px] text-center">
+                                        CARICA LOGO
+                                    </div>
                                 </div>
                                 <input type="file" ref="logoInput" @change="handleLogo" class="hidden" accept="image/*">
                             </div>
                         </div>
+
                         <div class="w-2/3 text-right">
                             <h1 class="text-2xl font-black text-black uppercase tracking-tighter leading-none mb-1">Rapportino Giornaliero</h1>
                             <div class="flex justify-end items-center gap-2"><label class="text-[10px] font-bold text-gray-600 uppercase">Data:</label><input v-model="displayDate" class="text-right font-bold text-sm outline-none border-b border-black w-24 r-input"></div>
@@ -91,29 +163,46 @@
                     </div>
 
                     <div class="mb-3">
-                        <div class="bg-black text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center"><span>Squadra Operativa</span><button @click="addWorker" class="text-yellow-400 hover:text-white">+ AGGIUNGI</button></div>
+                        <div class="bg-black text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center"><span>Squadra Operativa</span><button @click="addWorker" class="text-yellow-400 hover:text-white no-print">+ AGGIUNGI</button></div>
                         <table class="w-full text-xs border-collapse">
-                            <thead><tr class="text-left text-gray-600 uppercase border-b"><th class="w-24">Ruolo</th><th>Nome e Cognome</th><th class="w-10 text-center">Ord.</th><th class="w-10 text-center">Str.</th><th class="w-10 text-center">Viag.</th><th class="w-16 text-center">Note</th><th class="w-4"></th></tr></thead>
+                            <thead><tr class="text-left text-gray-600 uppercase border-b"><th class="w-24">Ruolo</th><th>Nome e Cognome</th><th class="w-10 text-center">Ord.</th><th class="w-10 text-center">Str.</th><th class="w-10 text-center">Viag.</th><th class="w-16 text-center">Note</th><th class="w-4 no-print"></th></tr></thead>
                             <tbody>
                                 <tr v-for="(worker, idx) in workers" :key="idx">
-                                    <td><select v-model="worker.role" class="outline-none bg-transparent font-bold text-black w-full text-[10px]"><option value="CS">Caposquadra</option><option value="OP">Tecnico</option><option value="GI">Giuntista</option><option value="IM">Impiantista</option><option value="PC">Posacavi</option><option value="DIP">Dipendente</option></select></td>
-                                    <td><input v-model="worker.name" class="r-input" placeholder="Nome..."></td><td class="text-center"><input type="number" v-model="worker.h_ord" class="r-input text-center"></td><td class="text-center"><input type="number" v-model="worker.h_str" class="r-input text-center"></td><td class="text-center"><input type="number" v-model="worker.h_vg" class="r-input text-center"></td><td><input v-model="worker.notes" class="r-input text-[10px]" placeholder="-"></td><td class="text-center"><button @click="workers.splice(idx, 1)" class="text-red-500 hover:text-red-700">×</button></td>
+                                    <td>
+                                        <select v-model="worker.role" class="outline-none bg-transparent font-bold text-black w-full text-[10px]">
+                                            <option value="CS">Caposquadra</option>
+                                            <option value="OP">Tecnico</option>
+                                            <option value="GI">Giuntista</option>
+                                            <option value="IM">Impiantista</option>
+                                            <option value="PC">Posacavi</option>
+                                            <option value="DIP">Dipendente</option>
+                                        </select>
+                                    </td>
+                                    <td><input v-model="worker.name" class="r-input" placeholder="Nome..."></td><td class="text-center"><input type="number" v-model="worker.h_ord" class="r-input text-center"></td><td class="text-center"><input type="number" v-model="worker.h_str" class="r-input text-center"></td><td class="text-center"><input type="number" v-model="worker.h_vg" class="r-input text-center"></td><td><input v-model="worker.notes" class="r-input text-[10px]" placeholder="-"></td><td class="text-center no-print"><button @click="workers.splice(idx, 1)" class="text-red-500 hover:text-red-700">×</button></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
                     <div>
-                        <div class="bg-gray-800 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center"><span>Descrizione Attività</span><div class="flex gap-2"><button @click="importSmartData" class="text-blue-200 hover:text-white font-bold px-1 rounded">AGGIORNA</button><button @click="addWork" class="text-white hover:text-yellow-400">+ RIGA</button></div></div>
+                        <div class="bg-gray-800 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center"><span>Descrizione Attività</span><div class="no-print flex gap-2"><button @click="importSmartData" class="text-blue-200 hover:text-white font-bold px-1 rounded">AGGIORNA</button><button @click="addWork" class="text-white hover:text-yellow-400">+ RIGA</button></div></div>
                         <table class="w-full text-xs border-collapse">
-                            <thead><tr class="text-left text-gray-600 uppercase border-b-2 border-black"><th class="w-6">N.</th><th class="w-1/3">Indirizzo (Paese)</th><th>Note Lavorazione</th><th class="w-10 text-center">Q.tà</th><th class="w-4"></th></tr></thead>
+                            <thead>
+                                <tr class="text-left text-gray-600 uppercase border-b-2 border-black">
+                                    <th class="w-6">N.</th>
+                                    <th class="w-1/3">Indirizzo (Località)</th>
+                                    <th>Note Lavorazione</th>
+                                    <th class="w-10 text-center">Q.tà</th>
+                                    <th class="w-4 no-print"></th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 <tr v-for="(work, idx) in works" :key="idx" class="align-top">
                                     <td class="font-bold text-gray-500 pt-2 text-[10px]">{{ idx + 1 }}</td>
                                     <td class="pr-2"><textarea v-model="work.address" rows="1" class="r-input font-bold uppercase text-[10px]" placeholder="Via..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
                                     <td class="pr-2"><textarea v-model="work.desc" rows="1" class="r-input text-black text-[11px]" placeholder="" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
                                     <td class="text-center pt-2"><input type="number" v-model="work.qty" class="r-input text-center font-bold"></td>
-                                    <td class="text-center pt-2"><button @click="works.splice(idx, 1)" class="text-red-500 hover:text-red-700">×</button></td>
+                                    <td class="text-center no-print pt-2"><button @click="works.splice(idx, 1)" class="text-red-500 hover:text-red-700">×</button></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -124,11 +213,34 @@
                     <div class="grid grid-cols-4 gap-4 text-xs mb-3">
                         <div class="col-span-2"><label class="text-[9px] text-gray-600 uppercase font-bold">Mezzo</label><div class="flex gap-2"><input v-model="mezzo" class="r-input" placeholder="Modello..."><input v-model="targa" class="r-input w-20 uppercase" placeholder="Targa"></div></div>
                         <div><label class="text-[9px] text-gray-600 uppercase font-bold">KM</label><input type="number" v-model="km" class="r-input" placeholder="0"></div>
-                        <div class="relative"><label class="text-[9px] text-gray-600 uppercase font-bold flex items-center gap-2">Rifornimento <input type="checkbox" v-model="showFuel"></label><div v-if="showFuel" class="flex gap-2 mt-1"><input v-model="fuelLitres" class="r-input" placeholder="Litri"><input v-model="fuelEuro" class="r-input" placeholder="€"></div></div>
+                        
+                        <div class="relative flex flex-col justify-start">
+                            <label class="text-[9px] text-gray-600 uppercase font-bold flex items-center gap-2">
+                                Rifornimento <input type="checkbox" v-model="showFuel" class="no-print">
+                            </label>
+                            
+                            <div v-if="showFuel" class="flex gap-2 mt-1">
+                                <input v-model="fuelLitres" class="r-input w-12" placeholder="Litri">
+                                <input v-model="fuelEuro" class="r-input w-12" placeholder="€">
+                            </div>
+                            </div>
                     </div>
+
                     <div class="grid grid-cols-2 gap-10 items-end">
-                        <div><div class="border border-black flex text-center"><div class="flex-1 border-r border-black p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Assist.</span></div><div class="flex-1 border-r border-black p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Ammin.</span></div><div class="flex-1 p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Contab.</span></div></div></div>
-                        <div class="relative"><div class="text-[9px] text-gray-600 uppercase font-bold mb-1">Firma Caposquadra</div><input v-model="signatureName" class="w-full text-center outline-none border-none text-gray-400 text-xs mb-1" placeholder="Firma qui..."><div class="h-12 flex items-end justify-center border-b border-black relative"><span v-if="signatureName" class="signature-font absolute bottom-1 left-0 right-0 text-center">{{ signatureName }}</span></div></div>
+                        <div>
+                            <div class="border border-black flex text-center">
+                                <div class="flex-1 border-r border-black p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Assist.</span></div>
+                                <div class="flex-1 border-r border-black p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Ammin.</span></div>
+                                <div class="flex-1 p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Contab.</span></div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="text-[9px] text-gray-600 uppercase font-bold mb-1">Firma Caposquadra</div>
+                            <input v-model="signatureName" class="w-full text-center outline-none border-none text-gray-400 text-xs no-print mb-1" placeholder="Firma qui...">
+                            <div class="h-12 flex items-end justify-center border-b border-black relative">
+                                <span v-if="signatureName" class="signature-font absolute bottom-1 left-0 right-0 text-center">{{ signatureName }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -137,6 +249,7 @@
 
     <script>
         const { createApp } = Vue;
+
         createApp({
             data() {
                 return {
@@ -146,7 +259,10 @@
                     cliente: 'Open Fiber', localita: '', assistente: '', 
                     workers: [{ role: 'CS', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }, { role: 'DIP', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }],
                     works: [ { address: '', desc: '', qty: '' } ],
-                    mezzo: '', targa: '', km: '', showFuel: false, fuelLitres: '', fuelEuro: '', signatureName: ''
+                    mezzo: '', targa: '', km: '', 
+                    showFuel: false, 
+                    fuelLitres: '', fuelEuro: '', 
+                    signatureName: ''
                 }
             },
             methods: {
@@ -203,20 +319,31 @@
                     const element = document.getElementById('pdf-content');
                     window.scrollTo(0,0);
 
-                    // TRASFORMA INPUT IN TESTO PER IL PDF (Così non taglia e non fa pagine bianche)
                     const inputs = element.querySelectorAll('input, textarea, select');
                     const originalStates = [];
                     
-                    // Nascondi pulsanti di controllo
                     const btns = document.querySelectorAll('button');
                     btns.forEach(b => b.style.opacity = '0');
 
                     inputs.forEach((input) => {
                         originalStates.push({ element: input, display: input.style.display });
+                        
                         const textDiv = document.createElement('div');
-                        textDiv.innerText = input.value;
+                        
+                        if (input.tagName === 'SELECT') {
+                            textDiv.innerText = input.options[input.selectedIndex].text;
+                        } else {
+                            textDiv.innerText = input.value;
+                        }
+
+                        if(input.type === 'checkbox') return;
+
                         textDiv.className = input.className + ' print-text';
-                        if(input.tagName === 'TEXTAREA') textDiv.style.minHeight = Math.max(20, input.scrollHeight) + 'px';
+                        
+                        if(input.tagName === 'TEXTAREA') {
+                            textDiv.style.minHeight = Math.max(20, input.scrollHeight) + 'px';
+                        }
+                        
                         input.style.display = 'none';
                         input.parentNode.insertBefore(textDiv, input);
                     });
@@ -225,7 +352,7 @@
                         margin: 0, 
                         filename: `Rapportino_${cleanDate}.pdf`, 
                         image: { type: 'jpeg', quality: 0.99 }, 
-                        html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, // No windowWidth forzato per evitare bug PC
+                        html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
                         pagebreak: { mode: 'avoid-all' } 
                     };
@@ -233,13 +360,34 @@
                     try {
                         await html2pdf().set(opt).from(element).save();
                     } finally {
-                        // Ripristina tutto
                         setTimeout(() => {
                             document.querySelectorAll('.print-text').forEach(el => el.remove());
                             inputs.forEach((input, i) => input.style.display = originalStates[i].display);
                             btns.forEach(b => b.style.opacity = '1');
                         }, 500);
                     }
+                },
+
+                downloadFiberPDF() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const savedSheets = localStorage.getItem('fiber_sheets');
+                    if (!savedSheets) return alert("Nessun dato Fiber Report trovato.");
+                    const sheets = JSON.parse(savedSheets);
+                    let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1];
+                    doc.setFillColor(6, 182, 212); doc.rect(0, 0, 210, 20, 'F');
+                    doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT PRO", 10, 13);
+                    doc.setFontSize(10); doc.text(`Squadra: ${targetSheet.team}`, 130, 9);
+                    let parts = targetSheet.date.split('-');
+                    let dateIT = targetSheet.date.includes('-') ? `${parts[2]}/${parts[1]}/${parts[0]}` : targetSheet.date;
+                    doc.text(`Data: ${dateIT}`, 130, 15);
+                    const body = targetSheet.rows.map(r => {
+                        let matStr = r.materiale_list ? r.materiale_list.map(m => `• ${m.text}`).join("\n") : "";
+                        let noteFull = r.note || ""; 
+                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr];
+                    });
+                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 35 }, 6: { cellWidth: 30 }, 7: { cellWidth: 30 } } });
+                    doc.save(`FiberReport_${targetSheet.date}.pdf`);
                 }
             }
         }).mount('#app');
