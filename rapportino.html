@@ -3,283 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapportino 2026</title>
+    <title>Rapportino Tecnico v41</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
 
     <style>
-        body { background: #e5e7eb; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        body { background: #111827; font-family: 'Inter', sans-serif; }
         
-        /* FOGLIO A4 "SWISS STYLE" */
+        /* FOGLIO A4 "ENGINEERING STYLE" */
         .a4-page {
             width: 210mm;
             height: 296mm; 
             background: white;
-            margin: 20px auto;
-            padding: 12mm 15mm; /* Margini eleganti */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            /* Margini minimi per massimizzare lo spazio */
+            padding: 8mm 10mm; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
             position: relative;
             overflow: hidden; 
         }
 
-        /* INPUT INVISIBILI MA ELEGANTI */
+        /* INPUT INVISIBILI STYLE */
         .r-input {
-            width: 100%;
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid #e5e7eb; /* Grigio chiarissimo */
-            padding: 4px 0;
-            outline: none;
-            font-size: 11px;
-            font-weight: 500;
-            color: #111827;
-            transition: border 0.3s;
+            width: 100%; background: transparent; border: none; outline: none;
+            font-size: 11px; font-weight: 600; color: #111827;
+            padding: 0; margin: 0;
         }
-        .r-input:focus { border-bottom: 1px solid #000; }
-        .r-input::placeholder { color: #9ca3af; font-weight: 300; }
-
+        .r-input::placeholder { color: #d1d5db; font-weight: 400; }
+        
+        /* TEXTAREA CHE SI ADATTA */
         textarea.r-input {
-            resize: none;
-            overflow: hidden;
-            min-height: 24px;
-            line-height: 1.4;
-            display: block;
+            resize: none; overflow: hidden; min-height: 18px; line-height: 1.3; display: block;
         }
 
-        /* TIPOGRAFIA */
-        .label-tiny {
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #6b7280; /* Grigio medio */
-            font-weight: 600;
-            margin-bottom: 2px;
-            display: block;
+        /* SEZIONI MODULARI */
+        .tech-box {
+            background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px;
+            padding: 6px 8px; margin-bottom: 6px;
+        }
+        .tech-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 8px; 
+            text-transform: uppercase; color: #6b7280; display: block; margin-bottom: 2px;
         }
 
-        .section-title {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #000;
-            border-bottom: 2px solid #000;
-            padding-bottom: 4px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: end;
+        /* TABELLA TECNICA */
+        .tech-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        .tech-table th {
+            text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 8px;
+            color: #6b7280; text-transform: uppercase; padding: 4px 0;
+            border-bottom: 2px solid #111827;
         }
+        .tech-table td {
+            padding: 6px 4px; border-bottom: 1px solid #f3f4f6; vertical-align: top;
+        }
+        .tech-table tr:last-child td { border-bottom: none; }
 
-        /* TABELLA MINIMAL */
-        .min-table { width: 100%; border-collapse: collapse; }
-        .min-table th {
-            text-align: left;
-            font-size: 9px;
-            font-weight: 600;
-            color: #6b7280;
-            padding: 4px 0;
-            border-bottom: 1px solid #e5e7eb;
-            text-transform: uppercase;
-        }
-        .min-table td {
-            font-size: 11px;
-            padding: 6px 0;
-            border-bottom: 1px solid #f3f4f6;
-            vertical-align: top;
-            color: #1f2937;
-        }
-        .min-table tr:last-child td { border-bottom: none; }
+        /* DATI MONOSPACE (Numeri, Targhe) */
+        .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* CLASSE STAMPA PDF */
+        /* CLASSE STAMPA PER PDF (Testo invece di Input) */
         .print-text {
-            font-size: 11px;
-            line-height: 1.4;
-            white-space: pre-wrap;
-            color: #000;
-            display: block;
-            width: 100%;
+            font-size: 11px; font-weight: 600; color: #000; white-space: pre-wrap; line-height: 1.3;
         }
 
-        .signature-font {
-            font-family: 'Dancing Script', cursive;
-            font-size: 2rem;
-            color: #000;
-            line-height: 1;
-            display: block;
-        }
+        .signature-font { font-family: 'Dancing Script', cursive; font-size: 1.8rem; line-height: 1; }
+
+        /* STATUS BAR HEADER */
+        .header-bar { border-left: 4px solid #2563eb; padding-left: 10px; }
 
         @media print {
             .no-print { display: none !important; }
             body { background: white; margin: 0; }
-            .a4-page { box-shadow: none; margin: 0; width: 100%; height: 100%; page-break-after: avoid; }
+            .a4-page { margin: 0; box-shadow: none; height: 100%; page-break-after: avoid; }
         }
         
-        .screen-wrapper { padding: 40px 20px; display: flex; justify-content: center; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        @media (max-width: 800px) { .a4-page { min-width: 210mm; } .screen-wrapper { justify-content: flex-start; padding: 10px; } }
+        .screen-wrapper { padding: 40px 10px; display: flex; justify-content: center; overflow-x: auto; }
+        @media (max-width: 800px) { .a4-page { min-width: 210mm; } .screen-wrapper { justify-content: flex-start; } }
     </style>
 </head>
 <body>
 
     <div id="app">
-        
-        <div class="fixed top-0 left-0 right-0 bg-[#111827] text-white px-4 py-3 flex justify-between items-center z-50 shadow-md no-print">
-            <div class="font-bold flex items-center gap-3 text-sm tracking-wide">
-                <div class="w-2 h-2 rounded-full bg-green-400"></div>
-                RAPPORTINO v40
+        <div class="fixed top-0 left-0 right-0 bg-[#0f172a] text-white px-4 py-2 flex justify-between items-center z-50 border-b border-gray-800 no-print">
+            <div class="font-bold flex items-center gap-2 text-xs tracking-widest font-mono">
+                <span class="text-blue-500">///</span> FIBER REPORT v41
             </div>
-            
-            <div class="flex gap-3 items-center">
-                <button @click="importSmartData" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-md text-xs transition-colors flex items-center gap-2">
-                    <i class="ph ph-magic-wand"></i> IMPORTA
-                </button>
-                
-                <div class="w-px h-6 bg-gray-700"></div>
-                
-                <div class="flex gap-2">
-                    <button @click="downloadFiberPDF" class="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-md text-xs transition-colors">
-                        XLS / REPORT
-                    </button>
-                    <button @click="downloadRapportinoPDF" class="px-4 py-1.5 bg-white text-black hover:bg-gray-100 font-bold rounded-md text-xs transition-colors shadow-sm flex items-center gap-2">
-                        <i class="ph ph-download-simple"></i> PDF A4
+            <div class="flex gap-3">
+                <button @click="importSmartData" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded text-[10px] uppercase tracking-wide">Importa Dati</button>
+                <a href="index.html" class="px-3 py-1 border border-gray-600 text-gray-300 hover:text-white rounded text-[10px] uppercase tracking-wide">Indietro</a>
+                <div class="flex gap-1">
+                    <button @click="downloadFiberPDF" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded text-[10px] uppercase">XLS</button>
+                    <button @click="downloadRapportinoPDF" class="px-4 py-1 bg-white text-black hover:bg-gray-200 font-bold rounded text-[10px] uppercase flex items-center gap-2">
+                        <i class="ph ph-file-pdf"></i> PDF A4
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="h-16 no-print"></div>
+        <div class="h-12 no-print"></div>
 
         <div class="screen-wrapper">
             <div class="a4-page" id="pdf-content">
                 
-                <div id="content-body" class="flex-grow">
-                    
-                    <div class="flex justify-between items-start mb-8">
+                <div class="flex-grow">
+                    <div class="flex justify-between items-start mb-6">
                         <div class="w-1/3">
                             <div class="relative group cursor-pointer" @click="triggerLogoUpload">
-                                <div class="h-20 w-full flex items-center justify-start">
+                                <div class="h-16 w-full flex items-center justify-start">
                                     <img v-if="logoSrc" :src="logoSrc" class="h-full w-auto object-contain object-left">
-                                    <div v-else class="w-32 h-12 bg-gray-50 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-[10px]">
-                                        LOGO AZIENDA
-                                    </div>
+                                    <div v-else class="w-32 h-10 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-[9px] mono">LOGO</div>
                                 </div>
                                 <input type="file" ref="logoInput" @change="handleLogo" class="hidden" accept="image/*">
                             </div>
                         </div>
-
-                        <div class="text-right">
-                            <h1 class="text-3xl font-bold text-gray-900 tracking-tight leading-none mb-1">Rapportino Giornaliero</h1>
-                            <div class="flex flex-col items-end gap-1 mt-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="label-tiny">DATA INTERVENTO</span>
-                                    <input v-model="displayDate" class="text-right font-mono font-medium text-sm outline-none border-b border-gray-200 w-24 bg-transparent">
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="label-tiny">CLIENTE</span>
-                                    <input v-model="cliente" class="text-right font-medium text-sm outline-none border-b border-gray-200 w-32 bg-transparent" placeholder="Cliente...">
-                                </div>
-                            </div>
+                        <div class="text-right header-bar">
+                            <h1 class="text-2xl font-black text-gray-900 uppercase tracking-tighter leading-none">Rapporto Giornaliero</h1>
+                            <div class="text-[10px] text-gray-500 font-mono mt-1">REF: INTERVENTO TECNICO</div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-6 mb-8">
-                        <div>
-                            <span class="label-tiny">LOCALITÀ / CANTIERI (ELENCO COMUNI)</span>
-                            <input v-model="localita" class="r-input text-sm uppercase" placeholder="Es. Boscotrecase, Grumo Nevano...">
+                    <div class="grid grid-cols-12 gap-2 mb-4">
+                        <div class="col-span-3 tech-box">
+                            <span class="tech-label">DATA INTERVENTO</span>
+                            <input v-model="displayDate" class="r-input mono text-sm">
                         </div>
-                        <div>
-                            <span class="label-tiny">ASSISTENTE DI RIFERIMENTO</span>
-                            <input v-model="assistente" class="r-input text-sm" placeholder="Nome Cognome...">
+                        <div class="col-span-3 tech-box">
+                            <span class="tech-label">CLIENTE / COMMITTENTE</span>
+                            <input v-model="cliente" class="r-input text-sm" placeholder="Es. Open Fiber">
+                        </div>
+                        <div class="col-span-6 tech-box">
+                            <span class="tech-label">ASSISTENTE DI RIFERIMENTO</span>
+                            <input v-model="assistente" class="r-input text-sm" placeholder="Nome Cognome">
                         </div>
                     </div>
 
-                    <div class="mb-8">
-                        <div class="section-title">
-                            <span>Squadra Operativa</span>
-                            <button @click="addWorker" class="text-[9px] text-blue-600 hover:text-blue-800 no-print font-medium">+ AGGIUNGI TECNICO</button>
+                    <div class="tech-box mb-6">
+                        <span class="tech-label">LOCALITÀ / CANTIERI (ELENCO COMUNI)</span>
+                        <input v-model="localita" class="r-input uppercase" placeholder="INSERIRE COMUNI...">
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between items-end border-b border-gray-300 mb-2 pb-1">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-900">01. Squadra Operativa</span>
+                            <button @click="addWorker" class="text-[9px] text-blue-600 font-bold no-print">+ ADD</button>
                         </div>
-                        <table class="min-table">
-                            <thead>
-                                <tr>
-                                    <th class="w-24">Ruolo</th>
-                                    <th>Tecnico</th>
-                                    <th class="w-12 text-center">Ord.</th>
-                                    <th class="w-12 text-center">Str.</th>
-                                    <th class="w-12 text-center">Viag.</th>
-                                    <th class="w-24">Note</th>
-                                    <th class="w-6 no-print"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(worker, idx) in workers" :key="idx">
-                                    <td>
-                                        <select v-model="worker.role" class="outline-none bg-transparent font-medium text-xs text-gray-900 w-full cursor-pointer">
-                                            <option value="CS">Caposquadra</option>
-                                            <option value="OP">Tecnico</option>
-                                            <option value="GI">Giuntista</option>
-                                            <option value="IM">Impiantista</option>
-                                            <option value="PC">Posacavi</option>
-                                            <option value="DIP">Dipendente</option>
-                                        </select>
-                                    </td>
-                                    <td><input v-model="worker.name" class="r-input" placeholder="Nome..."></td>
-                                    <td class="text-center"><input type="number" v-model="worker.h_ord" class="r-input text-center font-mono"></td>
-                                    <td class="text-center"><input type="number" v-model="worker.h_str" class="r-input text-center font-mono"></td>
-                                    <td class="text-center"><input type="number" v-model="worker.h_vg" class="r-input text-center font-mono"></td>
-                                    <td><input v-model="worker.notes" class="r-input" placeholder="-"></td>
-                                    <td class="text-center no-print">
-                                        <button @click="workers.splice(idx, 1)" class="text-gray-400 hover:text-red-500">×</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="bg-gray-50 border border-gray-200 rounded p-2">
+                            <table class="tech-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-24">RUOLO</th>
+                                        <th>TECNICO</th>
+                                        <th class="w-10 text-center">ORD</th>
+                                        <th class="w-10 text-center">STR</th>
+                                        <th class="w-10 text-center">VIG</th>
+                                        <th class="w-24">NOTE</th>
+                                        <th class="w-4 no-print"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(worker, idx) in workers" :key="idx">
+                                        <td>
+                                            <select v-model="worker.role" class="bg-transparent font-bold text-[10px] text-gray-900 w-full outline-none">
+                                                <option value="CS">CAPOSQUADRA</option>
+                                                <option value="OP">TECNICO</option>
+                                                <option value="GI">GIUNTISTA</option>
+                                                <option value="IM">IMPIANTISTA</option>
+                                                <option value="PC">POSACAVI</option>
+                                                <option value="DIP">DIPENDENTE</option>
+                                            </select>
+                                        </td>
+                                        <td><input v-model="worker.name" class="r-input" placeholder="..."></td>
+                                        <td class="text-center"><input type="number" v-model="worker.h_ord" class="r-input text-center mono"></td>
+                                        <td class="text-center"><input type="number" v-model="worker.h_str" class="r-input text-center mono"></td>
+                                        <td class="text-center"><input type="number" v-model="worker.h_vg" class="r-input text-center mono"></td>
+                                        <td><input v-model="worker.notes" class="r-input" placeholder="-"></td>
+                                        <td class="text-center no-print"><button @click="workers.splice(idx, 1)" class="text-red-400">×</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <div class="mb-4">
-                        <div class="section-title">
-                            <span>Dettaglio Lavorazioni</span>
-                            <div class="flex gap-3 no-print">
-                                <button @click="importSmartData" class="text-[9px] text-blue-600 hover:text-blue-800 font-medium">AGGIORNA DATI</button>
-                                <button @click="addWork" class="text-[9px] text-green-600 hover:text-green-800 font-medium">+ AGGIUNGI RIGA</button>
+                        <div class="flex justify-between items-end border-b border-gray-300 mb-2 pb-1">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-900">02. Dettaglio Lavorazioni</span>
+                            <div class="flex gap-2 no-print">
+                                <button @click="importSmartData" class="text-[9px] text-blue-600 font-bold">AGGIORNA</button>
+                                <button @click="addWork" class="text-[9px] text-green-600 font-bold">+ RIGA</button>
                             </div>
                         </div>
-                        <table class="min-table">
+                        <table class="tech-table">
                             <thead>
                                 <tr>
                                     <th class="w-8">N.</th>
-                                    <th class="w-1/3">Indirizzo (Località)</th>
-                                    <th>Descrizione Intervento / Note</th>
-                                    <th class="w-12 text-center">Q.tà</th>
-                                    <th class="w-6 no-print"></th>
+                                    <th class="w-1/3">INDIRIZZO (LOCALITÀ)</th>
+                                    <th>DESCRIZIONE / NOTE TECNICHE</th>
+                                    <th class="w-10 text-center">Q.TÀ</th>
+                                    <th class="w-4 no-print"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="(work, idx) in works" :key="idx">
-                                    <td class="font-bold text-gray-400 text-xs">{{ idx + 1 }}</td>
-                                    
-                                    <td class="pr-4">
-                                        <textarea v-model="work.address" rows="1" class="r-input font-bold text-xs uppercase" placeholder="VIA..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                    <td class="font-bold text-gray-400 mono">{{ idx + 1 }}</td>
+                                    <td class="pr-3">
+                                        <textarea v-model="work.address" rows="1" class="r-input font-bold uppercase" placeholder="VIA..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
                                     </td>
-                                    
-                                    <td class="pr-4">
-                                        <textarea v-model="work.desc" rows="1" class="r-input text-gray-700" placeholder="Descrizione..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                    <td class="pr-3">
+                                        <textarea v-model="work.desc" rows="1" class="r-input text-gray-700" placeholder="Dettagli..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
                                     </td>
-                                    
                                     <td class="text-center">
-                                        <input type="number" v-model="work.qty" class="r-input text-center font-mono font-bold">
+                                        <input type="number" v-model="work.qty" class="r-input text-center font-bold mono">
                                     </td>
                                     <td class="text-center no-print">
-                                        <button @click="works.splice(idx, 1)" class="text-gray-400 hover:text-red-500">×</button>
+                                        <button @click="works.splice(idx, 1)" class="text-red-400">×</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -287,63 +230,61 @@
                     </div>
                 </div>
 
-                <div id="content-footer" class="mt-auto pt-6 border-t border-gray-800">
-                    
-                    <div class="flex justify-between items-start mb-8 text-xs">
-                        <div class="flex gap-8">
-                            <div>
-                                <span class="label-tiny">MEZZO / FURGONE</span>
-                                <div class="flex gap-2">
-                                    <input v-model="mezzo" class="r-input w-24" placeholder="Modello">
-                                    <input v-model="targa" class="r-input w-20 uppercase font-mono" placeholder="TARGA">
-                                </div>
+                <div class="mt-auto border-t-2 border-gray-900 pt-4">
+                    <div class="flex justify-between items-start mb-6">
+                        
+                        <div class="flex gap-4">
+                            <div class="tech-box w-32">
+                                <span class="tech-label">MEZZO</span>
+                                <input v-model="mezzo" class="r-input" placeholder="Modello">
                             </div>
-                            <div>
-                                <span class="label-tiny">KM PERCORSI</span>
-                                <input type="number" v-model="km" class="r-input w-16 font-mono" placeholder="0">
+                            <div class="tech-box w-24">
+                                <span class="tech-label">TARGA</span>
+                                <input v-model="targa" class="r-input uppercase mono" placeholder="TARGA">
+                            </div>
+                            <div class="tech-box w-20">
+                                <span class="tech-label">KM</span>
+                                <input type="number" v-model="km" class="r-input mono text-right" placeholder="0">
                             </div>
                         </div>
 
-                        <div class="flex flex-col items-end min-w-[120px]">
+                        <div class="flex flex-col items-end">
                             <label class="flex items-center gap-2 cursor-pointer no-print mb-1">
-                                <span class="label-tiny text-blue-600">RIFORNIMENTO?</span>
+                                <span class="tech-label text-blue-600">RIFORNIMENTO</span>
                                 <input type="checkbox" v-model="showFuel" class="accent-black">
                             </label>
                             
-                            <div v-if="showFuel" class="flex gap-3 bg-gray-50 px-2 py-1 rounded border border-gray-200">
-                                <div>
-                                    <span class="label-tiny">LITRI</span>
-                                    <input v-model="fuelLitres" class="r-input w-12 text-center font-mono">
+                            <div v-if="showFuel" class="flex gap-2">
+                                <div class="tech-box w-16">
+                                    <span class="tech-label">LITRI</span>
+                                    <input v-model="fuelLitres" class="r-input text-center mono">
                                 </div>
-                                <div>
-                                    <span class="label-tiny">EURO</span>
-                                    <input v-model="fuelEuro" class="r-input w-12 text-center font-mono">
+                                <div class="tech-box w-16">
+                                    <span class="tech-label">EURO</span>
+                                    <input v-model="fuelEuro" class="r-input text-center mono">
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-12 items-end">
-                        
-                        <div class="border border-gray-300 flex text-center rounded overflow-hidden">
-                            <div class="flex-1 border-r border-gray-300 p-2 flex flex-col justify-between h-16 bg-gray-50/50">
-                                <span class="label-tiny">VISTO ASSISTENTE</span>
+                    <div class="grid grid-cols-2 gap-10">
+                        <div class="border border-gray-300 rounded flex text-center bg-gray-50 h-16">
+                            <div class="flex-1 border-r border-gray-300 p-1 flex flex-col justify-between">
+                                <span class="tech-label">VISTO ASSISTENTE</span>
                             </div>
-                            <div class="flex-1 border-r border-gray-300 p-2 flex flex-col justify-between h-16 bg-gray-50/50">
-                                <span class="label-tiny">VISTO AMMIN.</span>
+                            <div class="flex-1 border-r border-gray-300 p-1 flex flex-col justify-between">
+                                <span class="tech-label">VISTO AMMIN.</span>
                             </div>
-                            <div class="flex-1 p-2 flex flex-col justify-between h-16 bg-gray-50/50">
-                                <span class="label-tiny">VISTO CONTAB.</span>
+                            <div class="flex-1 p-1 flex flex-col justify-between">
+                                <span class="tech-label">VISTO CONTAB.</span>
                             </div>
                         </div>
 
-                        <div class="relative">
-                            <span class="label-tiny mb-2">FIRMA CAPOSQUADRA</span>
-                            <div class="h-16 border-b border-gray-800 flex items-end justify-center relative">
-                                <input v-model="signatureName" class="absolute inset-0 opacity-0 cursor-text z-10 w-full h-full text-center" placeholder="Clicca per firmare">
-                                <span v-if="!signatureName" class="text-gray-300 text-xs mb-2 no-print">Clicca qui per firmare</span>
-                                <span v-else class="signature-font absolute bottom-2 w-full text-center">{{ signatureName }}</span>
-                            </div>
+                        <div class="relative border-b border-gray-900 h-16 flex items-end justify-center">
+                            <span class="tech-label absolute top-0 left-0">FIRMA CAPOSQUADRA</span>
+                            <input v-model="signatureName" class="absolute inset-0 opacity-0 cursor-text z-10 w-full h-full text-center" placeholder="Firma">
+                            <span v-if="!signatureName" class="text-gray-300 text-xs mb-2 no-print select-none">Clicca per firmare</span>
+                            <span v-else class="signature-font mb-1">{{ signatureName }}</span>
                         </div>
                     </div>
                 </div>
@@ -375,7 +316,7 @@
                 
                 importSmartData() {
                     const savedSheets = localStorage.getItem('fiber_sheets');
-                    if (!savedSheets) { alert("Nessun dato trovato!"); return; }
+                    if (!savedSheets) { alert("Nessun dato!"); return; }
                     const sheets = JSON.parse(savedSheets);
                     let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1]; 
                     
@@ -399,7 +340,6 @@
                             else finalDesc += ` - Permuta: ${r.permuta}`;
                         }
                         if(lowerNote.includes("giunzion") && r.elemento_ottico) {
-                            // Check intelligente duplicati (PTA, PTE, ecc)
                             let words = lowerNote.split(/\s+/);
                             let idx = words.findIndex(w => w.includes("giunzion"));
                             let nextWords = "";
@@ -413,44 +353,44 @@
                     });
                     this.localita = Array.from(uniqueCities).join(', ');
                     this.displayDate = new Date().toLocaleDateString('it-IT');
-                    alert("Importazione Completata!");
+                    alert("Dati Importati!");
                 },
 
                 async downloadRapportinoPDF() {
                     const element = document.getElementById('pdf-content');
                     window.scrollTo(0,0);
                     
-                    // NOME FILE CORRETTO: Rapportino_03-02-2026.pdf
-                    let dateForFilename = this.displayDate.replace(/\//g, '-'); 
+                    let dateFilename = this.displayDate.replace(/\//g, '-'); 
 
                     // 1. TRASFORMAZIONE INPUT -> TESTO
                     const inputs = element.querySelectorAll('input, textarea, select');
                     const originalStates = [];
-                    const btns = document.querySelectorAll('button'); // Nascondi tasti "+" e "x"
-                    btns.forEach(b => b.style.opacity = '0');
+                    const btns = document.querySelectorAll('.no-print');
+                    btns.forEach(b => b.style.opacity = '0'); // Nascondi bottoni
 
                     inputs.forEach((input) => {
-                        // Salva stato
                         originalStates.push({ element: input, display: input.style.display });
-                        
-                        // Crea testo
                         const textDiv = document.createElement('div');
-                        if (input.tagName === 'SELECT') textDiv.innerText = input.options[input.selectedIndex].text;
-                        else textDiv.innerText = input.value;
+                        
+                        if (input.tagName === 'SELECT') {
+                            textDiv.innerText = input.options[input.selectedIndex].text; // PRENDI IL TESTO DEL RUOLO (CAPOSQUADRA)
+                        } else {
+                            textDiv.innerText = input.value;
+                        }
 
-                        // Se checkbox (rifornimento) ignoriamo, se non spuntato il div padre è nascosto da v-if
                         if(input.type === 'checkbox') return;
 
                         textDiv.className = input.className + ' print-text';
-                        if(input.tagName === 'TEXTAREA') textDiv.style.minHeight = Math.max(24, input.scrollHeight) + 'px';
+                        if(input.tagName === 'TEXTAREA') textDiv.style.minHeight = Math.max(18, input.scrollHeight) + 'px';
                         
                         input.style.display = 'none';
                         input.parentNode.insertBefore(textDiv, input);
                     });
 
+                    // 2. CONFIGURAZIONE "A4 BLINDATO" (NO PAGINE BIANCHE)
                     const opt = { 
                         margin: 0, 
-                        filename: `FiberReport_${dateForFilename}.pdf`, 
+                        filename: `Rapportino_${dateFilename}.pdf`, 
                         image: { type: 'jpeg', quality: 0.99 }, 
                         html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -475,16 +415,15 @@
                     const sheets = JSON.parse(savedSheets);
                     let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1];
                     
-                    // NOME FILE CORRETTO ANCHE QUI
                     let parts = targetSheet.date.split('-');
                     let dateIT = `${parts[2]}/${parts[1]}/${parts[0]}`;
                     let dateFile = `${parts[2]}-${parts[1]}-${parts[0]}`;
 
-                    doc.setFillColor(31, 41, 55); // Grigio scuro moderno
+                    doc.setFillColor(15, 23, 42); // Slate 900
                     doc.rect(0, 0, 210, 20, 'F');
-                    doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT PRO", 10, 13);
-                    doc.setFontSize(10); doc.text(`Squadra: ${targetSheet.team}`, 130, 9);
-                    doc.text(`Data: ${dateIT}`, 130, 15);
+                    doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT", 10, 13);
+                    doc.setFontSize(10); doc.text(`SQUADRA: ${targetSheet.team}`, 130, 9);
+                    doc.text(`DATA: ${dateIT}`, 130, 15);
 
                     const body = targetSheet.rows.map(r => {
                         let matStr = r.materiale_list ? r.materiale_list.map(m => `• ${m.text}`).join("\n") : "";
@@ -492,10 +431,11 @@
                     });
 
                     doc.autoTable({
-                        head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note', 'Materiale']],
+                        head: [['LOC.', 'INDIRIZZO', 'NODO', 'OTTICO', 'PERMUTA', 'STATO', 'NOTE', 'MATERIALE']],
                         body: body, startY: 25, theme: 'grid',
-                        headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' },
-                        // Logica colori riga uguale a video
+                        headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+                        styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, 
+                        columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 35 }, 6: { cellWidth: 35 }, 7: { cellWidth: 30 } },
                         didParseCell: function(data) {
                             if (data.section === 'body') {
                                 let st = data.row.raw[5];
