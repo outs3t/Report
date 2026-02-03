@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fiber Report Pro v20</title>
+    <title>Fiber Report Pro v21</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -21,6 +21,10 @@
     </script>
     <style>
         body { transition: background-color 0.3s ease, color 0.3s ease; }
+        
+        /* STILE SMART CAPS: Ogni parola inizia maiuscola visivamente */
+        .smart-caps { text-transform: capitalize; }
+        
         .f-input { width: 100%; background: transparent; border-bottom-width: 1px; padding: 8px 0; outline: none; font-weight: 600; transition: all 0.3s; }
         .f-input:focus { border-color: #ff8000 !important; }
         .f-textarea { width: 100%; background: transparent; border: 1px solid; border-radius: 8px; padding: 10px; outline: none; resize: vertical; min-height: 80px; font-size: 14px; font-weight: 500; transition: all 0.3s; }
@@ -65,7 +69,7 @@
                 <div class="max-w-7xl mx-auto p-4 flex flex-wrap gap-4 justify-between items-center">
                     <div class="flex-1 min-w-[200px]">
                         <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-cyan-700'">Squadra Operativa</label>
-                        <input v-model="currentSheet.team" class="w-full bg-transparent font-bold text-xl outline-none placeholder-gray-600" :class="darkMode ? 'text-white' : 'text-gray-900'" placeholder="Inserisci Squadra...">
+                        <input v-model="currentSheet.team" class="w-full bg-transparent font-bold text-xl outline-none placeholder-gray-600 smart-caps" :class="darkMode ? 'text-white' : 'text-gray-900'" placeholder="Inserisci Squadra...">
                     </div>
                     <div class="text-right">
                         <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-cyan-700'">Data Intervento</label>
@@ -99,33 +103,33 @@
 
                     <div class="space-y-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Località</label><input v-model="row.localita" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="-"></div>
-                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Indirizzo</label><input v-model="row.indirizzo" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="-"></div>
+                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Località</label><input v-model="row.localita" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="-"></div>
+                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Indirizzo</label><input v-model="row.indirizzo" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="-"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Nodo</label><input v-model="row.pop_pfs" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'"></div>
-                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">El. Ottico</label><input v-model="row.elemento_ottico" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'"></div>
+                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Nodo</label><input v-model="row.pop_pfs" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'"></div>
+                            <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">El. Ottico</label><input v-model="row.elemento_ottico" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'"></div>
                         </div>
-                        <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Permuta</label><input v-model="row.permuta" class="f-input" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'"></div>
-                        <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Note</label><textarea v-model="row.note" class="f-textarea" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="Scrivi..."></textarea></div>
+                        <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Permuta</label><input v-model="row.permuta" class="f-input smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'"></div>
+                        <div><label class="text-[10px] uppercase font-bold mb-1 block" :class="darkMode ? 'text-cyan-400' : 'text-gray-500'">Note</label><textarea v-model="row.note" class="f-textarea smart-caps" :class="darkMode ? 'text-white border-[#333]' : 'text-black border-gray-300'" placeholder="Scrivi..."></textarea></div>
                         <div class="pt-4 mt-2 border-t" :class="darkMode ? 'border-gray-800' : 'border-gray-100'">
                             <label class="text-[11px] uppercase font-black text-fiber-orange mb-3 block tracking-wider flex items-center gap-2"><i class="ph ph-wrench-fill"></i> Materiale</label>
                             <div class="space-y-2 mb-4">
                                 <div v-for="(item, mIdx) in row.materiale_list" :key="mIdx" class="flex items-center gap-3 p-1 transition-colors">
                                     <div @click="item.checked = !item.checked" class="checkbox-box flex-shrink-0" :class="{ 'active': item.checked }"><i v-if="item.checked" class="ph ph-check text-white text-xs font-bold"></i></div>
-                                    <input v-model="item.text" class="flex-grow bg-transparent border-none outline-none text-sm font-medium" :class="[item.checked ? 'line-through opacity-50 text-gray-500' : (darkMode ? 'text-white' : 'text-gray-900')]">
+                                    <input v-model="item.text" class="flex-grow bg-transparent border-none outline-none text-sm font-medium smart-caps" :class="[item.checked ? 'line-through opacity-50 text-gray-500' : (darkMode ? 'text-white' : 'text-gray-900')]">
                                     <button @click="row.materiale_list.splice(mIdx, 1)" class="text-gray-500 hover:text-red-500 p-1 flex-shrink-0"><i class="ph ph-x"></i></button>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 mt-2">
-                                <input v-model="row.tempMaterial" @keyup.enter="addMaterial(row)" placeholder="Aggiungi voce..." class="text-sm bg-transparent border-b p-2 w-full outline-none focus:border-orange-500 transition-colors" :class="darkMode ? 'border-[#333] text-white' : 'border-gray-300 text-gray-700'">
+                                <input v-model="row.tempMaterial" @keyup.enter="addMaterial(row)" placeholder="Aggiungi voce..." class="text-sm bg-transparent border-b p-2 w-full outline-none focus:border-orange-500 transition-colors smart-caps" :class="darkMode ? 'border-[#333] text-white' : 'border-gray-300 text-gray-700'">
                                 <button @click="addMaterial(row)" class="text-cyan-500 hover:text-cyan-400 p-2"><i class="ph ph-plus-circle text-xl"></i></button>
                             </div>
                         </div>
                         <div v-if="row.extras.length > 0" class="pt-3 border-t border-dashed" :class="darkMode ? 'border-gray-800' : 'border-gray-300'">
                              <div v-for="(extra, eIdx) in row.extras" :key="eIdx" class="flex gap-2 mb-2 items-center">
-                                <input v-model="extra.key" class="w-1/3 text-xs font-bold bg-transparent border-b border-cyan-800 text-cyan-500 outline-none p-1" placeholder="Nome">
-                                <input v-model="extra.value" class="w-full text-xs bg-transparent border-b outline-none p-1" :class="darkMode ? 'border-[#333] text-white' : 'border-gray-300 text-black'" placeholder="Valore">
+                                <input v-model="extra.key" class="w-1/3 text-xs font-bold bg-transparent border-b border-cyan-800 text-cyan-500 outline-none p-1 smart-caps" placeholder="Nome">
+                                <input v-model="extra.value" class="w-full text-xs bg-transparent border-b outline-none p-1 smart-caps" :class="darkMode ? 'border-[#333] text-white' : 'border-gray-300 text-black'" placeholder="Valore">
                                 <button @click="row.extras.splice(eIdx, 1)" class="text-red-500"><i class="ph ph-x"></i></button>
                              </div>
                         </div>
@@ -189,23 +193,24 @@
                 openRapportino() { localStorage.setItem('fiber_sheets', JSON.stringify(this.sheets)); window.open('rapportino.html', '_blank'); },
                 addSheet() { this.sheets.push({ id: Date.now(), name: `Foglio ${this.sheets.length+1}`, date: new Date().toISOString().split('T')[0], team: '', rows: [] }); this.currentSheetIdx = this.sheets.length - 1; this.addRow(); },
                 removeSheet(i) { if(confirm("Eliminare foglio?")) { this.sheets.splice(i, 1); if(this.currentSheetIdx >= this.sheets.length) this.currentSheetIdx = this.sheets.length - 1; } },
-                
-                // ROW STRUCTURE WITH STATO
-                addRow() { 
-                    const newRow = { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', stato: '', materiale_list: [], tempMaterial: '', extras: [] }; 
-                    this.currentSheet.rows.push(newRow); 
-                    this.lastActiveRowId = newRow.id; 
-                },
-                
+                addRow() { const newRow = { id: Date.now(), localita: '', indirizzo: '', pop_pfs: '', elemento_ottico: '', permuta: '', note: '', stato: '', materiale_list: [], tempMaterial: '', extras: [] }; this.currentSheet.rows.push(newRow); this.lastActiveRowId = newRow.id; },
                 removeRow(i) { if(confirm("Eliminare riga?")) this.currentSheet.rows.splice(i, 1); },
                 addMaterial(row, text = null) { const val = text || row.tempMaterial; if(val) { row.materiale_list.push({ text: val, checked: false }); row.tempMaterial = ''; } },
                 
-                // COLORI SCURI/CHIARI PER DARK MODE
+                // FUNZIONE SMART CAPS: Rende maiuscola la prima lettera di ogni parola, se non è già tutto maiuscolo
+                smartFormat(text) {
+                    if (!text) return '';
+                    return text.replace(/\S+/g, (word) => {
+                        // Se è già tutto maiuscolo (es. ROMA, PTA), lascialo così
+                        if (word === word.toUpperCase() && word.length > 1) return word;
+                        // Altrimenti Maiuscola la prima
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                    });
+                },
+
                 getRowClass(row) {
                     if (!row.stato) return this.darkMode ? 'bg-[#121212] border-gray-800' : 'bg-white border-gray-200';
                     switch(row.stato) {
-                        // DARK MODE: Sfondo scuro colorato + Bordo colorato
-                        // LIGHT MODE: Sfondo pastello + Bordo colorato
                         case 'DA_SBLOCCARE': return this.darkMode ? 'bg-green-900/20 border-green-600' : 'bg-green-50 border-green-500';
                         case 'OCCORRE_ASSISTENTE': return this.darkMode ? 'bg-yellow-900/20 border-yellow-600' : 'bg-yellow-50 border-yellow-500';
                         case 'NEGATO_ACCESSO': return this.darkMode ? 'bg-red-900/20 border-red-600' : 'bg-red-50 border-red-500';
@@ -230,48 +235,50 @@
                     if (currentField && buffer.trim()) this.applyValue(targetRow, currentField, buffer.trim()); else if (!currentField && buffer.trim()) targetRow.note = (targetRow.note ? targetRow.note + "\n" : "") + buffer.trim();
                 },
                 applyValue(row, field, value) { if (field === 'TEAM_FIELD') this.currentSheet.team = value.toUpperCase(); else if (field === 'MATERIAL_ADD') this.addMaterial(row, value.charAt(0).toUpperCase() + value.slice(1)); else if (field === 'note') row.note = (row.note ? row.note + "\n" : "") + value.charAt(0).toUpperCase() + value.slice(1); else row[field] = value.charAt(0).toUpperCase() + value.slice(1); },
+                
                 exportWhatsapp() {
                     let dateFormatted = this.formatDateIT(this.currentSheet.date);
-                    let msg = `*FIBER REPORT PRO*\n📅 ${dateFormatted} | 👷 ${this.currentSheet.team}\n\n`;
-                    this.currentSheet.rows.forEach((r, i) => { if(r.localita || r.indirizzo) { msg += `*#${i+1}* 📍 ${r.localita}, ${r.indirizzo}\n`; msg += `🔌 Nodo: ${r.pop_pfs} | 👁 EL: ${r.elemento_ottico}\n`; if(r.permuta) msg += `🔄 Permuta: ${r.permuta}\n`; if(r.note) msg += `📝 Note: ${r.note}\n`; 
-                    if(r.stato) msg += `🚦 Stato: ${r.stato.replace(/_/g, ' ')}\n`;
-                    if(r.materiale_list.length) { msg += `🛠 MAT:\n`; r.materiale_list.forEach(m => msg += `${m.checked?'✅':'⬜'} ${m.text}\n`); } msg += "--------------------\n"; } });
+                    let msg = `*FIBER REPORT PRO*\n📅 ${dateFormatted} | 👷 ${this.smartFormat(this.currentSheet.team)}\n\n`;
+                    this.currentSheet.rows.forEach((r, i) => { if(r.localita || r.indirizzo) { 
+                        msg += `*#${i+1}* 📍 ${this.smartFormat(r.localita)}, ${this.smartFormat(r.indirizzo)}\n`; 
+                        msg += `🔌 Nodo: ${this.smartFormat(r.pop_pfs)} | 👁 EL: ${this.smartFormat(r.elemento_ottico)}\n`; 
+                        if(r.permuta) msg += `🔄 Permuta: ${this.smartFormat(r.permuta)}\n`; 
+                        if(r.note) msg += `📝 Note: ${this.smartFormat(r.note)}\n`; 
+                        if(r.stato) msg += `🚦 Stato: ${r.stato.replace(/_/g, ' ')}\n`;
+                        if(r.materiale_list.length) { msg += `🛠 MAT:\n`; r.materiale_list.forEach(m => msg += `${m.checked?'✅':'⬜'} ${this.smartFormat(m.text)}\n`); } 
+                        msg += "--------------------\n"; } });
                     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                 },
                 
-                // EXPORT PDF CON COLORI E DATA
                 exportPDF() {
                     const { jsPDF } = window.jspdf; const doc = new jsPDF();
                     doc.setFillColor(6, 182, 212); doc.rect(0, 0, 210, 20, 'F');
                     doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT PRO", 10, 13);
-                    doc.setFontSize(10); doc.text(`Squadra: ${this.currentSheet.team}`, 130, 9);
+                    doc.setFontSize(10); doc.text(`Squadra: ${this.smartFormat(this.currentSheet.team)}`, 130, 9);
                     let dateFormatted = this.formatDateIT(this.currentSheet.date); doc.text(`Data: ${dateFormatted}`, 130, 15);
                     const body = this.currentSheet.rows.map(r => { 
-                        let matStr = r.materiale_list.map(m => `• ${m.text}`).join("\n"); 
-                        let extraStr = r.extras.map(e => `${e.key}: ${e.value}`).join("\n"); 
-                        let noteFull = r.note + (extraStr ? "\n\n" + extraStr : ""); 
-                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr]; 
+                        let matStr = r.materiale_list.map(m => `• ${this.smartFormat(m.text)}`).join("\n"); 
+                        let extraStr = r.extras.map(e => `${this.smartFormat(e.key)}: ${this.smartFormat(e.value)}`).join("\n"); 
+                        let noteFull = this.smartFormat(r.note) + (extraStr ? "\n\n" + extraStr : ""); 
+                        return [this.smartFormat(r.localita), this.smartFormat(r.indirizzo), this.smartFormat(r.pop_pfs), this.smartFormat(r.elemento_ottico), this.smartFormat(r.permuta), r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr]; 
                     });
                     
                     doc.autoTable({ 
                         head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note / Extra', 'Materiale']], 
-                        body: body, 
-                        startY: 25, theme: 'grid', 
+                        body: body, startY: 25, theme: 'grid', 
                         headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, 
                         alternateRowStyles: { fillColor: [245, 245, 245] }, 
                         styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, 
                         columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 30 }, 6: { cellWidth: 30 }, 7: { cellWidth: 30 } },
-                        
-                        // LOGICA COLORI RIGHE PDF
                         didParseCell: function(data) {
                             if (data.section === 'body') {
                                 let row = data.row;
-                                let stato = row.raw[5]; // Indice colonna Stato
-                                if (stato === 'DA_SBLOCCARE') data.cell.styles.fillColor = [220, 252, 231]; // Green Light
-                                if (stato === 'OCCORRE_ASSISTENTE') data.cell.styles.fillColor = [254, 249, 195]; // Yellow Light
-                                if (stato === 'NEGATO_ACCESSO') data.cell.styles.fillColor = [254, 226, 226]; // Red Light
-                                if (stato === 'NON_REALIZZATO') data.cell.styles.fillColor = [254, 202, 202]; // Red Stronger
-                                if (stato === 'OCCORRE_MATERIALE') data.cell.styles.fillColor = [255, 237, 213]; // Orange Light
+                                let stato = row.raw[5];
+                                if (stato === 'DA_SBLOCCARE') data.cell.styles.fillColor = [220, 252, 231];
+                                if (stato === 'OCCORRE_ASSISTENTE') data.cell.styles.fillColor = [254, 249, 195];
+                                if (stato === 'NEGATO_ACCESSO') data.cell.styles.fillColor = [254, 226, 226];
+                                if (stato === 'NON_REALIZZATO') data.cell.styles.fillColor = [254, 202, 202];
+                                if (stato === 'OCCORRE_MATERIALE') data.cell.styles.fillColor = [255, 237, 213];
                             }
                         }
                     });
@@ -279,7 +286,23 @@
                 },
                 exportExcel() {
                     let allData = []; let dateFormatted = this.formatDateIT(this.currentSheet.date);
-                    this.currentSheet.rows.forEach(r => { let matStr = r.materiale_list.map(m => m.text).join(", "); let obj = { "Località": r.localita, "Indirizzo": r.indirizzo, "Nodo": r.pop_pfs, "El. Ottico": r.elemento_ottico, "Permuta": r.permuta, "Stato": r.stato, "Materiale": matStr, "Note": r.note, "Squadra": this.currentSheet.team, "Data": dateFormatted }; r.extras.forEach(e => obj[e.key] = e.value); allData.push(obj); });
+                    this.currentSheet.rows.forEach(r => { 
+                        let matStr = r.materiale_list.map(m => this.smartFormat(m.text)).join(", "); 
+                        let obj = { 
+                            "Località": this.smartFormat(r.localita), 
+                            "Indirizzo": this.smartFormat(r.indirizzo), 
+                            "Nodo": this.smartFormat(r.pop_pfs), 
+                            "El. Ottico": this.smartFormat(r.elemento_ottico), 
+                            "Permuta": this.smartFormat(r.permuta), 
+                            "Stato": r.stato, 
+                            "Materiale": matStr, 
+                            "Note": this.smartFormat(r.note), 
+                            "Squadra": this.smartFormat(this.currentSheet.team), 
+                            "Data": dateFormatted 
+                        }; 
+                        r.extras.forEach(e => obj[this.smartFormat(e.key)] = this.smartFormat(e.value)); 
+                        allData.push(obj); 
+                    });
                     const ws = XLSX.utils.json_to_sheet(allData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Report"); XLSX.writeFile(wb, `Report_${this.currentSheet.name}.xlsx`);
                 },
                 backupData() { const blob = new Blob([JSON.stringify(this.sheets)], {type: "application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); },
