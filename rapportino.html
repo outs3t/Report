@@ -3,30 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapportino Delta Impianti v39</title>
+    <title>Rapportino 2026</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
     <style>
-        body { background: #525659; font-family: 'Roboto', sans-serif; }
+        body { background: #e5e7eb; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
         
-        /* FOGLIO A4 BLINDATO */
+        /* FOGLIO A4 "SWISS STYLE" */
         .a4-page {
             width: 210mm;
             height: 296mm; 
             background: white;
-            margin: 0 auto;
-            padding: 4mm 10mm 5mm 10mm; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            margin: 20px auto;
+            padding: 12mm 15mm; /* Margini eleganti */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -34,34 +32,80 @@
             overflow: hidden; 
         }
 
+        /* INPUT INVISIBILI MA ELEGANTI */
         .r-input {
-            border: none;
-            border-bottom: 1px dotted #ccc;
             width: 100%;
-            padding: 2px 0;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #e5e7eb; /* Grigio chiarissimo */
+            padding: 4px 0;
             outline: none;
             font-size: 11px;
-            background: transparent;
             font-weight: 500;
-            color: #000;
+            color: #111827;
+            transition: border 0.3s;
         }
-        .r-input:focus { border-bottom: 1px solid #000; background: #f5f5f5; }
+        .r-input:focus { border-bottom: 1px solid #000; }
+        .r-input::placeholder { color: #9ca3af; font-weight: 300; }
 
         textarea.r-input {
             resize: none;
             overflow: hidden;
-            min-height: 20px;
-            line-height: 1.2;
+            min-height: 24px;
+            line-height: 1.4;
             display: block;
         }
 
-        /* CLASSE STAMPA */
+        /* TIPOGRAFIA */
+        .label-tiny {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280; /* Grigio medio */
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #000;
+            border-bottom: 2px solid #000;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+        }
+
+        /* TABELLA MINIMAL */
+        .min-table { width: 100%; border-collapse: collapse; }
+        .min-table th {
+            text-align: left;
+            font-size: 9px;
+            font-weight: 600;
+            color: #6b7280;
+            padding: 4px 0;
+            border-bottom: 1px solid #e5e7eb;
+            text-transform: uppercase;
+        }
+        .min-table td {
+            font-size: 11px;
+            padding: 6px 0;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: top;
+            color: #1f2937;
+        }
+        .min-table tr:last-child td { border-bottom: none; }
+
+        /* CLASSE STAMPA PDF */
         .print-text {
             font-size: 11px;
+            line-height: 1.4;
             white-space: pre-wrap;
-            border-bottom: 1px dotted #ccc;
-            min-height: 18px;
-            padding: 2px 0;
             color: #000;
             display: block;
             width: 100%;
@@ -69,15 +113,11 @@
 
         .signature-font {
             font-family: 'Dancing Script', cursive;
-            font-size: 1.8rem;
-            color: #000000;
+            font-size: 2rem;
+            color: #000;
             line-height: 1;
             display: block;
-            margin-bottom: 2px;
         }
-
-        th { font-weight: 700; font-size: 9px; padding-bottom: 2px; border-bottom: 1px solid #000; color: #333; }
-        td { vertical-align: top; padding-top: 2px; padding-bottom: 2px; font-size: 10px; }
 
         @media print {
             .no-print { display: none !important; }
@@ -85,91 +125,105 @@
             .a4-page { box-shadow: none; margin: 0; width: 100%; height: 100%; page-break-after: avoid; }
         }
         
-        .btn-smart { animation: pulse-blue 2s infinite; }
-        @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
-        
-        .screen-wrapper { 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-            overflow-x: auto; 
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        @media (max-width: 800px) {
-            .a4-page { min-width: 210mm; }
-            .screen-wrapper { justify-content: flex-start; }
-        }
+        .screen-wrapper { padding: 40px 20px; display: flex; justify-content: center; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        @media (max-width: 800px) { .a4-page { min-width: 210mm; } .screen-wrapper { justify-content: flex-start; padding: 10px; } }
     </style>
 </head>
 <body>
 
     <div id="app">
         
-        <div class="fixed top-0 left-0 right-0 bg-gray-900 text-white p-2 flex justify-between items-center z-50 shadow-lg no-print">
-            <div class="font-bold flex items-center gap-2 text-xs">
-                <i class="ph ph-file-text text-yellow-400"></i> RAPPORTINO v39
+        <div class="fixed top-0 left-0 right-0 bg-[#111827] text-white px-4 py-3 flex justify-between items-center z-50 shadow-md no-print">
+            <div class="font-bold flex items-center gap-3 text-sm tracking-wide">
+                <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                RAPPORTINO v40
             </div>
             
-            <div class="flex gap-2 items-center overflow-x-auto">
-                <button @click="importSmartData" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded shadow text-[10px] flex items-center gap-1 btn-smart border border-blue-400 whitespace-nowrap">
+            <div class="flex gap-3 items-center">
+                <button @click="importSmartData" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-md text-xs transition-colors flex items-center gap-2">
                     <i class="ph ph-magic-wand"></i> IMPORTA
                 </button>
                 
-                <div class="w-px h-6 bg-gray-700 mx-1"></div>
+                <div class="w-px h-6 bg-gray-700"></div>
                 
-                <a href="index.html" class="px-3 py-1 text-[10px] font-bold text-gray-300 hover:text-white border border-gray-600 rounded flex items-center whitespace-nowrap">INDIETRO</a>
-                
-                <div class="flex gap-1">
-                    <button @click="downloadFiberPDF" class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded shadow text-[10px] flex items-center gap-1 whitespace-nowrap">
-                        <i class="ph ph-table"></i> XLS
+                <div class="flex gap-2">
+                    <button @click="downloadFiberPDF" class="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-md text-xs transition-colors">
+                        XLS / REPORT
                     </button>
-                    <button @click="downloadRapportinoPDF" class="px-4 py-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded shadow text-[10px] flex items-center gap-1 whitespace-nowrap">
-                        <i class="ph ph-file-pdf"></i> PDF A4
+                    <button @click="downloadRapportinoPDF" class="px-4 py-1.5 bg-white text-black hover:bg-gray-100 font-bold rounded-md text-xs transition-colors shadow-sm flex items-center gap-2">
+                        <i class="ph ph-download-simple"></i> PDF A4
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="h-12 no-print"></div>
+        <div class="h-16 no-print"></div>
 
         <div class="screen-wrapper">
             <div class="a4-page" id="pdf-content">
                 
-                <div id="content-body">
-                    <div class="flex justify-between items-end mb-2 border-b-2 border-black pb-2">
-                        <div class="w-1/3 pr-4">
+                <div id="content-body" class="flex-grow">
+                    
+                    <div class="flex justify-between items-start mb-8">
+                        <div class="w-1/3">
                             <div class="relative group cursor-pointer" @click="triggerLogoUpload">
-                                <div class="h-24 w-full flex items-center justify-start">
-                                    <img v-if="logoSrc" :src="logoSrc" class="h-full w-auto object-contain object-left" title="Clicca per cambiare logo">
-                                    <div v-else class="w-full h-16 bg-gray-100 border border-dashed border-gray-400 flex items-center justify-center text-gray-500 text-[10px] text-center">
-                                        CARICA LOGO
+                                <div class="h-20 w-full flex items-center justify-start">
+                                    <img v-if="logoSrc" :src="logoSrc" class="h-full w-auto object-contain object-left">
+                                    <div v-else class="w-32 h-12 bg-gray-50 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-[10px]">
+                                        LOGO AZIENDA
                                     </div>
                                 </div>
                                 <input type="file" ref="logoInput" @change="handleLogo" class="hidden" accept="image/*">
                             </div>
                         </div>
 
-                        <div class="w-2/3 text-right">
-                            <h1 class="text-2xl font-black text-black uppercase tracking-tighter leading-none mb-1">Rapportino Giornaliero</h1>
-                            <div class="flex justify-end items-center gap-2"><label class="text-[10px] font-bold text-gray-600 uppercase">Data:</label><input v-model="displayDate" class="text-right font-bold text-sm outline-none border-b border-black w-24 r-input"></div>
-                            <div class="flex justify-end items-center gap-2 mt-1"><label class="text-[10px] font-bold text-gray-600 uppercase">Cliente:</label><input v-model="cliente" class="text-right font-bold outline-none border-b border-black w-32 text-xs r-input" placeholder="Es. Open Fiber"></div>
+                        <div class="text-right">
+                            <h1 class="text-3xl font-bold text-gray-900 tracking-tight leading-none mb-1">Rapportino Giornaliero</h1>
+                            <div class="flex flex-col items-end gap-1 mt-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="label-tiny">DATA INTERVENTO</span>
+                                    <input v-model="displayDate" class="text-right font-mono font-medium text-sm outline-none border-b border-gray-200 w-24 bg-transparent">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="label-tiny">CLIENTE</span>
+                                    <input v-model="cliente" class="text-right font-medium text-sm outline-none border-b border-gray-200 w-32 bg-transparent" placeholder="Cliente...">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-1 mb-3">
-                        <div class="flex items-center gap-2"><label class="text-[10px] font-bold text-black uppercase whitespace-nowrap w-32">Località / Cantiere:</label><input v-model="localita" class="r-input font-bold text-xs uppercase text-black" placeholder="ELENCO PAESI..."></div>
-                        <div class="flex items-center gap-2"><label class="text-[10px] font-bold text-black uppercase whitespace-nowrap w-32">Assistente:</label><input v-model="assistente" class="r-input font-bold text-black" placeholder="Nome cognome..."></div>
+                    <div class="grid grid-cols-1 gap-6 mb-8">
+                        <div>
+                            <span class="label-tiny">LOCALITÀ / CANTIERI (ELENCO COMUNI)</span>
+                            <input v-model="localita" class="r-input text-sm uppercase" placeholder="Es. Boscotrecase, Grumo Nevano...">
+                        </div>
+                        <div>
+                            <span class="label-tiny">ASSISTENTE DI RIFERIMENTO</span>
+                            <input v-model="assistente" class="r-input text-sm" placeholder="Nome Cognome...">
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="bg-black text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center"><span>Squadra Operativa</span><button @click="addWorker" class="text-yellow-400 hover:text-white no-print">+ AGGIUNGI</button></div>
-                        <table class="w-full text-xs border-collapse">
-                            <thead><tr class="text-left text-gray-600 uppercase border-b"><th class="w-24">Ruolo</th><th>Nome e Cognome</th><th class="w-10 text-center">Ord.</th><th class="w-10 text-center">Str.</th><th class="w-10 text-center">Viag.</th><th class="w-16 text-center">Note</th><th class="w-4 no-print"></th></tr></thead>
+                    <div class="mb-8">
+                        <div class="section-title">
+                            <span>Squadra Operativa</span>
+                            <button @click="addWorker" class="text-[9px] text-blue-600 hover:text-blue-800 no-print font-medium">+ AGGIUNGI TECNICO</button>
+                        </div>
+                        <table class="min-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-24">Ruolo</th>
+                                    <th>Tecnico</th>
+                                    <th class="w-12 text-center">Ord.</th>
+                                    <th class="w-12 text-center">Str.</th>
+                                    <th class="w-12 text-center">Viag.</th>
+                                    <th class="w-24">Note</th>
+                                    <th class="w-6 no-print"></th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 <tr v-for="(worker, idx) in workers" :key="idx">
                                     <td>
-                                        <select v-model="worker.role" class="outline-none bg-transparent font-bold text-black w-full text-[10px]">
+                                        <select v-model="worker.role" class="outline-none bg-transparent font-medium text-xs text-gray-900 w-full cursor-pointer">
                                             <option value="CS">Caposquadra</option>
                                             <option value="OP">Tecnico</option>
                                             <option value="GI">Giuntista</option>
@@ -178,71 +232,122 @@
                                             <option value="DIP">Dipendente</option>
                                         </select>
                                     </td>
-                                    <td><input v-model="worker.name" class="r-input" placeholder="Nome..."></td><td class="text-center"><input type="number" v-model="worker.h_ord" class="r-input text-center"></td><td class="text-center"><input type="number" v-model="worker.h_str" class="r-input text-center"></td><td class="text-center"><input type="number" v-model="worker.h_vg" class="r-input text-center"></td><td><input v-model="worker.notes" class="r-input text-[10px]" placeholder="-"></td><td class="text-center no-print"><button @click="workers.splice(idx, 1)" class="text-red-500 hover:text-red-700">×</button></td>
+                                    <td><input v-model="worker.name" class="r-input" placeholder="Nome..."></td>
+                                    <td class="text-center"><input type="number" v-model="worker.h_ord" class="r-input text-center font-mono"></td>
+                                    <td class="text-center"><input type="number" v-model="worker.h_str" class="r-input text-center font-mono"></td>
+                                    <td class="text-center"><input type="number" v-model="worker.h_vg" class="r-input text-center font-mono"></td>
+                                    <td><input v-model="worker.notes" class="r-input" placeholder="-"></td>
+                                    <td class="text-center no-print">
+                                        <button @click="workers.splice(idx, 1)" class="text-gray-400 hover:text-red-500">×</button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div>
-                        <div class="bg-gray-800 text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center"><span>Descrizione Attività</span><div class="no-print flex gap-2"><button @click="importSmartData" class="text-blue-200 hover:text-white font-bold px-1 rounded">AGGIORNA</button><button @click="addWork" class="text-white hover:text-yellow-400">+ RIGA</button></div></div>
-                        <table class="w-full text-xs border-collapse">
+                    <div class="mb-4">
+                        <div class="section-title">
+                            <span>Dettaglio Lavorazioni</span>
+                            <div class="flex gap-3 no-print">
+                                <button @click="importSmartData" class="text-[9px] text-blue-600 hover:text-blue-800 font-medium">AGGIORNA DATI</button>
+                                <button @click="addWork" class="text-[9px] text-green-600 hover:text-green-800 font-medium">+ AGGIUNGI RIGA</button>
+                            </div>
+                        </div>
+                        <table class="min-table">
                             <thead>
-                                <tr class="text-left text-gray-600 uppercase border-b-2 border-black">
-                                    <th class="w-6">N.</th>
+                                <tr>
+                                    <th class="w-8">N.</th>
                                     <th class="w-1/3">Indirizzo (Località)</th>
-                                    <th>Note Lavorazione</th>
-                                    <th class="w-10 text-center">Q.tà</th>
-                                    <th class="w-4 no-print"></th>
+                                    <th>Descrizione Intervento / Note</th>
+                                    <th class="w-12 text-center">Q.tà</th>
+                                    <th class="w-6 no-print"></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(work, idx) in works" :key="idx" class="align-top">
-                                    <td class="font-bold text-gray-500 pt-2 text-[10px]">{{ idx + 1 }}</td>
-                                    <td class="pr-2"><textarea v-model="work.address" rows="1" class="r-input font-bold uppercase text-[10px]" placeholder="Via..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
-                                    <td class="pr-2"><textarea v-model="work.desc" rows="1" class="r-input text-black text-[11px]" placeholder="" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></td>
-                                    <td class="text-center pt-2"><input type="number" v-model="work.qty" class="r-input text-center font-bold"></td>
-                                    <td class="text-center no-print pt-2"><button @click="works.splice(idx, 1)" class="text-red-500 hover:text-red-700">×</button></td>
+                                <tr v-for="(work, idx) in works" :key="idx">
+                                    <td class="font-bold text-gray-400 text-xs">{{ idx + 1 }}</td>
+                                    
+                                    <td class="pr-4">
+                                        <textarea v-model="work.address" rows="1" class="r-input font-bold text-xs uppercase" placeholder="VIA..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                    </td>
+                                    
+                                    <td class="pr-4">
+                                        <textarea v-model="work.desc" rows="1" class="r-input text-gray-700" placeholder="Descrizione..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                    </td>
+                                    
+                                    <td class="text-center">
+                                        <input type="number" v-model="work.qty" class="r-input text-center font-mono font-bold">
+                                    </td>
+                                    <td class="text-center no-print">
+                                        <button @click="works.splice(idx, 1)" class="text-gray-400 hover:text-red-500">×</button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div id="content-footer" class="mt-4 pt-2 border-t-2 border-black">
-                    <div class="grid grid-cols-4 gap-4 text-xs mb-3">
-                        <div class="col-span-2"><label class="text-[9px] text-gray-600 uppercase font-bold">Mezzo</label><div class="flex gap-2"><input v-model="mezzo" class="r-input" placeholder="Modello..."><input v-model="targa" class="r-input w-20 uppercase" placeholder="Targa"></div></div>
-                        <div><label class="text-[9px] text-gray-600 uppercase font-bold">KM</label><input type="number" v-model="km" class="r-input" placeholder="0"></div>
-                        
-                        <div class="relative flex flex-col justify-start">
-                            <label class="text-[9px] text-gray-600 uppercase font-bold flex items-center gap-2">
-                                Rifornimento <input type="checkbox" v-model="showFuel" class="no-print">
-                            </label>
-                            
-                            <div v-if="showFuel" class="flex gap-2 mt-1">
-                                <input v-model="fuelLitres" class="r-input w-12" placeholder="Litri">
-                                <input v-model="fuelEuro" class="r-input w-12" placeholder="€">
+                <div id="content-footer" class="mt-auto pt-6 border-t border-gray-800">
+                    
+                    <div class="flex justify-between items-start mb-8 text-xs">
+                        <div class="flex gap-8">
+                            <div>
+                                <span class="label-tiny">MEZZO / FURGONE</span>
+                                <div class="flex gap-2">
+                                    <input v-model="mezzo" class="r-input w-24" placeholder="Modello">
+                                    <input v-model="targa" class="r-input w-20 uppercase font-mono" placeholder="TARGA">
+                                </div>
                             </div>
-                            </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-10 items-end">
-                        <div>
-                            <div class="border border-black flex text-center">
-                                <div class="flex-1 border-r border-black p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Assist.</span></div>
-                                <div class="flex-1 border-r border-black p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Ammin.</span></div>
-                                <div class="flex-1 p-1 flex flex-col justify-between h-12"><span class="text-[9px] font-bold uppercase text-black">Visto Contab.</span></div>
+                            <div>
+                                <span class="label-tiny">KM PERCORSI</span>
+                                <input type="number" v-model="km" class="r-input w-16 font-mono" placeholder="0">
                             </div>
                         </div>
+
+                        <div class="flex flex-col items-end min-w-[120px]">
+                            <label class="flex items-center gap-2 cursor-pointer no-print mb-1">
+                                <span class="label-tiny text-blue-600">RIFORNIMENTO?</span>
+                                <input type="checkbox" v-model="showFuel" class="accent-black">
+                            </label>
+                            
+                            <div v-if="showFuel" class="flex gap-3 bg-gray-50 px-2 py-1 rounded border border-gray-200">
+                                <div>
+                                    <span class="label-tiny">LITRI</span>
+                                    <input v-model="fuelLitres" class="r-input w-12 text-center font-mono">
+                                </div>
+                                <div>
+                                    <span class="label-tiny">EURO</span>
+                                    <input v-model="fuelEuro" class="r-input w-12 text-center font-mono">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-12 items-end">
+                        
+                        <div class="border border-gray-300 flex text-center rounded overflow-hidden">
+                            <div class="flex-1 border-r border-gray-300 p-2 flex flex-col justify-between h-16 bg-gray-50/50">
+                                <span class="label-tiny">VISTO ASSISTENTE</span>
+                            </div>
+                            <div class="flex-1 border-r border-gray-300 p-2 flex flex-col justify-between h-16 bg-gray-50/50">
+                                <span class="label-tiny">VISTO AMMIN.</span>
+                            </div>
+                            <div class="flex-1 p-2 flex flex-col justify-between h-16 bg-gray-50/50">
+                                <span class="label-tiny">VISTO CONTAB.</span>
+                            </div>
+                        </div>
+
                         <div class="relative">
-                            <div class="text-[9px] text-gray-600 uppercase font-bold mb-1">Firma Caposquadra</div>
-                            <input v-model="signatureName" class="w-full text-center outline-none border-none text-gray-400 text-xs no-print mb-1" placeholder="Firma qui...">
-                            <div class="h-12 flex items-end justify-center border-b border-black relative">
-                                <span v-if="signatureName" class="signature-font absolute bottom-1 left-0 right-0 text-center">{{ signatureName }}</span>
+                            <span class="label-tiny mb-2">FIRMA CAPOSQUADRA</span>
+                            <div class="h-16 border-b border-gray-800 flex items-end justify-center relative">
+                                <input v-model="signatureName" class="absolute inset-0 opacity-0 cursor-text z-10 w-full h-full text-center" placeholder="Clicca per firmare">
+                                <span v-if="!signatureName" class="text-gray-300 text-xs mb-2 no-print">Clicca qui per firmare</span>
+                                <span v-else class="signature-font absolute bottom-2 w-full text-center">{{ signatureName }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -259,10 +364,7 @@
                     cliente: 'Open Fiber', localita: '', assistente: '', 
                     workers: [{ role: 'CS', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }, { role: 'DIP', name: '', h_ord: 8, h_str: '', h_vg: '', notes: '' }],
                     works: [ { address: '', desc: '', qty: '' } ],
-                    mezzo: '', targa: '', km: '', 
-                    showFuel: false, 
-                    fuelLitres: '', fuelEuro: '', 
-                    signatureName: ''
+                    mezzo: '', targa: '', km: '', showFuel: false, fuelLitres: '', fuelEuro: '', signatureName: ''
                 }
             },
             methods: {
@@ -276,8 +378,7 @@
                     if (!savedSheets) { alert("Nessun dato trovato!"); return; }
                     const sheets = JSON.parse(savedSheets);
                     let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1]; 
-                    if (!targetSheet) { alert("Nessun foglio trovato."); return; }
-
+                    
                     if(targetSheet.team) {
                         let splitNames = targetSheet.team.split(/\s*[-/]\s*/);
                         if(splitNames[0]) this.workers[0].name = splitNames[0];
@@ -290,6 +391,7 @@
                         let fullAddress = r.indirizzo || "";
                         if(r.localita && fullAddress) fullAddress += ` (${r.localita})`;
                         else if(!fullAddress && r.localita) fullAddress = r.localita;
+                        
                         let finalDesc = r.note || "";
                         let lowerNote = finalDesc.toLowerCase();
                         if(r.permuta) {
@@ -297,13 +399,13 @@
                             else finalDesc += ` - Permuta: ${r.permuta}`;
                         }
                         if(lowerNote.includes("giunzion") && r.elemento_ottico) {
+                            // Check intelligente duplicati (PTA, PTE, ecc)
                             let words = lowerNote.split(/\s+/);
                             let idx = words.findIndex(w => w.includes("giunzion"));
                             let nextWords = "";
                             if(idx !== -1 && idx < words.length - 1) nextWords = words.slice(idx + 1, idx + 4).join(" ");
                             const skipKeywords = ["pta", "pte", "roe", "pd", "pfs", "pfp"];
-                            let alreadyHasElement = skipKeywords.some(k => nextWords.includes(k));
-                            if(!alreadyHasElement) finalDesc += ` - Elemento: ${r.elemento_ottico}`;
+                            if(!skipKeywords.some(k => nextWords.includes(k))) finalDesc += ` - Elemento: ${r.elemento_ottico}`;
                         }
                         if(fullAddress || finalDesc) {
                             this.works.push({ address: fullAddress.toUpperCase(), desc: finalDesc, qty: '1' });
@@ -311,38 +413,36 @@
                     });
                     this.localita = Array.from(uniqueCities).join(', ');
                     this.displayDate = new Date().toLocaleDateString('it-IT');
-                    alert("Importazione completata!");
+                    alert("Importazione Completata!");
                 },
 
                 async downloadRapportinoPDF() {
-                    let cleanDate = this.displayDate.replace(/\//g, '-');
                     const element = document.getElementById('pdf-content');
                     window.scrollTo(0,0);
+                    
+                    // NOME FILE CORRETTO: Rapportino_03-02-2026.pdf
+                    let dateForFilename = this.displayDate.replace(/\//g, '-'); 
 
+                    // 1. TRASFORMAZIONE INPUT -> TESTO
                     const inputs = element.querySelectorAll('input, textarea, select');
                     const originalStates = [];
-                    
-                    const btns = document.querySelectorAll('button');
+                    const btns = document.querySelectorAll('button'); // Nascondi tasti "+" e "x"
                     btns.forEach(b => b.style.opacity = '0');
 
                     inputs.forEach((input) => {
+                        // Salva stato
                         originalStates.push({ element: input, display: input.style.display });
                         
+                        // Crea testo
                         const textDiv = document.createElement('div');
-                        
-                        if (input.tagName === 'SELECT') {
-                            textDiv.innerText = input.options[input.selectedIndex].text;
-                        } else {
-                            textDiv.innerText = input.value;
-                        }
+                        if (input.tagName === 'SELECT') textDiv.innerText = input.options[input.selectedIndex].text;
+                        else textDiv.innerText = input.value;
 
+                        // Se checkbox (rifornimento) ignoriamo, se non spuntato il div padre è nascosto da v-if
                         if(input.type === 'checkbox') return;
 
                         textDiv.className = input.className + ' print-text';
-                        
-                        if(input.tagName === 'TEXTAREA') {
-                            textDiv.style.minHeight = Math.max(20, input.scrollHeight) + 'px';
-                        }
+                        if(input.tagName === 'TEXTAREA') textDiv.style.minHeight = Math.max(24, input.scrollHeight) + 'px';
                         
                         input.style.display = 'none';
                         input.parentNode.insertBefore(textDiv, input);
@@ -350,44 +450,64 @@
 
                     const opt = { 
                         margin: 0, 
-                        filename: `Rapportino_${cleanDate}.pdf`, 
+                        filename: `FiberReport_${dateForFilename}.pdf`, 
                         image: { type: 'jpeg', quality: 0.99 }, 
                         html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
-                        pagebreak: { mode: 'avoid-all' } 
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: 'avoid-all' }
                     };
                     
-                    try {
-                        await html2pdf().set(opt).from(element).save();
-                    } finally {
-                        setTimeout(() => {
-                            document.querySelectorAll('.print-text').forEach(el => el.remove());
-                            inputs.forEach((input, i) => input.style.display = originalStates[i].display);
-                            btns.forEach(b => b.style.opacity = '1');
-                        }, 500);
-                    }
+                    await html2pdf().set(opt).from(element).save();
+
+                    // RIPRISTINO
+                    setTimeout(() => {
+                        document.querySelectorAll('.print-text').forEach(el => el.remove());
+                        inputs.forEach((input, i) => input.style.display = originalStates[i].display);
+                        btns.forEach(b => b.style.opacity = '1');
+                    }, 500);
                 },
 
                 downloadFiberPDF() {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
                     const savedSheets = localStorage.getItem('fiber_sheets');
-                    if (!savedSheets) return alert("Nessun dato Fiber Report trovato.");
+                    if (!savedSheets) return alert("Nessun dato.");
                     const sheets = JSON.parse(savedSheets);
                     let targetSheet = sheets.find(s => s.date === this.dataOggi) || sheets[sheets.length - 1];
-                    doc.setFillColor(6, 182, 212); doc.rect(0, 0, 210, 20, 'F');
+                    
+                    // NOME FILE CORRETTO ANCHE QUI
+                    let parts = targetSheet.date.split('-');
+                    let dateIT = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                    let dateFile = `${parts[2]}-${parts[1]}-${parts[0]}`;
+
+                    doc.setFillColor(31, 41, 55); // Grigio scuro moderno
+                    doc.rect(0, 0, 210, 20, 'F');
                     doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text("FIBER REPORT PRO", 10, 13);
                     doc.setFontSize(10); doc.text(`Squadra: ${targetSheet.team}`, 130, 9);
-                    let parts = targetSheet.date.split('-');
-                    let dateIT = targetSheet.date.includes('-') ? `${parts[2]}/${parts[1]}/${parts[0]}` : targetSheet.date;
                     doc.text(`Data: ${dateIT}`, 130, 15);
+
                     const body = targetSheet.rows.map(r => {
                         let matStr = r.materiale_list ? r.materiale_list.map(m => `• ${m.text}`).join("\n") : "";
-                        let noteFull = r.note || ""; 
-                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.stato ? r.stato.replace(/_/g, ' ') : '', noteFull, matStr];
+                        return [r.localita, r.indirizzo, r.pop_pfs, r.elemento_ottico, r.permuta, r.stato ? r.stato.replace(/_/g, ' ') : '', r.note, matStr];
                     });
-                    doc.autoTable({ head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note', 'Materiale']], body: body, startY: 25, theme: 'grid', headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 245, 245] }, styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 35 }, 6: { cellWidth: 30 }, 7: { cellWidth: 30 } } });
-                    doc.save(`FiberReport_${targetSheet.date}.pdf`);
+
+                    doc.autoTable({
+                        head: [['Località', 'Indirizzo', 'Nodo', 'El. Ottico', 'Permuta', 'Stato', 'Note', 'Materiale']],
+                        body: body, startY: 25, theme: 'grid',
+                        headStyles: { fillColor: [255, 128, 0], textColor: 255, fontStyle: 'bold' },
+                        // Logica colori riga uguale a video
+                        didParseCell: function(data) {
+                            if (data.section === 'body') {
+                                let st = data.row.raw[5];
+                                if (st === 'DA_SBLOCCARE') data.cell.styles.fillColor = [220, 252, 231];
+                                if (st === 'OCCORRE_ASSISTENTE') data.cell.styles.fillColor = [254, 249, 195];
+                                if (st === 'NEGATO_ACCESSO') data.cell.styles.fillColor = [254, 226, 226];
+                                if (st === 'NON_REALIZZATO') data.cell.styles.fillColor = [254, 202, 202];
+                                if (st === 'OCCORRE_MATERIALE') data.cell.styles.fillColor = [255, 237, 213];
+                            }
+                        }
+                    });
+                    doc.save(`FiberReport_${dateFile}.pdf`);
                 }
             }
         }).mount('#app');
