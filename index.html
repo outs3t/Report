@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fiber Report Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode:'class',
+            theme:{ extend:{ fontFamily:{ sans:['Inter','sans-serif'] }, colors:{ fiber:{ orange:'#ff8000', cyan:'#06b6d4', darkbg:'#050505', darkcard:'#121212' } } } }
+        }
+    </script>
+    <style>
+        body { transition:background-color .3s,color .3s; }
+        .f-input  { width:100%; background:transparent; border-bottom-width:1px; padding:8px 0; outline:none; font-weight:600; transition:all .3s; }
+        .f-input:focus { border-color:#ff8000 !important; }
+        .f-textarea { width:100%; background:transparent; border:1px solid; border-radius:8px; padding:10px; outline:none; resize:vertical; min-height:72px; font-size:13px; font-weight:500; transition:all .3s; }
+        .f-textarea:focus { border-color:#ff8000 !important; }
+        .smart-caps { text-transform:capitalize; }
+        .field-label { font-size:10px; text-transform:uppercase; font-weight:700; margin-bottom:4px; display:block; letter-spacing:.05em; }
+        .checkbox-box { min-width:22px; height:22px; border:2px solid #06b6d4; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
+        .checkbox-box.active { background-color:#06b6d4; }
+        ::-webkit-scrollbar { height:4px; width:4px; }
+        ::-webkit-scrollbar-thumb { background:#ff8000; border-radius:10px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        @keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(255,128,0,.7);}50%{transform:scale(1.05);}100%{box-shadow:0 0 0 0 rgba(255,128,0,0);transform:scale(1);} }
+        .mic-active { animation:pulse-ring 1.5s infinite; }
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor:pointer; filter:invert(.5); }
+        .dark input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(1); }
+
+        /* ── RAPPORTINO PANEL ── */
+        .rapportino-panel { position:fixed; inset:0; z-index:80; background:#111827; transform:translateX(100%); transition:transform .4s cubic-bezier(.25,.46,.45,.94); overflow-y:auto; }
+        .rapportino-panel.open { transform:translateX(0); }
+
+        /* ── A4: altura fija, una sola pagina ── */
+        .a4-page {
+            width:210mm; height:296mm; background:white; margin:0 auto;
+            padding:6mm 9mm; box-shadow:0 20px 50px rgba(0,0,0,.5);
+            display:flex; flex-direction:column; position:relative; overflow:hidden;
+        }
+        @media (max-width:800px) { .a4-page { min-width:210mm; } .screen-wrapper { justify-content:flex-start; } }
+        .screen-wrapper { padding:40px 10px; display:flex; justify-content:center; overflow-x:auto; }
+
+        /* ── RAPPORTINO INPUTS ── */
+        .r-input { width:100%; background:transparent; border:none; outline:none; font-size:10px; font-weight:600; color:#111827; padding:0; margin:0; text-transform:capitalize; font-family:'Inter',sans-serif; }
+        .r-input::placeholder { color:#d1d5db; font-weight:400; text-transform:none; }
+        textarea.r-input { resize:none; overflow:hidden; min-height:16px; line-height:1.3; display:block; }
+        .tech-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:4px; padding:4px 7px; margin-bottom:5px; }
+        .tech-label { font-family:'JetBrains Mono',monospace; font-size:7px; text-transform:uppercase; color:#6b7280; display:block; margin-bottom:1px; }
+        .tech-table { width:100%; border-collapse:collapse; font-size:9px; }
+        .tech-table th { text-align:left; font-family:'JetBrains Mono',monospace; font-size:7px; color:#6b7280; text-transform:uppercase; padding:3px 0; border-bottom:2px solid #111827; }
+        .tech-table td { padding:4px 3px; border-bottom:1px solid #f3f4f6; vertical-align:top; }
+        .tech-table tr:last-child td { border-bottom:none; }
+        .mono { font-family:'JetBrains Mono',monospace; }
+        .print-text { font-size:10px; font-weight:600; color:#000; white-space:pre-wrap; line-height:1.3; text-transform:capitalize; }
+        .signature-font { font-family:'Dancing Script',cursive; font-size:1.6rem; line-height:1; }
+        .header-bar { border-left:4px solid #2563eb; padding-left:8px; }
+
+        /* ── TOAST ── */
+        .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:#ff8000; color:white; font-weight:700; font-size:12px; padding:10px 24px; border-radius:100px; z-index:200; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; }
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+        /* ── WELCOME ── */
+        .type-card { border:2px solid transparent; border-radius:20px; padding:24px; cursor:pointer; transition:all .25s; }
+        .type-card:hover { transform:translateY(-4px); }
+
+        @page { size:A4 portrait; margin:0; }
+        @media print {
+            .no-print { display:none !important; }
+            body { background:white; margin:0; }
+            .rapportino-panel { position:static; transform:none; overflow:visible; background:white; }
+            .screen-wrapper { padding:0; }
+            .a4-page { margin:0; box-shadow:none; width:210mm; height:296mm; overflow:hidden; }
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen transition-colors duration-300"
+      :class="darkMode ? 'dark bg-[#050505] text-white' : 'bg-gray-50 text-gray-900'">
+<div id="app">
+
+<!-- ══════════════════════════════════
+     WELCOME – scelta tipo intervento
+══════════════════════════════════ -->
+<div v-if="view==='welcome'" class="min-h-screen flex flex-col items-center justify-center p-6"
+     :class="darkMode?'bg-[#050505]':'bg-gray-50'">
+    <div class="flex items-center gap-3 mb-10 select-none">
+        <div class="w-1.5 h-12 bg-gradient-to-b from-orange-400 to-red-600 rounded-full shadow-lg"></div>
+        <div>
+            <h1 class="text-3xl font-black tracking-tighter italic leading-none">
+                <span class="text-[#ff8000]">FIBER</span><span class="text-[#06b6d4]">REPORT</span>
+                <span class="text-[11px] font-normal opacity-40 ml-2 not-italic">PRO</span>
+            </h1>
+            <p class="text-xs mt-1 font-mono" :class="darkMode?'text-gray-500':'text-gray-400'">Seleziona il tipo di intervento per iniziare</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 w-full max-w-2xl">
+        <!-- GUASTI -->
+        <div class="type-card" :class="darkMode?'bg-[#121212] border-orange-500/30 hover:border-orange-400 hover:bg-orange-950/30':'bg-white border-orange-200 hover:border-orange-400 hover:bg-orange-50'" @click="selectType('guasti')">
+            <div class="w-12 h-12 rounded-2xl bg-orange-500/15 flex items-center justify-center mb-3">
+                <i class="ph ph-wrench text-2xl text-orange-400"></i>
+            </div>
+            <div class="font-black text-lg" :class="darkMode?'text-white':'text-gray-900'">Guasti</div>
+            <div class="text-xs mt-1 mb-3 leading-relaxed" :class="darkMode?'text-gray-400':'text-gray-500'">Permute, elementi ottici, interventi su guasti rete</div>
+            <div class="flex flex-wrap gap-1">
+                <span v-for="f in ['Nodo','Permuta','Problema','Intervento']" :key="f" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-orange-500/10 text-orange-400">{{ f }}</span>
+            </div>
+        </div>
+        <!-- CREATION -->
+        <div class="type-card" :class="darkMode?'bg-[#121212] border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-950/30':'bg-white border-cyan-200 hover:border-cyan-400 hover:bg-cyan-50'" @click="selectType('creation')">
+            <div class="w-12 h-12 rounded-2xl bg-cyan-500/15 flex items-center justify-center mb-3">
+                <i class="ph ph-cable-car text-2xl text-cyan-400"></i>
+            </div>
+            <div class="font-black text-lg" :class="darkMode?'text-white':'text-gray-900'">Creation</div>
+            <div class="text-xs mt-1 mb-3 leading-relaxed" :class="darkMode?'text-gray-400':'text-gray-500'">Nuove installazioni fibra, posa cavi, giunzioni</div>
+            <div class="flex flex-wrap gap-1">
+                <span v-for="f in ['Nodo','El. Ottico','UI Servite','Giunzioni']" :key="f" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400">{{ f }}</span>
+            </div>
+        </div>
+        <!-- CABINE -->
+        <div class="type-card" :class="darkMode?'bg-[#121212] border-purple-500/30 hover:border-purple-400 hover:bg-purple-950/30':'bg-white border-purple-200 hover:border-purple-400 hover:bg-purple-50'" @click="selectType('cabine')">
+            <div class="w-12 h-12 rounded-2xl bg-purple-500/15 flex items-center justify-center mb-3">
+                <i class="ph ph-circle-dashed text-2xl text-purple-400"></i>
+            </div>
+            <div class="font-black text-lg" :class="darkMode?'text-white':'text-gray-900'">Cabine</div>
+            <div class="text-xs mt-1 mb-3 leading-relaxed" :class="darkMode?'text-gray-400':'text-gray-500'">Anello primario, cabine secondarie, fibre, stato</div>
+            <div class="flex flex-wrap gap-1">
+                <span v-for="f in ['Anello','Cabine','Fibre','Stato']" :key="f" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400">{{ f }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex gap-4 mt-10 items-center">
+        <button @click="toggleTheme" class="w-11 h-7 rounded-full flex items-center px-1 border-2 transition-all" :class="darkMode?'bg-gray-800 border-yellow-500 justify-end':'bg-indigo-100 border-indigo-500 justify-start'">
+            <div class="w-5 h-5 rounded-full flex items-center justify-center text-xs shadow-sm" :class="darkMode?'bg-yellow-400 text-black':'bg-indigo-500 text-white'">
+                <i :class="darkMode?'ph-sun-fill':'ph-moon-stars-fill'"></i>
+            </div>
+        </button>
+        <div class="flex items-center rounded-full px-2 py-1 border" :class="darkMode?'bg-white/5 border-gray-700':'bg-gray-100 border-gray-300'">
+            <button @click="backupData" class="p-1.5 text-gray-400 hover:text-cyan-400" title="Backup"><i class="ph ph-floppy-disk text-base"></i></button>
+            <label class="p-1.5 text-gray-400 hover:text-cyan-400 cursor-pointer" title="Ripristina"><i class="ph ph-upload-simple text-base"></i><input type="file" @change="restoreData" class="hidden"></label>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════
+     EDITOR
+══════════════════════════════════ -->
+<div v-if="view==='editor'" class="pb-48">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-40 border-b shadow-lg backdrop-blur-xl" :class="darkMode?'bg-[#0a0a0a]/95 border-gray-800':'bg-white/95 border-gray-200'">
+        <!-- Top bar -->
+        <div class="px-4 py-3 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-2 select-none cursor-pointer" @click="view='welcome'" title="Cambia tipo">
+                <div class="w-2 h-7 rounded-full shadow-lg" :class="sheetType==='guasti'?'bg-gradient-to-b from-orange-400 to-red-600':sheetType==='creation'?'bg-gradient-to-b from-cyan-400 to-blue-600':'bg-gradient-to-b from-purple-400 to-purple-700'"></div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tighter italic leading-none"><span class="text-[#ff8000]">FIBER</span><span class="text-[#06b6d4]">REPORT</span></h1>
+                    <div class="text-[9px] font-mono uppercase font-bold mt-0.5" :class="sheetType==='guasti'?'text-orange-400':sheetType==='creation'?'text-cyan-400':'text-purple-400'">◀ {{ sheetType }}</div>
+                </div>
+            </div>
+            <div class="flex gap-2 items-center flex-wrap sm:flex-nowrap ml-auto">
+                <button @click="openRapportino" class="h-9 sm:h-10 px-3 rounded-full border flex items-center gap-2 text-xs font-bold transition-all hover:scale-105" :class="darkMode?'border-orange-500 text-orange-500 bg-orange-500/10':'border-orange-600 text-orange-600 bg-orange-50'">
+                    <i class="ph ph-clipboard-text text-lg"></i><span class="hidden sm:block">Rapportino</span>
+                </button>
+                <div class="flex items-center rounded-full px-2 py-1 border h-9 sm:h-10" :class="darkMode?'bg-white/5 border-gray-700':'bg-gray-100 border-gray-300'">
+                    <button @click="backupData" class="p-1.5 text-gray-400 hover:text-cyan-400"><i class="ph ph-floppy-disk text-lg"></i></button>
+                    <label class="p-1.5 text-gray-400 hover:text-cyan-400 cursor-pointer"><i class="ph ph-upload-simple text-lg"></i><input type="file" @change="restoreData" class="hidden"></label>
+                </div>
+                <button @click="showMemory=true" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 border" :class="darkMode?'bg-gray-800 border-gray-700 text-cyan-400':'bg-white border-gray-200 text-cyan-600 shadow-sm'"><i class="ph ph-brain text-lg"></i></button>
+                <button @click="toggleTheme" class="w-12 h-8 rounded-full flex items-center transition-all px-1 border-2" :class="darkMode?'bg-gray-800 border-yellow-500 justify-end':'bg-indigo-100 border-indigo-500 justify-start'">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center shadow-sm" :class="darkMode?'bg-yellow-400 text-black':'bg-indigo-500 text-white'"><i :class="darkMode?'ph-sun-fill':'ph-moon-stars-fill'" class="text-sm"></i></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex overflow-x-auto gap-1 px-4 pb-0 max-w-7xl mx-auto border-b" :class="darkMode?'bg-black/40 border-gray-800':'bg-gray-50 border-gray-200'">
+            <div v-for="(sheet,idx) in sheets" :key="sheet.id" @click="currentSheetIdx=idx"
+                 class="px-5 py-3 text-xs font-bold whitespace-nowrap rounded-t-lg cursor-pointer relative group uppercase tracking-wide border-t border-x transition-all"
+                 :class="[darkMode?'border-gray-800':'border-gray-300', currentSheetIdx===idx ? (darkMode?'bg-fiber-darkcard text-fiber-orange border-b-[#121212]':'bg-white text-fiber-orange border-b-white shadow-sm') : (darkMode?'bg-transparent text-gray-500 border-b-gray-800 hover:text-gray-300':'bg-transparent text-gray-400 border-b-gray-200 hover:text-gray-600')]">
+                {{ sheet.name }}
+                <button v-if="sheets.length>1" @click.stop="removeSheet(idx)" class="ml-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+            </div>
+            <button @click="addSheet" class="px-4 py-2 font-bold text-cyan-500 hover:text-cyan-400"><i class="ph ph-plus-circle text-lg"></i></button>
+        </div>
+
+        <!-- Team / Matricola / Data -->
+        <div class="border-b" :class="darkMode?'bg-fiber-darkcard border-gray-800':'bg-white border-gray-200'">
+            <div v-if="currentSheet" class="max-w-7xl mx-auto p-4 flex flex-wrap gap-4 justify-between items-center">
+                <div class="flex-1 min-w-[180px]">
+                    <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode?'text-cyan-400':'text-cyan-700'">Squadra Operativa</label>
+                    <input v-model="currentSheet.team" class="w-full bg-transparent font-bold text-xl outline-none placeholder-gray-600 smart-caps" :class="darkMode?'text-white':'text-gray-900'" placeholder="Inserisci Squadra...">
+                </div>
+                <div class="text-center">
+                    <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode?'text-cyan-400':'text-cyan-700'">N° Matricola</label>
+                    <input v-model="currentSheet.matricola" class="bg-transparent font-mono font-bold text-lg outline-none text-center w-28 border-b" :class="darkMode?'text-[#ff8000] border-gray-700':'text-orange-600 border-gray-300'" placeholder="000000">
+                </div>
+                <div class="text-right">
+                    <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode?'text-cyan-400':'text-cyan-700'">Data Intervento</label>
+                    <input type="date" v-model="currentSheet.date" class="bg-transparent font-mono font-bold text-lg outline-none text-right" :class="darkMode?'text-white':'text-gray-900'">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GRID -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6">
+        <div v-if="!currentSheet" class="flex items-center justify-center h-64 text-gray-500 text-sm">Caricamento...</div>
+        <template v-if="currentSheet">
+
+        <!-- ══ CABINE: layout dedicato anello ══ -->
+        <div v-if="sheetType==='cabine'" class="space-y-6">
+
+            <!-- HEADER ANELLO PRIMARIO -->
+            <div class="rounded-2xl p-5 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-purple-800':'bg-white border-purple-300'">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-xl bg-purple-500/20 flex items-center justify-center"><i class="ph ph-circle-dashed text-purple-400 text-lg"></i></div>
+                    <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Anello Primario</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Codice Cabina Primaria</label>
+                        <input v-model="currentSheet.anello_primaria" class="f-input font-mono font-black text-lg" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. CP-001">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Nome Anello</label>
+                        <input v-model="currentSheet.anello_nome" class="f-input smart-caps" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. Anello Nord - Via Roma">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CABINE SECONDARIE -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-black text-sm uppercase tracking-widest flex items-center gap-2" :class="darkMode?'text-white':'text-gray-900'">
+                        <i class="ph ph-buildings text-purple-400"></i> Cabine Secondarie
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full" :class="darkMode?'bg-purple-900/50 text-purple-400':'bg-purple-100 text-purple-700'">{{ (currentSheet.cabine_secondarie||[]).length }}</span>
+                    </h3>
+                    <button @click="addCabina" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105"
+                            :class="darkMode?'bg-purple-900/50 text-purple-300 border border-purple-700 hover:bg-purple-800/50':'bg-purple-50 text-purple-700 border border-purple-300 hover:bg-purple-100'">
+                        <i class="ph ph-plus-circle"></i> Aggiungi Cabina
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div v-for="(cab, cIdx) in (currentSheet.cabine_secondarie||[])" :key="cab.id"
+                         class="rounded-2xl border-2 overflow-hidden transition-all"
+                         :class="cabStatoClass(cab)">
+                        <!-- Cabina header -->
+                        <div class="flex items-center justify-between px-5 py-3 border-b" :class="darkMode?'border-gray-800 bg-black/20':'border-gray-100 bg-gray-50/50'">
+                            <div class="flex items-center gap-3">
+                                <span class="font-mono font-black text-xs px-2 py-1 rounded-md" :class="darkMode?'bg-purple-900/60 text-purple-300':'bg-purple-100 text-purple-700'">#{{ cIdx+1 }}</span>
+                                <span v-if="cab.nome" class="font-bold text-sm" :class="darkMode?'text-white':'text-gray-900'">{{ cab.nome }}</span>
+                                <span v-if="cab.codice" class="font-mono text-xs" :class="darkMode?'text-gray-400':'text-gray-500'">{{ cab.codice }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span v-if="cab.stato" class="text-[10px] font-bold uppercase px-2 py-1 rounded-full"
+                                      :class="cab.stato==='COMPLETATA'?'bg-emerald-500/20 text-emerald-400':cab.stato==='BYPASSATA'?'bg-amber-500/20 text-amber-400':'bg-red-500/20 text-red-400'">
+                                    {{ cab.stato==='COMPLETATA'?'✅':cab.stato==='BYPASSATA'?'⚡':'🔴' }} {{ cab.stato.replace('_',' ') }}
+                                </span>
+                                <button @click="currentSheet.cabine_secondarie.splice(cIdx,1)" class="text-gray-500 hover:text-red-500 transition-colors p-1"><i class="ph ph-trash text-base"></i></button>
+                            </div>
+                        </div>
+                        <!-- Cabina body -->
+                        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <!-- DATI CABINA -->
+                            <div class="space-y-3">
+                                <div class="text-[10px] font-black uppercase tracking-wider mb-2" :class="darkMode?'text-purple-400':'text-purple-700'">📍 Dati Cabina</div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Nome Cabina</label>
+                                        <input v-model="cab.nome" class="f-input smart-caps" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" placeholder="Es. Cabina Via Roma">
+                                    </div>
+                                    <div>
+                                        <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Codice</label>
+                                        <input v-model="cab.codice" class="f-input font-mono" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" placeholder="Es. CS-042">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Stato Lavori</label>
+                                    <select v-model="cab.stato" class="w-full bg-transparent border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white':'border-gray-300 text-gray-900'">
+                                        <option value="">-- Stato --</option>
+                                        <option value="COMPLETATA">✅ Completata</option>
+                                        <option value="NON_COMPLETATA">🔴 Non Completata</option>
+                                        <option value="BYPASSATA">⚡ Bypassata</option>
+                                    </select>
+                                </div>
+                                <div v-if="cab.stato==='BYPASSATA'" class="rounded-xl p-3 border" :class="darkMode?'bg-amber-950/30 border-amber-700':'bg-amber-50 border-amber-300'">
+                                    <label class="field-label text-amber-500">⚡ Motivo Bypass</label>
+                                    <select v-model="cab.motivo_bypass" class="w-full bg-transparent border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-amber-800 text-amber-300':'border-amber-400 text-amber-800'">
+                                        <option value="">-- Seleziona motivo --</option>
+                                        <option value="scavo_non_eseguito">Scavo non eseguito</option>
+                                        <option value="cavo_non_posato">Cavo non posato</option>
+                                        <option value="apparato_non_presente">Apparato attivo non presente</option>
+                                        <option value="switch_non_presente">Switch non presente</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Note</label>
+                                    <textarea v-model="cab.note" rows="2" class="f-textarea smart-caps text-sm" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" placeholder="Note tecniche..."></textarea>
+                                </div>
+                            </div>
+                            <!-- FIBRE + CONNESSIONI -->
+                            <div class="space-y-4">
+                                <!-- FIBRE -->
+                                <div>
+                                    <div class="text-[10px] font-black uppercase tracking-wider mb-2 flex items-center justify-between">
+                                        <span :class="darkMode?'text-cyan-400':'text-cyan-700'">🔵 Fibre Utilizzate</span>
+                                        <select v-model="cab.origine_fibre" class="text-[10px] font-bold bg-transparent border rounded-lg px-2 py-0.5 outline-none cursor-pointer" :class="darkMode?'border-gray-600 text-cyan-400':'border-gray-300 text-cyan-600'">
+                                            <option value="PFS">Origine: PFS</option>
+                                            <option value="PFP">Origine: PFP</option>
+                                        </select>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="rounded-lg p-2 border" :class="darkMode?'bg-blue-950/30 border-blue-800':'bg-blue-50 border-blue-200'">
+                                            <div class="text-[9px] font-mono font-bold text-blue-400 mb-1.5">→ ANDATA</div>
+                                            <div class="grid grid-cols-2 gap-1">
+                                                <div><div class="text-[9px] text-gray-500 mb-0.5">Fibra 1</div><input v-model="cab.fibra_andata_1" type="number" class="w-full bg-transparent text-sm font-bold font-mono outline-none border-b py-0.5" :class="darkMode?'border-blue-800 text-white':'border-blue-300 text-black'" placeholder="—"></div>
+                                                <div><div class="text-[9px] text-gray-500 mb-0.5">Fibra 2</div><input v-model="cab.fibra_andata_2" type="number" class="w-full bg-transparent text-sm font-bold font-mono outline-none border-b py-0.5" :class="darkMode?'border-blue-800 text-white':'border-blue-300 text-black'" placeholder="—"></div>
+                                            </div>
+                                        </div>
+                                        <div class="rounded-lg p-2 border" :class="darkMode?'bg-orange-950/30 border-orange-800':'bg-orange-50 border-orange-200'">
+                                            <div class="text-[9px] font-mono font-bold text-orange-400 mb-1.5">← RITORNO</div>
+                                            <div class="grid grid-cols-2 gap-1">
+                                                <div><div class="text-[9px] text-gray-500 mb-0.5">Fibra 3</div><input v-model="cab.fibra_ritorno_1" type="number" class="w-full bg-transparent text-sm font-bold font-mono outline-none border-b py-0.5" :class="darkMode?'border-orange-800 text-white':'border-orange-300 text-black'" placeholder="—"></div>
+                                                <div><div class="text-[9px] text-gray-500 mb-0.5">Fibra 4</div><input v-model="cab.fibra_ritorno_2" type="number" class="w-full bg-transparent text-sm font-bold font-mono outline-none border-b py-0.5" :class="darkMode?'border-orange-800 text-white':'border-orange-300 text-black'" placeholder="—"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- CONNESSIONI -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-[10px] font-black uppercase tracking-wider" :class="darkMode?'text-green-400':'text-green-700'">🔗 Connessioni Switch</span>
+                                        <button @click="cab.connessioni.push({modulo:'1',fibre:'1-2',destinazione:''})" class="text-[9px] font-bold text-green-500 hover:text-green-400">+ Aggiungi</button>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div v-for="(conn,connIdx) in cab.connessioni" :key="connIdx" class="flex items-center gap-2 rounded-lg p-2 border" :class="darkMode?'bg-gray-900/40 border-gray-700':'bg-gray-50 border-gray-200'">
+                                            <select v-model="conn.modulo" class="text-xs font-bold bg-transparent outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-cyan-400':'border-gray-300 text-cyan-600'">
+                                                <option value="1">Mod.1</option><option value="2">Mod.2</option>
+                                            </select>
+                                            <select v-model="conn.fibre" class="text-xs font-mono font-bold bg-transparent outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-blue-400':'border-gray-300 text-blue-600'">
+                                                <option value="1-2">F 1-2</option><option value="3-4">F 3-4</option><option value="5-6">F 5-6</option><option value="7-8">F 7-8</option>
+                                            </select>
+                                            <i class="ph ph-arrow-right text-gray-500 text-xs"></i>
+                                            <input v-model="conn.destinazione" class="flex-1 bg-transparent text-xs font-bold outline-none border-b smart-caps" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'" placeholder="Cabina dest.">
+                                            <button @click="cab.connessioni.splice(connIdx,1)" class="text-red-500/60 hover:text-red-500 text-xs"><i class="ph ph-x"></i></button>
+                                        </div>
+                                        <button v-if="cab.connessioni.length===0" @click="cab.connessioni.push({modulo:'1',fibre:'1-2',destinazione:''})" class="w-full text-[10px] text-gray-500 border border-dashed rounded-lg py-2" :class="darkMode?'border-gray-700':'border-gray-300'">+ Connessione</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!currentSheet.cabine_secondarie||currentSheet.cabine_secondarie.length===0" class="rounded-2xl border-2 border-dashed flex flex-col items-center justify-center py-12 gap-3" :class="darkMode?'border-gray-800':'border-gray-300'">
+                    <i class="ph ph-buildings text-3xl text-gray-600"></i>
+                    <span class="text-sm font-bold text-gray-500">Nessuna cabina secondaria</span>
+                    <button @click="addCabina" class="px-5 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white hover:bg-purple-500 transition-colors">+ Aggiungi Cabina</button>
+                </div>
+            </div>
+
+            <!-- SCHEMA ANELLO -->
+            <div class="rounded-2xl border-2 p-5" :class="darkMode?'bg-[#121212] border-purple-900':'bg-white border-purple-200'">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="ph ph-graph text-purple-400 text-lg"></i>
+                    <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Schema Anello Primario</span>
+                </div>
+                <div class="overflow-x-auto pb-2">
+                    <div class="flex items-center min-w-max py-3 gap-0">
+                        <div class="flex flex-col items-center">
+                            <div class="w-14 h-14 rounded-2xl flex flex-col items-center justify-center border-2 font-black text-[10px] text-center" :class="darkMode?'bg-purple-950 border-purple-500 text-purple-300':'bg-purple-100 border-purple-500 text-purple-700'"><i class="ph ph-broadcast text-base mb-0.5"></i>POP</div>
+                            <span class="text-[8px] font-mono mt-1 text-gray-500">Bredallaggio</span>
+                        </div>
+                        <div class="flex flex-col items-center w-10"><div class="text-[8px] text-blue-400 font-mono mb-0.5">→</div><div class="w-full h-0.5 bg-blue-500"></div><div class="text-[8px] text-orange-400 font-mono mt-0.5">←</div></div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-14 rounded-2xl flex flex-col items-center justify-center border-2 font-black text-[10px] text-center" :class="darkMode?'bg-purple-900 border-purple-400 text-purple-200':'bg-purple-200 border-purple-600 text-purple-800'"><i class="ph ph-database text-base mb-0.5"></i><span>{{ currentSheet.anello_primaria||'PRIMARIA' }}</span></div>
+                            <span class="text-[8px] font-mono mt-1 max-w-[64px] truncate" :class="darkMode?'text-purple-400':'text-purple-600'">{{ currentSheet.anello_nome||'Anello' }}</span>
+                        </div>
+                        <template v-if="currentSheet.cabine_secondarie&&currentSheet.cabine_secondarie.length">
+                            <div class="flex flex-col items-center w-10"><div class="text-[8px] text-blue-400 font-mono mb-0.5">→</div><div class="w-full h-0.5 bg-blue-500"></div><div class="text-[8px] text-orange-400 font-mono mt-0.5">←</div></div>
+                            <div class="flex flex-col items-center"><div class="px-2 py-1 rounded-lg border text-[10px] font-bold font-mono" :class="darkMode?'bg-gray-800 border-gray-600 text-cyan-400':'bg-gray-100 border-gray-400 text-cyan-600'">SW 1</div></div>
+                            <div v-for="(cab,i) in currentSheet.cabine_secondarie" :key="cab.id" class="flex items-center">
+                                <div class="flex flex-col items-center w-8"><div class="text-[8px] text-blue-400 font-mono mb-0.5">→</div><div class="w-full h-0.5" :class="cab.stato==='BYPASSATA'?'bg-amber-500':'bg-blue-400'"></div><div class="text-[8px] text-orange-400 font-mono mt-0.5">←</div></div>
+                                <div class="flex flex-col items-center">
+                                    <div class="w-14 h-12 rounded-xl flex flex-col items-center justify-center border-2 text-[9px] font-bold text-center"
+                                         :class="cab.stato==='COMPLETATA'?(darkMode?'bg-emerald-950 border-emerald-600 text-emerald-300':'bg-emerald-100 border-emerald-500 text-emerald-700'):cab.stato==='BYPASSATA'?(darkMode?'bg-amber-950 border-amber-600 text-amber-300 opacity-70':'bg-amber-100 border-amber-500 text-amber-700 opacity-70'):(darkMode?'bg-gray-900 border-gray-600 text-gray-400':'bg-gray-100 border-gray-400 text-gray-600')">
+                                        <i class="ph text-sm" :class="cab.stato==='COMPLETATA'?'ph-check-circle':cab.stato==='BYPASSATA'?'ph-lightning':'ph-circle'"></i>
+                                        <span class="leading-tight text-[8px]">{{ cab.codice||`CS-${i+1}` }}</span>
+                                    </div>
+                                    <span class="text-[8px] font-mono mt-0.5 max-w-[56px] truncate text-gray-500">{{ cab.nome }}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center w-10"><div class="text-[8px] text-blue-400 font-mono mb-0.5">→</div><div class="w-full h-0.5 bg-blue-300"></div></div>
+                            <div class="flex flex-col items-center"><div class="px-2 py-1 rounded-lg border text-[10px] font-bold font-mono" :class="darkMode?'bg-gray-800 border-gray-600 text-cyan-400':'bg-gray-100 border-gray-400 text-cyan-600'">SW 2</div></div>
+                            <div class="flex flex-col items-center w-8"><div class="text-[8px] text-orange-400 font-mono">↩</div><div class="w-full h-0.5 bg-orange-300"></div></div>
+                        </template>
+                        <div v-else class="px-6 text-gray-600 text-xs font-mono italic">— aggiungi cabine per lo schema —</div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-3 mt-3 pt-3 border-t text-[10px] font-mono" :class="darkMode?'border-gray-800':'border-gray-200'">
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Completata</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Bypassata</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-gray-500 inline-block"></span> Non completata</span>
+                    <span class="text-blue-400">→ Andata</span>
+                    <span class="text-orange-400">← Ritorno</span>
+                </div>
+            </div>
+        </div><!-- /cabine layout -->
+
+        <!-- ══ GUASTI + CREATION: summary chips + card grid ══ -->
+        <template v-if="sheetType!=='cabine'">
+        <div v-if="currentSheet.rows.length>0" class="mb-5 flex flex-wrap gap-3 text-[11px] font-bold">
+            <div v-for="(count,stato) in statsSummary" :key="stato" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" :class="statoChipClass(stato)">
+                <span>{{ statoEmoji(stato) }}</span><span>{{ statoLabel(stato) }}: {{ count }}</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div v-for="(row,rIdx) in currentSheet.rows" :key="row.id" class="rounded-2xl p-6 shadow-xl border-2 transition-all duration-300" :class="getRowClass(row)">
+
+                <!-- Card header -->
+                <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode?'border-gray-800':'border-gray-100'">
+                    <span class="text-cyan-500 font-black text-xs tracking-widest bg-cyan-500/10 px-3 py-1.5 rounded-md border border-cyan-500/20">SCHEDA #{{ rIdx+1 }}</span>
+                    <select v-model="row.stato" class="ml-2 text-xs font-bold uppercase rounded-lg px-2 py-1 outline-none border cursor-pointer" :class="darkMode?'bg-gray-800 text-white border-gray-600':'bg-white text-gray-900 border-gray-300'">
+                        <option value="">-- STATO --</option>
+                        <option value="DA_SBLOCCARE">🟢 Da Sbloccare</option>
+                        <option value="OCCORRE_ASSISTENTE">🟡 Occorre Assistente</option>
+                        <option value="NEGATO_ACCESSO">🔴 Negato Accesso</option>
+                        <option value="NON_REALIZZATO">🔴 Non Realizzato</option>
+                        <option value="OCCORRE_MATERIALE">🟠 Occorre Materiale</option>
+                        <option value="COMPLETATO">✅ Completato</option>
+                    </select>
+                    <button @click="removeRow(rIdx)" class="text-gray-500 hover:text-red-500 ml-2"><i class="ph ph-trash text-xl"></i></button>
+                </div>
+
+                <!-- GUASTI fields -->
+                <div v-if="sheetType==='guasti'" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Località</label><input v-model="row.localita" class="f-input smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'" placeholder="-"></div>
+                        <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Indirizzo</label><input v-model="row.indirizzo" class="f-input smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'" placeholder="-"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Nodo / PFS</label><input v-model="row.pop_pfs" class="f-input smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'"></div>
+                        <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">El. Ottico</label><input v-model="row.elemento_ottico" class="f-input smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'"></div>
+                    </div>
+                    <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Permuta</label><input v-model="row.permuta" class="f-input smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'"></div>
+                    <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Descrizione Problema</label><textarea v-model="row.desc_problema" class="f-textarea smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'" placeholder="Tipo guasto, sintomi..."></textarea></div>
+                    <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Intervento Effettuato</label><textarea v-model="row.intervento" class="f-textarea smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'" placeholder="Operazioni eseguite..."></textarea></div>
+                    <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Note</label><textarea v-model="row.note" class="f-textarea smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'" placeholder="Note aggiuntive..."></textarea></div>
+                </div>
+
+                <!-- CREATION fields -->
+                <div v-if="sheetType==='creation'" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Località</label><input v-model="row.localita" class="f-input smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'" placeholder="-"></div>
+                        <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Indirizzo</label><input v-model="row.indirizzo" class="f-input smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'" placeholder="-"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Nodo / PFS</label><input v-model="row.pop_pfs" class="f-input smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'"></div>
+                        <!-- TIPO ELEMENTO OTTICO - dropdown gestibile -->
+                        <div>
+                            <label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Tipo Elemento Ottico</label>
+                            <div class="flex items-center gap-2">
+                                <select v-model="row.tipo_elemento_ottico"
+                                        class="f-input outline-none cursor-pointer"
+                                        :class="darkMode?'text-white border-[#333] bg-transparent':'text-black border-gray-300 bg-transparent'">
+                                    <option value="">-- Seleziona --</option>
+                                    <option v-for="opt in tipiElementoOttico" :key="opt" :value="opt">{{ opt }}</option>
+                                </select>
+                                <button @click="showGestisciElementiOttici=true" class="flex-shrink-0 text-cyan-500 hover:text-cyan-300" title="Gestisci opzioni">
+                                    <i class="ph ph-gear text-base"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">UI Servite <span class="text-orange-400">*</span></label>
+                            <input v-model="row.ui_servite" type="number" min="1"
+                                   class="f-input" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'"
+                                   placeholder="Es: 8, 16, 32...">
+                        </div>
+                        <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">N° Giunzioni</label><input v-model="row.num_giunzioni" type="number" class="f-input" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'" placeholder="0"></div>
+                    </div>
+                    <div><label class="field-label" :class="darkMode?'text-cyan-400':'text-gray-500'">Note</label><textarea v-model="row.note" class="f-textarea smart-caps" :class="darkMode?'text-white border-[#333]':'text-black border-gray-300'" placeholder="Note tecniche..."></textarea></div>
+                </div>
+
+                <!-- CABINE fields - handled separately below, skip in row card -->
+                <div v-if="sheetType==='cabine'" class="hidden"></div>
+
+                <!-- MATERIALE (tutti) -->
+                <div class="pt-4 mt-4 border-t" :class="darkMode?'border-gray-800':'border-gray-100'">
+                    <label class="text-[11px] uppercase font-black text-fiber-orange mb-3 block tracking-wider flex items-center gap-2"><i class="ph ph-wrench-fill"></i> Materiale</label>
+                    <div class="space-y-2 mb-3">
+                        <div v-for="(item,mIdx) in row.materiale_list" :key="mIdx" class="flex items-center gap-3 p-1">
+                            <div @click="item.checked=!item.checked" class="checkbox-box flex-shrink-0" :class="{active:item.checked}"><i v-if="item.checked" class="ph ph-check text-white text-xs"></i></div>
+                            <input v-model="item.text" class="flex-grow bg-transparent border-none outline-none text-sm font-medium smart-caps" :class="[item.checked?'line-through opacity-50 text-gray-500':(darkMode?'text-white':'text-gray-900')]">
+                            <button @click="row.materiale_list.splice(mIdx,1)" class="text-gray-500 hover:text-red-500 p-1"><i class="ph ph-x"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input v-model="row.tempMaterial" @keyup.enter="addMaterial(row)" placeholder="Aggiungi voce..." class="text-sm bg-transparent border-b p-2 w-full outline-none focus:border-orange-500 transition-colors smart-caps" :class="darkMode?'border-[#333] text-white':'border-gray-300 text-gray-700'">
+                        <button @click="addMaterial(row)" class="text-cyan-500 hover:text-cyan-400 p-2"><i class="ph ph-plus-circle text-xl"></i></button>
+                    </div>
+                </div>
+
+                <!-- EXTRAS -->
+                <div v-if="row.extras.length>0" class="pt-3 mt-3 border-t border-dashed" :class="darkMode?'border-gray-800':'border-gray-300'">
+                    <div v-for="(extra,eIdx) in row.extras" :key="eIdx" class="flex gap-2 mb-2 items-center">
+                        <input v-model="extra.key" class="w-1/3 text-xs font-bold bg-transparent border-b border-cyan-800 text-cyan-500 outline-none p-1 smart-caps" placeholder="Nome">
+                        <input v-model="extra.value" class="w-full text-xs bg-transparent border-b outline-none p-1 smart-caps" :class="darkMode?'border-[#333] text-white':'border-gray-300 text-black'" placeholder="Valore">
+                        <button @click="row.extras.splice(eIdx,1)" class="text-red-500"><i class="ph ph-x"></i></button>
+                    </div>
+                </div>
+                <button @click="row.extras.push({key:'',value:''})" class="text-[10px] font-bold text-cyan-600 hover:text-cyan-400 mt-2">+ EXTRA</button>
+
+            </div>
+
+            <!-- Add row button -->
+            <button @click="addRow" class="h-full min-h-[250px] border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 transition-all opacity-60 hover:opacity-100 hover:scale-[1.01]" :class="darkMode?'border-gray-800 hover:border-orange-500 bg-white/5':'border-gray-300 hover:border-orange-500 bg-gray-50'">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center border-2" :class="darkMode?'border-gray-700 text-gray-500':'border-gray-400 text-gray-400'"><i class="ph ph-plus text-3xl"></i></div>
+                <span class="text-xs font-black uppercase tracking-widest text-gray-500">Nuova Scheda</span>
+            </button>
+        </div>
+        </template><!-- /sheetType!==cabine -->
+        </template><!-- /currentSheet -->
+    </main>
+
+    <!-- BOTTOM BAR -->
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 p-3 backdrop-blur-2xl rounded-2xl shadow-2xl border flex items-center gap-8 px-10 transition-colors" :class="darkMode?'bg-[#151515]/95 border-gray-700':'bg-white/95 border-gray-200 shadow-xl'">
+        <button @click="exportWhatsapp" class="group flex flex-col items-center gap-1">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-green-500 to-green-700 text-white flex items-center justify-center shadow-lg group-hover:-translate-y-1 transition-transform"><i class="ph ph-whatsapp-logo text-2xl"></i></div>
+            <span class="text-[9px] font-bold opacity-60" :class="darkMode?'text-white':'text-black'">INVIA</span>
+        </button>
+        <button @click="toggleDictation" class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all -mt-10 border-4 border-transparent" :class="[isListening?'bg-gradient-to-r from-orange-500 to-red-600 text-white mic-active shadow-orange-500/50':(darkMode?'bg-[#2a2a2a] text-white border-[#151515]':'bg-white text-gray-800 border-gray-100')]">
+            <i class="ph text-3xl" :class="isListening?'ph-microphone-fill':'ph-microphone'"></i>
+        </button>
+        <div class="flex gap-3">
+            <button @click="exportPDF" class="group flex flex-col items-center gap-1">
+                <div class="w-11 h-11 rounded-xl border flex items-center justify-center group-hover:-translate-y-1 transition-all" :class="darkMode?'border-gray-600 bg-gray-800 text-red-400':'border-gray-200 bg-white text-red-500'"><i class="ph ph-file-pdf text-xl"></i></div>
+                <span class="text-[9px] font-bold opacity-60" :class="darkMode?'text-white':'text-black'">PDF</span>
+            </button>
+            <button @click="exportExcel" class="group flex flex-col items-center gap-1">
+                <div class="w-11 h-11 rounded-xl border flex items-center justify-center group-hover:-translate-y-1 transition-all" :class="darkMode?'border-gray-600 bg-gray-800 text-green-400':'border-gray-200 bg-white text-green-600'"><i class="ph ph-file-xls text-xl"></i></div>
+                <span class="text-[9px] font-bold opacity-60" :class="darkMode?'text-white':'text-black'">XLS</span>
+            </button>
+        </div>
+    </div>
+
+</div><!-- /editor -->
+
+
+<!-- ══════════════════════════════════
+     RAPPORTINO PANEL
+══════════════════════════════════ -->
+<div class="rapportino-panel" :class="{open:view==='rapportino'}">
+
+    <div class="sticky top-0 z-50 bg-[#0f172a] text-white px-4 py-2 flex justify-between items-center border-b border-gray-800 no-print">
+        <div class="font-bold flex items-center gap-2 text-xs tracking-widest font-mono">
+            <span :class="rapp.tipo==='guasti'?'text-orange-400':rapp.tipo==='creation'?'text-cyan-400':'text-purple-400'">///</span>
+            RAPPORTINO · <span class="uppercase">{{ rapp.tipo }}</span>
+        </div>
+        <div class="flex gap-2 items-center overflow-x-auto">
+            <button @click="showImportModal=true" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded text-[10px] uppercase whitespace-nowrap flex items-center gap-1"><i class="ph ph-download-simple"></i> Importa Dati</button>
+            <button @click="view='editor'" class="px-3 py-1 border border-gray-600 text-gray-300 hover:text-white rounded text-[10px] uppercase whitespace-nowrap flex items-center gap-1"><i class="ph ph-arrow-left"></i> Indietro</button>
+            <button @click="downloadFiberPDF" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded text-[10px] uppercase whitespace-nowrap">XLS</button>
+            <button @click="downloadRapportinoPDF" class="px-4 py-1 bg-white text-black hover:bg-gray-200 font-bold rounded text-[10px] uppercase flex items-center gap-1.5 whitespace-nowrap"><i class="ph ph-file-pdf"></i> PDF A4</button>
+        </div>
+    </div>
+
+    <div class="screen-wrapper">
+        <div class="a4-page" id="pdf-content">
+            <!-- inner flex col to fill height -->
+            <div style="display:flex;flex-direction:column;height:100%;gap:0;">
+
+                <!-- Header -->
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;">
+                    <div style="width:30%;">
+                        <div style="height:52px;display:flex;align-items:center;cursor:pointer;" @click="triggerLogoUpload">
+                            <img v-if="rapp.logoSrc" :src="rapp.logoSrc" style="height:100%;width:auto;object-fit:contain;object-position:left;">
+                            <div v-else style="width:72px;height:26px;background:#f9fafb;border:1px dashed #d1d5db;display:flex;align-items:center;justify-content:center;font-size:8px;color:#9ca3af;font-family:'JetBrains Mono',monospace;">LOGO</div>
+                        </div>
+                        <input type="file" ref="logoInput" @change="handleLogo" style="display:none;" accept="image/*">
+                    </div>
+                    <div class="header-bar" style="text-align:right;margin-top:4px;">
+                        <div style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#6b7280;text-transform:uppercase;margin-bottom:2px;">
+                            TIPO: <span style="font-weight:700;" :style="rapp.tipo==='guasti'?'color:#f97316':rapp.tipo==='creation'?'color:#06b6d4':'color:#a855f7'">{{ rapp.tipo }}</span>
+                        </div>
+                        <div style="font-size:17px;font-weight:900;color:#111827;text-transform:uppercase;letter-spacing:-1px;line-height:1;">Rapporto Giornaliero</div>
+                        <div style="font-size:7px;color:#6b7280;font-family:'JetBrains Mono',monospace;margin-top:2px;">REF: INTERVENTO TECNICO</div>
+                    </div>
+                </div>
+
+                <!-- Meta -->
+                <div style="display:grid;grid-template-columns:1fr 1fr 2fr 1fr;gap:5px;margin-bottom:5px;">
+                    <div class="tech-box"><span class="tech-label">DATA</span><input v-model="rapp.displayDate" class="r-input mono"></div>
+                    <div class="tech-box"><span class="tech-label">CLIENTE</span><input v-model="rapp.cliente" class="r-input" placeholder="Open Fiber"></div>
+                    <div class="tech-box"><span class="tech-label">ASSISTENTE</span><input v-model="rapp.assistente" class="r-input" placeholder="Nome Cognome"></div>
+                    <div class="tech-box"><span class="tech-label">N° MAT. SQ.</span><input v-model="rapp.matricolaSquadra" class="r-input mono text-center font-black" placeholder="000000"></div>
+                </div>
+
+                <!-- Localita -->
+                <div class="tech-box" style="margin-bottom:5px;"><span class="tech-label">LOCALITÀ / CANTIERI</span><input v-model="rapp.localita" class="r-input uppercase" placeholder="COMUNI..."></div>
+
+                <!-- 01 Squadra -->
+                <div style="margin-bottom:5px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #d1d5db;margin-bottom:3px;padding-bottom:2px;">
+                        <span style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#111827;">01. Squadra Operativa</span>
+                        <button @click="addWorker" class="no-print" style="font-size:8px;color:#2563eb;font-weight:700;">+ ADD</button>
+                    </div>
+                    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:4px;padding:3px;">
+                        <table class="tech-table">
+                            <thead><tr>
+                                <th style="width:66px;">RUOLO</th><th>TECNICO</th><th style="width:56px;">MATRICOLA</th>
+                                <th style="width:24px;text-align:center;">ORD</th><th style="width:24px;text-align:center;">STR</th><th style="width:24px;text-align:center;">VIG</th>
+                                <th style="width:66px;">NOTE</th><th style="width:12px;" class="no-print"></th>
+                            </tr></thead>
+                            <tbody>
+                                <tr v-for="(w,i) in rapp.workers" :key="i">
+                                    <td><select v-model="w.role" style="background:transparent;font-weight:700;font-size:9px;color:#111827;width:100%;outline:none;"><option value="CS">CAPOSQUADRA</option><option value="OP">TECNICO</option><option value="GI">GIUNTISTA</option><option value="IM">IMPIANTISTA</option><option value="PC">POSACAVI</option><option value="DIP">DIPENDENTE</option></select></td>
+                                    <td><input v-model="w.name" class="r-input" placeholder="..."></td>
+                                    <td><input v-model="w.matricola" class="r-input mono text-center" placeholder="000000"></td>
+                                    <td style="text-align:center;"><input type="number" v-model="w.h_ord" class="r-input text-center mono"></td>
+                                    <td style="text-align:center;"><input type="number" v-model="w.h_str" class="r-input text-center mono"></td>
+                                    <td style="text-align:center;"><input type="number" v-model="w.h_vg" class="r-input text-center mono"></td>
+                                    <td><input v-model="w.notes" class="r-input" placeholder="-"></td>
+                                    <td style="text-align:center;" class="no-print"><button @click="rapp.workers.splice(i,1)" style="color:#f87171;">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 02 Lavorazioni (cresce a riempire spazio) -->
+                <div style="flex:1;min-height:0;overflow:hidden;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #d1d5db;margin-bottom:3px;padding-bottom:2px;">
+                        <span style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#111827;">02. Dettaglio Lavorazioni</span>
+                        <div class="no-print" style="display:flex;gap:8px;">
+                            <button @click="showImportModal=true" style="font-size:8px;color:#2563eb;font-weight:700;">AGGIORNA</button>
+                            <button @click="addWork" style="font-size:8px;color:#16a34a;font-weight:700;">+ RIGA</button>
+                        </div>
+                    </div>
+                    <div style="overflow:hidden;max-height:100%;">
+                        <table class="tech-table">
+                            <thead><tr>
+                                <th style="width:16px;">N.</th>
+                                <th style="width:33%;">INDIRIZZO (LOCALITÀ)</th>
+                                <th>DESCRIZIONE / NOTE TECNICHE</th>
+                                <th style="width:22px;text-align:center;">Q.</th>
+                                <th style="width:12px;" class="no-print"></th>
+                            </tr></thead>
+                            <tbody>
+                                <tr v-for="(work,i) in rapp.works" :key="i">
+                                    <td style="font-weight:700;color:#9ca3af;font-family:'JetBrains Mono',monospace;">{{ i+1 }}</td>
+                                    <td style="padding-right:5px;"><textarea v-model="work.address" rows="1" class="r-input font-bold uppercase" placeholder="VIA..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
+                                    <td style="padding-right:5px;"><textarea v-model="work.desc" rows="1" class="r-input" style="color:#374151;" placeholder="Dettagli..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
+                                    <td style="text-align:center;"><input type="number" v-model="work.qty" class="r-input text-center font-bold mono"></td>
+                                    <td style="text-align:center;" class="no-print"><button @click="rapp.works.splice(i,1)" style="color:#f87171;">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div style="border-top:2px solid #111827;padding-top:7px;margin-top:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                        <div style="display:flex;gap:5px;">
+                            <div class="tech-box" style="width:86px;"><span class="tech-label">MEZZO</span><input v-model="rapp.mezzo" class="r-input" placeholder="Modello"></div>
+                            <div class="tech-box" style="width:66px;"><span class="tech-label">TARGA</span><input v-model="rapp.targa" class="r-input uppercase mono" placeholder="TARGA"></div>
+                            <div class="tech-box" style="width:56px;"><span class="tech-label">KM</span><input type="number" v-model="rapp.km" class="r-input mono text-right" placeholder="0"></div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin-bottom:3px;" class="no-print">
+                                <span class="tech-label" style="color:#2563eb;margin:0;">RIFORNIMENTO</span>
+                                <input type="checkbox" v-model="rapp.showFuel" style="accent-color:#000;">
+                            </label>
+                            <div v-if="rapp.showFuel" style="display:flex;gap:4px;">
+                                <div class="tech-box" style="width:48px;"><span class="tech-label">LITRI</span><input v-model="rapp.fuelLitres" class="r-input text-center mono"></div>
+                                <div class="tech-box" style="width:48px;"><span class="tech-label">EURO</span><input v-model="rapp.fuelEuro" class="r-input text-center mono"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                        <div style="border:1px solid #d1d5db;border-radius:4px;display:flex;text-align:center;background:#f9fafb;height:48px;">
+                            <div style="flex:1;border-right:1px solid #d1d5db;padding:3px;"><span class="tech-label">VISTO ASSISTENTE</span></div>
+                            <div style="flex:1;border-right:1px solid #d1d5db;padding:3px;"><span class="tech-label">VISTO AMMIN.</span></div>
+                            <div style="flex:1;padding:3px;"><span class="tech-label">VISTO CONTAB.</span></div>
+                        </div>
+                        <div style="position:relative;border-bottom:1px solid #111827;height:48px;display:flex;align-items:flex-end;justify-content:center;">
+                            <span class="tech-label" style="position:absolute;top:0;left:0;">FIRMA CAPOSQUADRA</span>
+                            <input v-model="rapp.signatureName" style="position:absolute;inset:0;opacity:0;cursor:text;z-index:10;width:100%;height:100%;text-align:center;" placeholder="Firma">
+                            <span v-if="!rapp.signatureName" style="color:#d1d5db;font-size:9px;margin-bottom:3px;" class="no-print">Clicca per firmare</span>
+                            <span v-else class="signature-font" style="margin-bottom:2px;">{{ rapp.signatureName }}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div><!-- /rapportino -->
+
+
+<!-- ══ MODAL IMPORT ══ -->
+<div v-if="showImportModal" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-3xl p-6 shadow-2xl bg-[#18181b] border border-gray-700">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="ph ph-download-simple text-blue-400"></i> Importa nel Rapportino</h3>
+            <button @click="showImportModal=false" class="p-2 hover:bg-gray-500/10 rounded-full"><i class="ph ph-x text-gray-400"></i></button>
+        </div>
+        <p class="text-gray-400 text-xs mb-5">Scegli da quale foglio importare. I dati attuali verranno sostituiti.</p>
+        <div class="space-y-3">
+            <button v-for="type in ['guasti','creation','cabine']" :key="type" @click="doImport(type)"
+                    class="w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all group"
+                    :class="type==='guasti'?'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 hover:border-orange-400':type==='creation'?'border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-400':'border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-400'">
+                <i class="text-xl" :class="type==='guasti'?'ph ph-lightning-fill text-orange-400':type==='creation'?'ph ph-cable-car text-cyan-400':'ph ph-buildings text-purple-400'"></i>
+                <div class="text-left flex-1">
+                    <div class="text-white font-black capitalize">{{ type }}</div>
+                    <div class="text-[10px] font-mono" :class="type==='guasti'?'text-orange-400/60':type==='creation'?'text-cyan-400/60':'text-purple-400/60'">
+                        {{ sheetsByType[type] ? sheetsByType[type].rows.length+' schede' : 'nessun dato' }}
+                    </div>
+                </div>
+                <i class="ph ph-arrow-right text-gray-500 group-hover:text-white transition-colors"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL: Gestisci Tipi Elemento Ottico ══ -->
+<div v-if="showGestisciElementiOttici" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-3xl p-6 shadow-2xl border" :class="darkMode?'bg-[#18181b] border-gray-700':'bg-white border-gray-200'">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-lg font-bold flex items-center gap-2" :class="darkMode?'text-white':'text-gray-900'">
+                <i class="ph ph-sliders text-cyan-400"></i> Tipi Elemento Ottico
+            </h3>
+            <button @click="showGestisciElementiOttici=false" class="p-2 hover:bg-gray-500/10 rounded-full"><i class="ph ph-x text-gray-400"></i></button>
+        </div>
+        <div class="space-y-2 mb-4 max-h-52 overflow-y-auto">
+            <div v-for="(opt,i) in tipiElementoOttico" :key="i" class="flex items-center gap-2 px-3 py-2 rounded-xl border" :class="darkMode?'bg-gray-900 border-gray-700':'bg-gray-50 border-gray-200'">
+                <span class="flex-1 font-mono font-bold text-sm" :class="darkMode?'text-cyan-400':'text-cyan-700'">{{ opt }}</span>
+                <button @click="tipiElementoOttico.splice(i,1)" class="text-red-400 hover:text-red-300 p-1"><i class="ph ph-trash text-sm"></i></button>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <input v-model="newTipoElemento" @keyup.enter="addTipoElemento" placeholder="Nuovo tipo (es. ROE)" class="flex-1 bg-transparent border-b py-2 outline-none font-mono font-bold uppercase text-sm" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'">
+            <button @click="addTipoElemento" class="px-4 py-2 rounded-xl font-bold text-xs bg-cyan-600 hover:bg-cyan-500 text-white transition-colors">+ AGGIUNGI</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL: Memoria AI ══ --> -->
+<div v-if="showMemory" class="fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-3xl p-6 shadow-2xl border" :class="darkMode?'bg-[#18181b] border-gray-700':'bg-white border-gray-200'">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold flex items-center gap-2" :class="darkMode?'text-white':'text-gray-900'"><i class="ph ph-brain text-fiber-orange"></i> Memoria AI</h3>
+            <button @click="showMemory=false" class="p-2 hover:bg-gray-500/10 rounded-full"><i class="ph ph-x text-xl text-gray-500"></i></button>
+        </div>
+        <div class="rounded-xl p-2 max-h-60 overflow-y-auto mb-4 border" :class="darkMode?'bg-black/20 border-gray-800':'bg-gray-50 border-gray-200'">
+            <div v-for="(val,key) in dictationMemory" :key="key" class="flex justify-between items-center p-3 border-b last:border-0" :class="darkMode?'border-gray-800':'border-gray-200'">
+                <div><div class="text-red-400 text-xs line-through mb-0.5">{{ key }}</div><div class="text-cyan-500 font-bold text-sm">{{ val }}</div></div>
+                <button @click="deleteMemoryRule(key)" class="text-gray-400 hover:text-red-500 p-2"><i class="ph ph-trash text-lg"></i></button>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <input v-model="newRule.wrong" placeholder="Se sente..." class="f-input px-3 border rounded-lg bg-transparent" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'">
+            <input v-model="newRule.right" placeholder="Scrive..." class="f-input px-3 border rounded-lg bg-transparent" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'">
+        </div>
+        <button @click="addMemoryRule" class="w-full py-3 rounded-xl font-bold bg-gradient-to-r from-orange-400 to-red-500 text-white">SALVA REGOLA</button>
+    </div>
+</div>
+
+<div class="toast" :class="{show:toastVisible}">{{ toastMsg }}</div>
+</div><!-- /app -->
+
+<script>
+const { createApp } = Vue;
+createApp({
+    data() {
+        return {
+            view: 'welcome',
+            darkMode: true,
+            isListening: false,
+            showMemory: false,
+            showImportModal: false,
+            showGestisciElementiOttici: false,
+            newTipoElemento: '',
+            toastVisible: false,
+            toastMsg: '',
+            sheetType: null,
+            tipiElementoOttico: ['PFP','PFS','PDA','PDI','PTA','PD','PAC/PAL','POP/PCN'],
+            allSheets: { guasti:[], creation:[], cabine:[] },
+            currentSheetIdx: 0,
+            recognition: null,
+            dictationMemory: JSON.parse(localStorage.getItem('fiber_memory')) || { 'tubo r k':'Tubo Rame', 'fibra uno':'Fibra 1Gb' },
+            newRule: { wrong:'', right:'' },
+            rapp: {
+                tipo: 'guasti',
+                logoSrc: localStorage.getItem('delta_logo')||'',
+                displayDate: new Date().toLocaleDateString('it-IT'),
+                cliente:'Open Fiber', localita:'', assistente:'', matricolaSquadra:'',
+                workers:[{role:'CS',name:'',matricola:'',h_ord:8,h_str:'',h_vg:'',notes:''},{role:'DIP',name:'',matricola:'',h_ord:8,h_str:'',h_vg:'',notes:''}],
+                works:[{address:'',desc:'',qty:''}],
+                mezzo:'',targa:'',km:'',showFuel:false,fuelLitres:'',fuelEuro:'',signatureName:''
+            }
+        };
+    },
+    computed: {
+        sheets() {
+            if (!this.sheetType) return [];
+            return this.allSheets[this.sheetType] || [];
+        },
+        currentSheet() {
+            const s = this.sheets;
+            return s[Math.min(this.currentSheetIdx, s.length-1)] || null;
+        },
+        statsSummary() {
+            if (!this.currentSheet) return {};
+            const c={};
+            this.currentSheet.rows.forEach(r => { if(r.stato) c[r.stato]=(c[r.stato]||0)+1; });
+            return c;
+        },
+        sheetsByType() {
+            const res={};
+            for(const t of ['guasti','creation','cabine']){
+                const sheets=this.allSheets[t]||[];
+                if(sheets.length>0){
+                    res[t]={ rows:sheets.flatMap(s=>s.rows||[]), team:sheets[0].team, date:sheets[0].date, matricola:sheets[0].matricola };
+                }
+            }
+            return res;
+        }
+    },
+    mounted() {
+        if(localStorage.getItem('fiber_theme')==='light') this.darkMode=false;
+        const saved=localStorage.getItem('fiber_all_sheets');
+        if(saved){ try{ this.allSheets=JSON.parse(saved); }catch(e){} }
+        const savedType=localStorage.getItem('fiber_sheet_type');
+        if(savedType && this.allSheets[savedType]?.length>0){ this.sheetType=savedType; this.view='editor'; }
+        const savedTipi=localStorage.getItem('fiber_tipi_ottico');
+        if(savedTipi){ try{ this.tipiElementoOttico=JSON.parse(savedTipi); }catch(e){} }
+        this.initSpeech();
+    },
+    watch: {
+        allSheets:{ handler(v){ localStorage.setItem('fiber_all_sheets',JSON.stringify(v)); }, deep:true },
+        tipiElementoOttico:{ handler(v){ localStorage.setItem('fiber_tipi_ottico',JSON.stringify(v)); }, deep:true },
+        darkMode(v){ localStorage.setItem('fiber_theme',v?'dark':'light'); },
+        sheetType(v){ if(v) localStorage.setItem('fiber_sheet_type',v); }
+    },
+    methods: {
+        formatDateIT(d){ if(!d)return''; const p=d.split('-'); return`${p[2]}/${p[1]}/${p[0]}`; },
+        smartFormat(t){ if(!t)return''; return t.replace(/\S+/g,w=>w===w.toUpperCase()&&w.length>1?w:w.charAt(0).toUpperCase()+w.slice(1)); },
+        cap(v){ return v?v.charAt(0).toUpperCase()+v.slice(1):''; },
+        showToast(msg){ this.toastMsg=msg; this.toastVisible=true; setTimeout(()=>{this.toastVisible=false;},2500); },
+        toggleTheme(){ this.darkMode=!this.darkMode; },
+
+        // ── WELCOME ──
+        selectType(type){
+            this.sheetType=type;
+            if(!this.allSheets[type]) this.allSheets[type]=[];
+            if(this.allSheets[type].length===0){
+                const s=this.makeSheet(1); s.rows.push(this.newRow()); this.allSheets[type].push(s);
+            } else if(this.allSheets[type][0].rows.length===0){
+                this.allSheets[type][0].rows.push(this.newRow());
+            }
+            this.currentSheetIdx=0; this.view='editor';
+        },
+        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],anello_primaria:'',anello_nome:'',cabine_secondarie:[]}; },
+        newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',cabina_primaria:'',pfp:'',fibre_utilizzate:'',tratte_fibra:'',giunzioni:'',materiale_list:[],tempMaterial:'',extras:[]}; },
+        newCabina(){ return{id:Date.now()+Math.random(),nome:'',codice:'',connessioni:[],fibra_andata_1:'',fibra_andata_2:'',fibra_ritorno_1:'',fibra_ritorno_2:'',origine_fibre:'PFS',stato:'',motivo_bypass:'',note:''}; },
+        addCabina(){
+            if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie=[];
+            this.currentSheet.cabine_secondarie.push(this.newCabina());
+        },
+
+        // ── SHEETS ──
+        addSheet(){ const l=this.allSheets[this.sheetType]; const s=this.makeSheet(l.length+1); s.rows.push(this.newRow()); l.push(s); this.currentSheetIdx=l.length-1; },
+        removeSheet(i){ if(confirm('Eliminare foglio?')){ this.allSheets[this.sheetType].splice(i,1); if(this.currentSheetIdx>=this.allSheets[this.sheetType].length) this.currentSheetIdx=Math.max(0,this.allSheets[this.sheetType].length-1); }},
+        addRow(){ if(this.currentSheet) this.currentSheet.rows.push(this.newRow()); },
+        removeRow(i){ if(confirm('Eliminare riga?')) this.currentSheet.rows.splice(i,1); },
+        addMaterial(row,text=null){ const v=text||row.tempMaterial; if(v){row.materiale_list.push({text:v,checked:false});row.tempMaterial='';} },
+
+        // ── ROW STYLING ──
+        getRowClass(row){
+            if(!row.stato) return this.darkMode?'bg-[#121212] border-gray-800':'bg-white border-gray-200';
+            const dm={DA_SBLOCCARE:'bg-green-950/60 border-green-600',OCCORRE_ASSISTENTE:'bg-yellow-950/60 border-yellow-600',NEGATO_ACCESSO:'bg-red-950/60 border-red-600',NON_REALIZZATO:'bg-red-950/80 border-red-800',OCCORRE_MATERIALE:'bg-orange-950/60 border-orange-600',COMPLETATO:'bg-emerald-950/60 border-emerald-500'};
+            const lm={DA_SBLOCCARE:'bg-green-50 border-green-500',OCCORRE_ASSISTENTE:'bg-yellow-50 border-yellow-500',NEGATO_ACCESSO:'bg-red-50 border-red-500',NON_REALIZZATO:'bg-red-100 border-red-700',OCCORRE_MATERIALE:'bg-orange-50 border-orange-500',COMPLETATO:'bg-emerald-50 border-emerald-500'};
+            return this.darkMode?(dm[row.stato]||'bg-[#121212] border-gray-800'):(lm[row.stato]||'bg-white border-gray-200');
+        },
+        statoLabel(s){ return{DA_SBLOCCARE:'Da Sbloccare',OCCORRE_ASSISTENTE:'Assistente',NEGATO_ACCESSO:'Negato',NON_REALIZZATO:'Non Real.',OCCORRE_MATERIALE:'Materiale',COMPLETATO:'Completato'}[s]||s; },
+        statoEmoji(s){ return{DA_SBLOCCARE:'🟢',OCCORRE_ASSISTENTE:'🟡',NEGATO_ACCESSO:'🔴',NON_REALIZZATO:'🔴',OCCORRE_MATERIALE:'🟠',COMPLETATO:'✅'}[s]||'⚪'; },
+        statoChipClass(s){
+            if(this.darkMode) return{DA_SBLOCCARE:'border-green-700 bg-green-950/40 text-green-400',OCCORRE_ASSISTENTE:'border-yellow-700 bg-yellow-950/40 text-yellow-400',NEGATO_ACCESSO:'border-red-700 bg-red-950/40 text-red-400',NON_REALIZZATO:'border-red-800 bg-red-950/60 text-red-300',OCCORRE_MATERIALE:'border-orange-700 bg-orange-950/40 text-orange-400',COMPLETATO:'border-emerald-700 bg-emerald-950/40 text-emerald-400'}[s]||'border-gray-700 text-gray-400';
+            return{DA_SBLOCCARE:'border-green-400 bg-green-50 text-green-700',OCCORRE_ASSISTENTE:'border-yellow-400 bg-yellow-50 text-yellow-700',NEGATO_ACCESSO:'border-red-400 bg-red-50 text-red-700',NON_REALIZZATO:'border-red-600 bg-red-100 text-red-800',OCCORRE_MATERIALE:'border-orange-400 bg-orange-50 text-orange-700',COMPLETATO:'border-emerald-400 bg-emerald-50 text-emerald-700'}[s]||'border-gray-300 text-gray-600';
+        },
+        cabStatoClass(cab){
+            const dm={COMPLETATA:'bg-emerald-950/40 border-emerald-700',NON_COMPLETATA:'bg-red-950/40 border-red-700',BYPASSATA:'bg-amber-950/40 border-amber-700'};
+            const lm={COMPLETATA:'bg-emerald-50 border-emerald-400',NON_COMPLETATA:'bg-red-50 border-red-400',BYPASSATA:'bg-amber-50 border-amber-400'};
+            if(!cab.stato) return this.darkMode?'bg-[#121212] border-gray-800':'bg-white border-gray-200';
+            return this.darkMode?(dm[cab.stato]||'bg-[#121212] border-gray-800'):(lm[cab.stato]||'bg-white border-gray-200');
+        },
+
+        // ── MEMORIA ──
+        addMemoryRule(){ if(this.newRule.wrong&&this.newRule.right){this.dictationMemory[this.newRule.wrong.toLowerCase()]=this.newRule.right;localStorage.setItem('fiber_memory',JSON.stringify(this.dictationMemory));this.newRule={wrong:'',right:''};this.showToast('Regola salvata!');} },
+        deleteMemoryRule(key){ delete this.dictationMemory[key]; localStorage.setItem('fiber_memory',JSON.stringify(this.dictationMemory)); },
+        addTipoElemento(){ const v=this.newTipoElemento.trim().toUpperCase(); if(v&&!this.tipiElementoOttico.includes(v)){this.tipiElementoOttico.push(v);} this.newTipoElemento=''; },
+
+        // ── SPEECH ──
+        initSpeech(){
+            if(!('webkitSpeechRecognition' in window)) return;
+            this.recognition=new webkitSpeechRecognition();
+            this.recognition.lang='it-IT'; this.recognition.continuous=true; this.recognition.interimResults=false;
+            this.recognition.onstart=()=>{this.isListening=true;};
+            this.recognition.onend=()=>{if(this.isListening)try{this.recognition.start();}catch(e){}else this.isListening=false;};
+            this.recognition.onresult=(e)=>{
+                const transcript=e.results[e.results.length-1][0].transcript.trim();
+                // PRIORITÀ 1: campo in focus → inietta testo
+                const active=document.activeElement;
+                if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA')&&active.type!=='file'&&active.type!=='checkbox'){
+                    const proto=active.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;
+                    const setter=Object.getOwnPropertyDescriptor(proto,'value').set;
+                    const start=active.selectionStart??active.value.length;
+                    const end=active.selectionEnd??active.value.length;
+                    setter.call(active,active.value.slice(0,start)+transcript+active.value.slice(end));
+                    active.dispatchEvent(new Event('input',{bubbles:true}));
+                    try{active.setSelectionRange(start+transcript.length,start+transcript.length);}catch(err){}
+                    return;
+                }
+                // PRIORITÀ 2: parsing comandi
+                this.parseCommand(transcript);
+            };
+        },
+        toggleDictation(){ if(!this.recognition)return alert('Browser non supportato'); if(this.isListening){this.isListening=false;this.recognition.stop();}else this.recognition.start(); },
+
+        parseCommand(text){
+            let t=text.toLowerCase().trim();
+            for(const[w,r] of Object.entries(this.dictationMemory)) t=t.replace(new RegExp(w,'gi'),r);
+            if(!this.currentSheet) return;
+            if(this.currentSheet.rows.length===0) this.addRow();
+            const row=this.currentSheet.rows[this.currentSheet.rows.length-1];
+            const words=t.split(/\s+/);
+
+            // ── Comando "stato X" (2+ parole) ──
+            if(words[0]==='stato'){
+                const statoMap={sbloccare:'DA_SBLOCCARE',da:'DA_SBLOCCARE',assistente:'OCCORRE_ASSISTENTE',occorre:'OCCORRE_ASSISTENTE',negato:'NEGATO_ACCESSO',realizzato:'NON_REALIZZATO',non:'NON_REALIZZATO',materiale:'OCCORRE_MATERIALE',completato:'COMPLETATO',completata:'COMPLETATO'};
+                const k=words[1];
+                if(k&&statoMap[k]){row.stato=statoMap[k];this.showToast(`🚦 ${row.stato.replace(/_/g,' ')}`);return;}
+            }
+
+            // ── Mappa 2 parole ──
+            const two=words.slice(0,2).join(' ');
+            const TWO={'nuova scheda':'NEW_CARD','nuova riga':'NEW_CARD','aggiungi materiale':'MATERIAL_ADD','da sbloccare':'STATO_DA_SBLOCCARE','non realizzato':'STATO_NON_REALIZZATO'};
+            // ── Mappa 1 parola ──
+            const ONE={permuta:'permuta',indirizzo:'indirizzo',localita:'localita','località':'localita',nodo:'pop_pfs',pop:'pop_pfs',pfs:'pop_pfs',elemento:'elemento_ottico',ottico:'elemento_ottico',nota:'note',note:'note',problema:'desc_problema',guasto:'desc_problema',intervento:'intervento',cabina:'cabina_primaria',pfp:'pfp',tratte:'tratte_fibra',fibre:'fibre_utilizzate',giunzioni:'giunzioni',squadra:'TEAM_FIELD',materiale:'MATERIAL_ADD',sbloccare:'STATO_DA_SBLOCCARE',assistente:'STATO_OCCORRE_ASSISTENTE',negato:'STATO_NEGATO_ACCESSO',completato:'STATO_COMPLETATO',completata:'STATO_COMPLETATO'};
+
+            let field=TWO[two]||(ONE[words[0]]||null);
+            let vi=TWO[two]?2:1;
+            if(!field){row.note=(row.note?row.note+'\n':'')+this.cap(t);this.showToast('📝 Aggiunto a note');return;}
+            const value=words.slice(vi).join(' ').trim();
+            this.applyValue(row,field,value);
+        },
+        applyValue(row,field,value){
+            const lbl={permuta:'Permuta',indirizzo:'Indirizzo',localita:'Località',pop_pfs:'Nodo',elemento_ottico:'El.Ottico',note:'Note',desc_problema:'Problema',intervento:'Intervento',cabina_primaria:'Cabina',pfp:'PFP',fibre_utilizzate:'Fibre',tratte_fibra:'Tratte',giunzioni:'Giunzioni'};
+            if(field==='NEW_CARD'){this.addRow();this.showToast('➕ Nuova scheda');return;}
+            if(field==='TEAM_FIELD'){this.currentSheet.team=value.toUpperCase();this.showToast(`👷 ${value}`);return;}
+            if(field==='MATERIAL_ADD'){this.addMaterial(row,this.cap(value));this.showToast(`🔧 ${value}`);return;}
+            if(field==='note'){row.note=(row.note?row.note+'\n':'')+this.cap(value);this.showToast('📝 Nota');return;}
+            if(field.startsWith('STATO_')){row.stato=field.replace('STATO_','');this.showToast(`🚦 ${row.stato.replace(/_/g,' ')}`);return;}
+            row[field]=this.cap(value); this.showToast(`✓ ${lbl[field]||field}: ${value}`);
+        },
+
+        // ── RAPPORTINO ──
+        openRapportino(){ this.rapp.tipo=this.sheetType; this.view='rapportino'; },
+        doImport(type){
+            const data=this.sheetsByType[type];
+            if(!data||data.rows.length===0){this.showToast('Nessun dato per questo tipo');return;}
+            this.rapp.tipo=type;
+            const fs=this.allSheets[type][0];
+            this.rapp.displayDate=this.formatDateIT(fs.date);
+            if(fs.matricola) this.rapp.matricolaSquadra=fs.matricola;
+            if(fs.team){
+                const names=fs.team.split(/\s*[-\/,]\s*/).filter(Boolean);
+                names.forEach((n,i)=>{if(i<this.rapp.workers.length)this.rapp.workers[i].name=this.smartFormat(n.trim());else this.rapp.workers.push({role:'OP',name:this.smartFormat(n.trim()),matricola:'',h_ord:8,h_str:'',h_vg:'',notes:''});});
+            }
+            const cities=new Set(); this.rapp.works=[];
+            data.rows.forEach(r=>{
+                const loc=r.localita||r.cabina_primaria||'';
+                if(loc) cities.add(loc.toUpperCase());
+                let addr='';
+                if(type==='cabine') addr=[r.cabina_primaria,r.pfp].filter(Boolean).join(' → ').toUpperCase();
+                else addr=r.indirizzo?(r.localita?`${r.indirizzo} (${r.localita})`:r.indirizzo).toUpperCase():(r.localita||'').toUpperCase();
+                const dp=[];
+                if(type==='guasti'){if(r.desc_problema)dp.push(this.smartFormat(r.desc_problema));if(r.intervento)dp.push(`Int: ${this.smartFormat(r.intervento)}`);if(r.permuta)dp.push(`Permuta: ${r.permuta}`);if(r.pop_pfs)dp.push(`Nodo: ${r.pop_pfs}`);}
+                else if(type==='creation'){if(r.pop_pfs)dp.push(`Nodo: ${r.pop_pfs}`);if(r.elemento_ottico)dp.push(`EO: ${r.elemento_ottico}`);if(r.permuta)dp.push(`Permuta: ${r.permuta}`);if(r.num_giunzioni)dp.push(`Giun: ${r.num_giunzioni}`);}
+                else if(type==='cabine'){if(r.pop_pfs)dp.push(`Nodo: ${r.pop_pfs}`);if(r.fibre_utilizzate)dp.push(`Fibre: ${r.fibre_utilizzate}`);if(r.tratte_fibra)dp.push(`Tratte: ${r.tratte_fibra}`);if(r.giunzioni)dp.push(`Giun: ${r.giunzioni}`);}
+                if(r.note)dp.push(this.smartFormat(r.note));
+                if(r.stato)dp.push(r.stato.replace(/_/g,' '));
+                if(r.materiale_list?.length)dp.push(`Mat: ${r.materiale_list.map(m=>this.smartFormat(m.text)).join(', ')}`);
+                r.extras?.forEach(e=>{if(e.key&&e.value)dp.push(`${e.key}: ${e.value}`);});
+                if(addr||dp.length) this.rapp.works.push({address:addr||'–',desc:dp.join(' | '),qty:'1'});
+            });
+            this.rapp.localita=Array.from(cities).join(', ');
+            this.showImportModal=false;
+            this.showToast(`✓ Importati ${data.rows.length} interventi da ${type}`);
+        },
+
+        triggerLogoUpload(){ this.$refs.logoInput.click(); },
+        handleLogo(e){ const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{this.rapp.logoSrc=ev.target.result;localStorage.setItem('delta_logo',this.rapp.logoSrc);};r.readAsDataURL(f); },
+        addWorker(){ this.rapp.workers.push({role:'OP',name:'',matricola:'',h_ord:8,h_str:'',h_vg:'',notes:''}); },
+        addWork(){ this.rapp.works.push({address:'',desc:'',qty:''}); },
+
+        // ── PDF A4 (una sola pagina) ──
+        async downloadRapportinoPDF(){
+            const el=document.getElementById('pdf-content');
+            window.scrollTo(0,0);
+            const dateFile=this.rapp.displayDate.replace(/\//g,'-');
+            const btns=document.querySelectorAll('.no-print');
+            btns.forEach(b=>b.style.visibility='hidden');
+            const inputs=el.querySelectorAll('input,textarea,select');
+            const orig=[];
+            inputs.forEach(inp=>{
+                orig.push({el:inp,display:inp.style.display});
+                if(inp.type==='checkbox'||inp.type==='file') return;
+                const div=document.createElement('div');
+                div.innerText=inp.tagName==='SELECT'?inp.options[inp.selectedIndex]?.text||'':inp.value;
+                div.className=inp.className+' print-text';
+                if(inp.tagName==='TEXTAREA') div.style.minHeight=Math.max(16,inp.scrollHeight)+'px';
+                inp.style.display='none';
+                inp.parentNode.insertBefore(div,inp);
+            });
+            const opt={margin:0,filename:`Rapportino_${dateFile}.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,scrollY:0,windowWidth:794},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:'avoid-all'}};
+            await html2pdf().set(opt).from(el).save();
+            setTimeout(()=>{el.querySelectorAll('.print-text').forEach(e=>e.remove());inputs.forEach((inp,i)=>inp.style.display=orig[i].display);btns.forEach(b=>b.style.visibility='visible');},600);
+        },
+
+        // ── PDF tabella ──
+        downloadFiberPDF(){
+            const{jsPDF}=window.jspdf; const doc=new jsPDF();
+            const type=this.rapp.tipo; const sheets=this.allSheets[type];
+            if(!sheets?.length) return alert('Nessun dato.');
+            const sheet=sheets[0]; const dateIT=this.formatDateIT(sheet.date);
+            doc.setFillColor(15,23,42);doc.rect(0,0,210,20,'F');
+            doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+            doc.text(`FIBER REPORT · ${type.toUpperCase()}`,10,13);
+            doc.setFontSize(9);doc.text(`${this.smartFormat(sheet.team)}  ${dateIT}`,130,13);
+            const body=this.rapp.works.map((w,i)=>[i+1,w.address,w.desc,w.qty]);
+            doc.autoTable({head:[['N.','INDIRIZZO','DESCRIZIONE','Q.']],body,startY:25,theme:'grid',headStyles:{fillColor:[15,23,42],textColor:255,fontStyle:'bold',fontSize:8},styles:{fontSize:7,cellPadding:2,valign:'middle'},columnStyles:{0:{cellWidth:10},1:{cellWidth:50},3:{cellWidth:12}}});
+            doc.save(`FiberReport_${type}_${sheet.date.split('-').reverse().join('-')}.pdf`);
+        },
+
+        // ── WhatsApp ──
+        exportWhatsapp(){
+            const s=this.currentSheet; if(!s)return;
+            let msg=`*FIBER REPORT · ${this.sheetType.toUpperCase()}*\n📅 ${this.formatDateIT(s.date)} | 👷 ${this.smartFormat(s.team)}\n\n`;
+            s.rows.forEach((r,i)=>{
+                const addr=r.localita||r.cabina_primaria;
+                if(addr||r.indirizzo){
+                    msg+=`*#${i+1}* 📍 ${this.smartFormat(addr)}, ${this.smartFormat(r.indirizzo||'')}\n`;
+                    if(this.sheetType==='guasti'){if(r.pop_pfs)msg+=`🔌 Nodo: ${r.pop_pfs}\n`;if(r.permuta)msg+=`🔄 ${r.permuta}\n`;if(r.desc_problema)msg+=`⚠️ ${r.desc_problema}\n`;if(r.intervento)msg+=`🔧 ${r.intervento}\n`;}
+                    else if(this.sheetType==='creation'){if(r.pop_pfs)msg+=`🔌 ${r.pop_pfs}\n`;if(r.permuta)msg+=`🔄 ${r.permuta}\n`;if(r.num_giunzioni)msg+=`🔀 Giun: ${r.num_giunzioni}\n`;}
+                    else if(this.sheetType==='cabine'){if(r.pfp)msg+=`📦 PFP: ${r.pfp}\n`;if(r.pop_pfs)msg+=`🔌 ${r.pop_pfs}\n`;if(r.fibre_utilizzate)msg+=`💡 ${r.fibre_utilizzate}\n`;if(r.tratte_fibra)msg+=`↔️ ${r.tratte_fibra}\n`;}
+                    if(r.note)msg+=`📝 ${r.note}\n`;
+                    if(r.stato)msg+=`🚦 ${r.stato.replace(/_/g,' ')}\n`;
+                    if(r.materiale_list?.length){msg+=`🛠\n`;r.materiale_list.forEach(m=>msg+=`${m.checked?'✅':'⬜'} ${this.smartFormat(m.text)}\n`);}
+                    msg+='─────\n';
+                }
+            });
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+        },
+
+        // ── PDF editor ──
+        exportPDF(){
+            const{jsPDF}=window.jspdf; const doc=new jsPDF();
+            const s=this.currentSheet; if(!s)return;
+            doc.setFillColor(6,182,212);doc.rect(0,0,210,20,'F');
+            doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+            doc.text(`FIBER REPORT · ${this.sheetType.toUpperCase()}`,10,13);
+            doc.setFontSize(9);doc.text(`${this.smartFormat(s.team)} – ${this.formatDateIT(s.date)}`,130,13);
+            const heads={guasti:['LOC','INDIR','NODO','PERMUTA','STATO','PROBLEMA','INTERVENTO'],creation:['LOC','INDIR','NODO','EL.OTT','PERMUTA','GIUN','STATO'],cabine:['CABINA','PFP','NODO','FIBRE','TRATTE','GIUN','STATO']};
+            const body=s.rows.map(r=>{
+                if(this.sheetType==='guasti') return[this.smartFormat(r.localita),this.smartFormat(r.indirizzo),r.pop_pfs,r.permuta,r.stato?.replace(/_/g,' ')||'',this.smartFormat(r.desc_problema),this.smartFormat(r.intervento)];
+                if(this.sheetType==='creation') return[this.smartFormat(r.localita),this.smartFormat(r.indirizzo),r.pop_pfs,r.elemento_ottico,r.permuta,r.num_giunzioni,r.stato?.replace(/_/g,' ')||''];
+                if(this.sheetType==='cabine') return[this.smartFormat(r.cabina_primaria),r.pfp,r.pop_pfs,r.fibre_utilizzate,this.smartFormat(r.tratte_fibra),r.giunzioni,r.stato?.replace(/_/g,' ')||''];
+                return[];
+            });
+            doc.autoTable({head:[heads[this.sheetType]||[]],body,startY:25,theme:'grid',headStyles:{fillColor:[6,182,212],textColor:255,fontStyle:'bold',fontSize:8},alternateRowStyles:{fillColor:[245,245,245]},styles:{fontSize:7,cellPadding:2,valign:'middle'}});
+            doc.save(`${this.sheetType}_${s.name}.pdf`);
+        },
+
+        // ── Excel ──
+        exportExcel(){
+            const s=this.currentSheet; if(!s)return;
+            const data=s.rows.map(r=>{
+                const base={Squadra:this.smartFormat(s.team),Data:this.formatDateIT(s.date),Stato:r.stato,Note:this.smartFormat(r.note),Materiale:r.materiale_list.map(m=>this.smartFormat(m.text)).join(', ')};
+                if(this.sheetType==='guasti') Object.assign(base,{Località:this.smartFormat(r.localita),Indirizzo:this.smartFormat(r.indirizzo),Nodo:r.pop_pfs,'El.Ottico':r.elemento_ottico,Permuta:r.permuta,Problema:this.smartFormat(r.desc_problema),Intervento:this.smartFormat(r.intervento)});
+                if(this.sheetType==='creation') Object.assign(base,{Località:this.smartFormat(r.localita),Indirizzo:this.smartFormat(r.indirizzo),Nodo:r.pop_pfs,'El.Ottico':r.elemento_ottico,Permuta:r.permuta,Giunzioni:r.num_giunzioni});
+                if(this.sheetType==='cabine') Object.assign(base,{Cabina:this.smartFormat(r.cabina_primaria),PFP:r.pfp,Nodo:r.pop_pfs,Fibre:r.fibre_utilizzate,Tratte:this.smartFormat(r.tratte_fibra),Giunzioni:r.giunzioni});
+                r.extras.forEach(e=>base[this.smartFormat(e.key)]=this.smartFormat(e.value));
+                return base;
+            });
+            const ws=XLSX.utils.json_to_sheet(data); const wb=XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb,ws,this.sheetType);
+            XLSX.writeFile(wb,`${this.sheetType}_${s.name}.xlsx`);
+        },
+
+        // ── Backup / Restore ──
+        backupData(){
+            const blob=new Blob([JSON.stringify({allSheets:this.allSheets})],{type:'application/json'});
+            const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
+        },
+        restoreData(e){
+            const f=e.target.files[0]; if(!f)return;
+            const r=new FileReader();
+            r.onload=ev=>{
+                try{
+                    const data=JSON.parse(ev.target.result);
+                    this.allSheets=data.allSheets||data;
+                    this.currentSheetIdx=0;
+                    this.showToast('✓ Backup ripristinato');
+                }catch(err){alert('File non valido');}
+            };
+            r.readAsText(f);
+        }
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
