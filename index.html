@@ -102,7 +102,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 w-full max-w-2xl">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 w-full max-w-4xl">
         <!-- GUASTI -->
         <div class="type-card" :class="darkMode?'bg-[#121212] border-orange-500/30 hover:border-orange-400 hover:bg-orange-950/30':'bg-white border-orange-200 hover:border-orange-400 hover:bg-orange-50'" @click="selectType('guasti')">
             <div class="w-12 h-12 rounded-2xl bg-orange-500/15 flex items-center justify-center mb-3">
@@ -136,6 +136,17 @@
                 <span v-for="f in ['Anello','Cabine','Fibre','Stato']" :key="f" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400">{{ f }}</span>
             </div>
         </div>
+        <!-- BRETELLAGGIO -->
+        <div class="type-card" :class="darkMode?'bg-[#121212] border-yellow-500/30 hover:border-yellow-400 hover:bg-yellow-950/30':'bg-white border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50'" @click="selectType('bretellaggio')">
+            <div class="w-12 h-12 rounded-2xl bg-yellow-500/15 flex items-center justify-center mb-3">
+                <i class="ph ph-git-branch text-2xl text-yellow-400"></i>
+            </div>
+            <div class="font-black text-lg" :class="darkMode?'text-white':'text-gray-900'">Bretellaggio</div>
+            <div class="text-xs mt-1 mb-3 leading-relaxed" :class="darkMode?'text-gray-400':'text-gray-500'">POP, splitter primario/secondario, attenuazioni, PFS</div>
+            <div class="flex flex-wrap gap-1">
+                <span v-for="f in ['POP','PFP','Splitter','Attenuaz.']" :key="f" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400">{{ f }}</span>
+            </div>
+        </div>
     </div>
 
     <div class="flex gap-4 mt-10 items-center">
@@ -161,10 +172,10 @@
         <!-- Top bar -->
         <div class="px-4 py-3 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center gap-2 select-none cursor-pointer" @click="view='welcome'" title="Cambia tipo">
-                <div class="w-2 h-7 rounded-full shadow-lg" :class="sheetType==='guasti'?'bg-gradient-to-b from-orange-400 to-red-600':sheetType==='creation'?'bg-gradient-to-b from-cyan-400 to-blue-600':'bg-gradient-to-b from-purple-400 to-purple-700'"></div>
+                <div class="w-2 h-7 rounded-full shadow-lg" :class="sheetType==='guasti'?'bg-gradient-to-b from-orange-400 to-red-600':sheetType==='creation'?'bg-gradient-to-b from-cyan-400 to-blue-600':sheetType==='bretellaggio'?'bg-gradient-to-b from-yellow-400 to-orange-500':'bg-gradient-to-b from-purple-400 to-purple-700'"></div>
                 <div>
                     <h1 class="text-xl font-black tracking-tighter italic leading-none"><span class="text-[#ff8000]">FIBER</span><span class="text-[#06b6d4]">REPORT</span></h1>
-                    <div class="text-[9px] font-mono uppercase font-bold mt-0.5" :class="sheetType==='guasti'?'text-orange-400':sheetType==='creation'?'text-cyan-400':'text-purple-400'">◀ {{ sheetType }}</div>
+                    <div class="text-[9px] font-mono uppercase font-bold mt-0.5" :class="sheetType==='guasti'?'text-orange-400':sheetType==='creation'?'text-cyan-400':sheetType==='bretellaggio'?'text-yellow-400':'text-purple-400'">◀ {{ sheetType }}</div>
                 </div>
             </div>
             <div class="flex gap-2 items-center flex-wrap sm:flex-nowrap ml-auto">
@@ -226,7 +237,7 @@
                     <div class="w-8 h-8 rounded-xl bg-purple-500/20 flex items-center justify-center"><i class="ph ph-circle-dashed text-purple-400 text-lg"></i></div>
                     <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Anello Primario</span>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Codice Cabina Primaria</label>
                         <input v-model="currentSheet.anello_primaria" class="f-input font-mono font-black text-lg" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. CP-001">
@@ -234,6 +245,35 @@
                     <div>
                         <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Nome Anello</label>
                         <input v-model="currentSheet.anello_nome" class="f-input smart-caps" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. Anello Nord - Via Roma">
+                    </div>
+                </div>
+                <!-- Switch + Patch Panel -->
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t" :class="darkMode?'border-purple-900':'border-purple-200'">
+                    <div class="rounded-xl p-3 border" :class="darkMode?'bg-blue-950/30 border-blue-800':'bg-blue-50 border-blue-200'">
+                        <div class="text-[9px] font-mono font-black text-blue-400 mb-2 uppercase tracking-wider">→ Andata</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-blue-400':'text-blue-600'">Porta Switch 1</label>
+                                <input v-model="currentSheet.sw1_porta" type="number" class="f-input font-mono font-black text-base" :class="darkMode?'text-white border-blue-800':'text-black border-blue-300'" placeholder="5">
+                            </div>
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-blue-400':'text-blue-600'">Patch Panel</label>
+                                <input v-model="currentSheet.pp_andata" class="f-input font-mono font-bold" :class="darkMode?'text-white border-blue-800':'text-black border-blue-300'" placeholder="13/14">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rounded-xl p-3 border" :class="darkMode?'bg-orange-950/30 border-orange-800':'bg-orange-50 border-orange-200'">
+                        <div class="text-[9px] font-mono font-black text-orange-400 mb-2 uppercase tracking-wider">← Ritorno</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-orange-400':'text-orange-600'">Porta Switch 2</label>
+                                <input v-model="currentSheet.sw2_porta" type="number" class="f-input font-mono font-black text-base" :class="darkMode?'text-white border-orange-800':'text-black border-orange-300'" placeholder="5">
+                            </div>
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-orange-400':'text-orange-600'">Patch Panel</label>
+                                <input v-model="currentSheet.pp_ritorno" class="f-input font-mono font-bold" :class="darkMode?'text-white border-orange-800':'text-black border-orange-300'" placeholder="15/16">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -285,21 +325,20 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Stato Lavori</label>
-                                    <select v-model="cab.stato" class="w-full bg-transparent border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white':'border-gray-300 text-gray-900'">
-                                        <option value="">-- Stato --</option>
-                                        <option value="COMPLETATA">✅ Completata</option>
-                                        <option value="NON_COMPLETATA">🔴 Non Completata</option>
-                                        <option value="BYPASSATA">⚡ Bypassata</option>
+                                    <label class="field-label" :class="darkMode?'text-gray-300':'text-gray-600'">Stato Lavori</label>
+                                    <select v-model="cab.stato" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
+                                        <option value="" :class="darkMode?'text-gray-400 bg-[#1a1a1a]':''">-- Stato --</option>
+                                        <option value="COMPLETATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">✅ Completata</option>
+                                        <option value="NON_COMPLETATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">🔴 Non Completata</option>
+                                        <option value="BYPASSATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">⚡ Bypassata</option>
                                     </select>
                                 </div>
                                 <div v-if="cab.stato==='BYPASSATA'" class="rounded-xl p-3 border" :class="darkMode?'bg-amber-950/30 border-amber-700':'bg-amber-50 border-amber-300'">
                                     <label class="field-label text-amber-500">⚡ Motivo Bypass</label>
-                                    <select v-model="cab.motivo_bypass" class="w-full bg-transparent border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-amber-800 text-amber-300':'border-amber-400 text-amber-800'">
+                                    <select v-model="cab.motivo_bypass" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-amber-800 text-amber-300 bg-transparent':'border-amber-400 text-amber-800 bg-transparent'">
                                         <option value="">-- Seleziona motivo --</option>
                                         <option value="scavo_non_eseguito">Scavo non eseguito</option>
                                         <option value="cavo_non_posato">Cavo non posato</option>
-                                        <option value="apparato_non_presente">Apparato attivo non presente</option>
                                         <option value="switch_non_presente">Switch non presente</option>
                                     </select>
                                 </div>
@@ -310,33 +349,92 @@
                             </div>
                             <!-- FIBRE + CONNESSIONI -->
                             <div class="space-y-4">
-                                <!-- FIBRE -->
+                                <!-- FIBRE 8 totali: 4 PFS + 4 PFP -->
                                 <div>
-                                    <div class="text-[10px] font-black uppercase tracking-wider mb-2 flex items-center justify-between">
-                                        <span :class="darkMode?'text-cyan-400':'text-cyan-700'">🔵 Fibre Utilizzate</span>
-                                        <select v-model="cab.origine_fibre" class="text-[10px] font-bold bg-transparent border rounded-lg px-2 py-0.5 outline-none cursor-pointer" :class="darkMode?'border-gray-600 text-cyan-400':'border-gray-300 text-cyan-600'">
-                                            <option value="PFS">Origine: PFS</option>
-                                            <option value="PFP">Origine: PFP</option>
-                                        </select>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div class="rounded-lg p-2 border" :class="darkMode?'bg-blue-950/30 border-blue-800':'bg-blue-50 border-blue-200'">
-                                            <div class="text-[9px] font-mono font-bold text-blue-400 mb-1.5">→ ANDATA</div>
-                                            <div class="grid grid-cols-2 gap-1">
-                                                <div><div class="text-[9px] text-gray-500 mb-0.5">Fibra 1</div><input v-model="cab.fibra_andata_1" type="number" class="w-full bg-transparent text-sm font-bold font-mono outline-none border-b py-0.5" :class="darkMode?'border-blue-800 text-white':'border-blue-300 text-black'" placeholder="—"></div>
-                                                <div><div class="text-[9px] text-gray-500 mb-0.5">Fibra 2</div><input v-model="cab.fibra_andata_2" type="number" class="w-full bg-transparent text-sm font-bold font-mono outline-none border-b py-0.5" :class="darkMode?'border-blue-800 text-white':'border-blue-300 text-black'" placeholder="—"></div>
+                                    <div class="text-[10px] font-black uppercase tracking-wider mb-2" :class="darkMode?'text-cyan-400':'text-cyan-700'">🔵 Fibre Utilizzate (8 totali)</div>
+                                    <div class="space-y-2">
+                                        <!-- 4 PFS -->
+                                        <div class="rounded-xl p-3 border" :class="darkMode?'bg-blue-950/30 border-blue-800':'bg-blue-50 border-blue-200'">
+                                            <div class="text-[9px] font-mono font-black text-blue-400 mb-2 uppercase tracking-wider">→ PFS</div>
+                                            <div class="space-y-2">
+                                                <div v-for="n in 4" :key="'pfs'+n">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-[9px] font-mono font-bold w-5 flex-shrink-0" :class="darkMode?'text-blue-400':'text-blue-600'">F{{ n }}</span>
+                                                        <input v-model="cab['pfs_f'+n]" type="number"
+                                                               class="w-20 flex-shrink-0 bg-transparent text-base font-black font-mono outline-none border-b py-0.5"
+                                                               :class="darkMode?'border-blue-700 text-white':'border-blue-400 text-black'" placeholder="—">
+                                                    </div>
+                                                    <!-- Risultato inline leggibile -->
+                                                    <template v-if="cab['pfs_f'+n] && inlineFibra(cab['pfs_f'+n], currentSheet)">
+                                                        <div class="mt-1 ml-7 flex flex-wrap items-center gap-1 rounded-lg px-2 py-1.5 border"
+                                                             :class="darkMode?'bg-black/30 border-blue-900':'bg-white border-blue-200'">
+                                                            <!-- Tubetto -->
+                                                            <span class="text-[10px] font-bold" :class="darkMode?'text-gray-400':'text-gray-500'">T</span>
+                                                            <span class="text-[11px] font-black font-mono" :class="darkMode?'text-white':'text-gray-900'">{{ inlineFibra(cab['pfs_f'+n], currentSheet).tubetto }}</span>
+                                                            <span v-if="inlineFibra(cab['pfs_f'+n], currentSheet).tubettoHex"
+                                                                  class="w-3.5 h-3.5 rounded-sm border border-gray-400 flex-shrink-0"
+                                                                  :style="'background:'+inlineFibra(cab['pfs_f'+n], currentSheet).tubettoHex"
+                                                                  :title="inlineFibra(cab['pfs_f'+n], currentSheet).tubettoLabel"></span>
+                                                            <span class="text-[10px] font-bold" :class="darkMode?'text-gray-500':'text-gray-400'">{{ inlineFibra(cab['pfs_f'+n], currentSheet).tubettoLabel }}</span>
+                                                            <span class="text-[10px] text-gray-500 mx-0.5">→</span>
+                                                            <!-- Posizione e colore fibra -->
+                                                            <span class="text-[10px] font-bold" :class="darkMode?'text-gray-400':'text-gray-500'">F</span>
+                                                            <span class="text-[11px] font-black font-mono" :class="darkMode?'text-white':'text-gray-900'">{{ inlineFibra(cab['pfs_f'+n], currentSheet).posizione }}</span>
+                                                            <span class="w-3.5 h-3.5 rounded-full border-2 border-gray-400 flex-shrink-0"
+                                                                  :style="'background:'+inlineFibra(cab['pfs_f'+n], currentSheet).colorHex"></span>
+                                                            <span class="text-[10px] font-bold" :class="darkMode?'text-gray-300':'text-gray-700'">{{ inlineFibra(cab['pfs_f'+n], currentSheet).colore }}</span>
+                                                            <span class="text-[10px] text-gray-500 mx-0.5">→</span>
+                                                            <!-- Tipo fibra (evidenziato) -->
+                                                            <span class="text-[10px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded"
+                                                                  :class="inlineFibra(cab['pfs_f'+n], currentSheet).tipo==='Normale'?(darkMode?'bg-green-900/60 text-green-300':'bg-green-100 text-green-700'):inlineFibra(cab['pfs_f'+n], currentSheet).tipo==='Striata'?(darkMode?'bg-yellow-900/60 text-yellow-300':'bg-yellow-100 text-yellow-700'):(darkMode?'bg-red-900/60 text-red-300':'bg-red-100 text-red-700')">
+                                                                {{ inlineFibra(cab['pfs_f'+n], currentSheet).tipo.toUpperCase() }}
+                                                            </span>
+                                                        </div>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="rounded-lg p-2 border" :class="darkMode?'bg-orange-950/30 border-orange-800':'bg-orange-50 border-orange-200'">
-                                            <div class="text-[9px] font-mono font-bold text-orange-400 mb-1.5">← RITORNO</div>
-                                            <div class="grid grid-cols-2 gap-1">
-                                                <div><div class="text-[9px] text-gray-500 mb-0.5">Fibra 3</div><input v-model="cab.fibra_ritorno_1" type="number" class="w-full bg-transparent text-sm font-bold font-mono outline-none border-b py-0.5" :class="darkMode?'border-orange-800 text-white':'border-orange-300 text-black'" placeholder="—"></div>
-                                                <div><div class="text-[9px] text-gray-500 mb-0.5">Fibra 4</div><input v-model="cab.fibra_ritorno_2" type="number" class="w-full bg-transparent text-sm font-bold font-mono outline-none border-b py-0.5" :class="darkMode?'border-orange-800 text-white':'border-orange-300 text-black'" placeholder="—"></div>
+                                        <!-- 4 PFP -->
+                                        <div class="rounded-xl p-3 border" :class="darkMode?'bg-purple-950/30 border-purple-800':'bg-purple-50 border-purple-200'">
+                                            <div class="text-[9px] font-mono font-black text-purple-400 mb-2 uppercase tracking-wider">→ PFP</div>
+                                            <div class="space-y-2">
+                                                <div v-for="n in 4" :key="'pfp'+n">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-[9px] font-mono font-bold w-5 flex-shrink-0" :class="darkMode?'text-purple-400':'text-purple-600'">F{{ n }}</span>
+                                                        <input v-model="cab['pfp_f'+n]" type="number"
+                                                               class="w-20 flex-shrink-0 bg-transparent text-base font-black font-mono outline-none border-b py-0.5"
+                                                               :class="darkMode?'border-purple-700 text-white':'border-purple-400 text-black'" placeholder="—">
+                                                    </div>
+                                                    <!-- Risultato inline leggibile -->
+                                                    <template v-if="cab['pfp_f'+n] && inlineFibra(cab['pfp_f'+n], currentSheet)">
+                                                        <div class="mt-1 ml-7 flex flex-wrap items-center gap-1 rounded-lg px-2 py-1.5 border"
+                                                             :class="darkMode?'bg-black/30 border-purple-900':'bg-white border-purple-200'">
+                                                            <span class="text-[10px] font-bold" :class="darkMode?'text-gray-400':'text-gray-500'">T</span>
+                                                            <span class="text-[11px] font-black font-mono" :class="darkMode?'text-white':'text-gray-900'">{{ inlineFibra(cab['pfp_f'+n], currentSheet).tubetto }}</span>
+                                                            <span v-if="inlineFibra(cab['pfp_f'+n], currentSheet).tubettoHex"
+                                                                  class="w-3.5 h-3.5 rounded-sm border border-gray-400 flex-shrink-0"
+                                                                  :style="'background:'+inlineFibra(cab['pfp_f'+n], currentSheet).tubettoHex"
+                                                                  :title="inlineFibra(cab['pfp_f'+n], currentSheet).tubettoLabel"></span>
+                                                            <span class="text-[10px] font-bold" :class="darkMode?'text-gray-500':'text-gray-400'">{{ inlineFibra(cab['pfp_f'+n], currentSheet).tubettoLabel }}</span>
+                                                            <span class="text-[10px] text-gray-500 mx-0.5">→</span>
+                                                            <span class="text-[10px] font-bold" :class="darkMode?'text-gray-400':'text-gray-500'">F</span>
+                                                            <span class="text-[11px] font-black font-mono" :class="darkMode?'text-white':'text-gray-900'">{{ inlineFibra(cab['pfp_f'+n], currentSheet).posizione }}</span>
+                                                            <span class="w-3.5 h-3.5 rounded-full border-2 border-gray-400 flex-shrink-0"
+                                                                  :style="'background:'+inlineFibra(cab['pfp_f'+n], currentSheet).colorHex"></span>
+                                                            <span class="text-[10px] font-bold" :class="darkMode?'text-gray-300':'text-gray-700'">{{ inlineFibra(cab['pfp_f'+n], currentSheet).colore }}</span>
+                                                            <span class="text-[10px] text-gray-500 mx-0.5">→</span>
+                                                            <span class="text-[10px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded"
+                                                                  :class="inlineFibra(cab['pfp_f'+n], currentSheet).tipo==='Normale'?(darkMode?'bg-green-900/60 text-green-300':'bg-green-100 text-green-700'):inlineFibra(cab['pfp_f'+n], currentSheet).tipo==='Striata'?(darkMode?'bg-yellow-900/60 text-yellow-300':'bg-yellow-100 text-yellow-700'):(darkMode?'bg-red-900/60 text-red-300':'bg-red-100 text-red-700')">
+                                                                {{ inlineFibra(cab['pfp_f'+n], currentSheet).tipo.toUpperCase() }}
+                                                            </span>
+                                                        </div>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- CONNESSIONI -->
+                                <!-- CONNESSIONI SWITCH (dropdown) -->
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="text-[10px] font-black uppercase tracking-wider" :class="darkMode?'text-green-400':'text-green-700'">🔗 Connessioni Switch</span>
@@ -344,15 +442,24 @@
                                     </div>
                                     <div class="space-y-2">
                                         <div v-for="(conn,connIdx) in cab.connessioni" :key="connIdx" class="flex items-center gap-2 rounded-lg p-2 border" :class="darkMode?'bg-gray-900/40 border-gray-700':'bg-gray-50 border-gray-200'">
-                                            <select v-model="conn.modulo" class="text-xs font-bold bg-transparent outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-cyan-400':'border-gray-300 text-cyan-600'">
+                                            <select v-model="conn.modulo" class="text-xs font-bold outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-cyan-400 bg-transparent':'border-gray-300 text-cyan-600 bg-transparent'">
                                                 <option value="1">Mod.1</option><option value="2">Mod.2</option>
                                             </select>
-                                            <select v-model="conn.fibre" class="text-xs font-mono font-bold bg-transparent outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-blue-400':'border-gray-300 text-blue-600'">
+                                            <select v-model="conn.fibre" class="text-xs font-mono font-bold outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-blue-400 bg-transparent':'border-gray-300 text-blue-600 bg-transparent'">
                                                 <option value="1-2">F 1-2</option><option value="3-4">F 3-4</option><option value="5-6">F 5-6</option><option value="7-8">F 7-8</option>
                                             </select>
-                                            <i class="ph ph-arrow-right text-gray-500 text-xs"></i>
-                                            <input v-model="conn.destinazione" class="flex-1 bg-transparent text-xs font-bold outline-none border-b smart-caps" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'" placeholder="Cabina dest.">
-                                            <button @click="cab.connessioni.splice(connIdx,1)" class="text-red-500/60 hover:text-red-500 text-xs"><i class="ph ph-x"></i></button>
+                                            <i class="ph ph-arrow-right text-gray-500 text-xs flex-shrink-0"></i>
+                                            <!-- DROPDOWN cabine origine/destinazione: valore = id, label = Nome (Codice) -->
+                                            <select v-model="conn.destinazione" class="flex-1 text-xs font-bold outline-none border-b cursor-pointer" :class="darkMode?'border-gray-600 text-white bg-[#111]':'border-gray-300 text-black bg-white'">
+                                                <option value="">-- Cabina --</option>
+                                                <option :value="'__primaria__'">
+                                                    🟣 {{ currentSheet.anello_primaria||'Primaria' }}{{ currentSheet.anello_nome ? ' ('+currentSheet.anello_nome+')' : '' }}
+                                                </option>
+                                                <option v-for="(c2,i2) in (currentSheet.cabine_secondarie||[])" :key="c2.id" :value="c2.id">
+                                                    {{ c2.nome||('Cabina '+(i2+1)) }}{{ c2.codice ? ' ('+c2.codice+')' : '' }}
+                                                </option>
+                                            </select>
+                                            <button @click="cab.connessioni.splice(connIdx,1)" class="text-red-500/60 hover:text-red-500 text-xs flex-shrink-0"><i class="ph ph-x"></i></button>
                                         </div>
                                         <button v-if="cab.connessioni.length===0" @click="cab.connessioni.push({modulo:'1',fibre:'1-2',destinazione:''})" class="w-full text-[10px] text-gray-500 border border-dashed rounded-lg py-2" :class="darkMode?'border-gray-700':'border-gray-300'">+ Connessione</button>
                                     </div>
@@ -368,56 +475,216 @@
                 </div>
             </div>
 
-            <!-- SCHEMA ANELLO -->
+            <!-- SCHEMA ANELLO (semplificato: lista ordinata) -->
             <div class="rounded-2xl border-2 p-5" :class="darkMode?'bg-[#121212] border-purple-900':'bg-white border-purple-200'">
                 <div class="flex items-center gap-2 mb-4">
-                    <i class="ph ph-graph text-purple-400 text-lg"></i>
-                    <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Schema Anello Primario</span>
+                    <i class="ph ph-list-numbers text-purple-400 text-lg"></i>
+                    <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Ordine Anello</span>
                 </div>
-                <div class="overflow-x-auto pb-2">
-                    <div class="flex items-center min-w-max py-3 gap-0">
-                        <div class="flex flex-col items-center">
-                            <div class="w-14 h-14 rounded-2xl flex flex-col items-center justify-center border-2 font-black text-[10px] text-center" :class="darkMode?'bg-purple-950 border-purple-500 text-purple-300':'bg-purple-100 border-purple-500 text-purple-700'"><i class="ph ph-broadcast text-base mb-0.5"></i>POP</div>
-                            <span class="text-[8px] font-mono mt-1 text-gray-500">Bredallaggio</span>
-                        </div>
-                        <div class="flex flex-col items-center w-10"><div class="text-[8px] text-blue-400 font-mono mb-0.5">→</div><div class="w-full h-0.5 bg-blue-500"></div><div class="text-[8px] text-orange-400 font-mono mt-0.5">←</div></div>
-                        <div class="flex flex-col items-center">
-                            <div class="w-16 h-14 rounded-2xl flex flex-col items-center justify-center border-2 font-black text-[10px] text-center" :class="darkMode?'bg-purple-900 border-purple-400 text-purple-200':'bg-purple-200 border-purple-600 text-purple-800'"><i class="ph ph-database text-base mb-0.5"></i><span>{{ currentSheet.anello_primaria||'PRIMARIA' }}</span></div>
-                            <span class="text-[8px] font-mono mt-1 max-w-[64px] truncate" :class="darkMode?'text-purple-400':'text-purple-600'">{{ currentSheet.anello_nome||'Anello' }}</span>
-                        </div>
-                        <template v-if="currentSheet.cabine_secondarie&&currentSheet.cabine_secondarie.length">
-                            <div class="flex flex-col items-center w-10"><div class="text-[8px] text-blue-400 font-mono mb-0.5">→</div><div class="w-full h-0.5 bg-blue-500"></div><div class="text-[8px] text-orange-400 font-mono mt-0.5">←</div></div>
-                            <div class="flex flex-col items-center"><div class="px-2 py-1 rounded-lg border text-[10px] font-bold font-mono" :class="darkMode?'bg-gray-800 border-gray-600 text-cyan-400':'bg-gray-100 border-gray-400 text-cyan-600'">SW 1</div></div>
-                            <div v-for="(cab,i) in currentSheet.cabine_secondarie" :key="cab.id" class="flex items-center">
-                                <div class="flex flex-col items-center w-8"><div class="text-[8px] text-blue-400 font-mono mb-0.5">→</div><div class="w-full h-0.5" :class="cab.stato==='BYPASSATA'?'bg-amber-500':'bg-blue-400'"></div><div class="text-[8px] text-orange-400 font-mono mt-0.5">←</div></div>
-                                <div class="flex flex-col items-center">
-                                    <div class="w-14 h-12 rounded-xl flex flex-col items-center justify-center border-2 text-[9px] font-bold text-center"
-                                         :class="cab.stato==='COMPLETATA'?(darkMode?'bg-emerald-950 border-emerald-600 text-emerald-300':'bg-emerald-100 border-emerald-500 text-emerald-700'):cab.stato==='BYPASSATA'?(darkMode?'bg-amber-950 border-amber-600 text-amber-300 opacity-70':'bg-amber-100 border-amber-500 text-amber-700 opacity-70'):(darkMode?'bg-gray-900 border-gray-600 text-gray-400':'bg-gray-100 border-gray-400 text-gray-600')">
-                                        <i class="ph text-sm" :class="cab.stato==='COMPLETATA'?'ph-check-circle':cab.stato==='BYPASSATA'?'ph-lightning':'ph-circle'"></i>
-                                        <span class="leading-tight text-[8px]">{{ cab.codice||`CS-${i+1}` }}</span>
-                                    </div>
-                                    <span class="text-[8px] font-mono mt-0.5 max-w-[56px] truncate text-gray-500">{{ cab.nome }}</span>
-                                </div>
-                            </div>
-                            <div class="flex flex-col items-center w-10"><div class="text-[8px] text-blue-400 font-mono mb-0.5">→</div><div class="w-full h-0.5 bg-blue-300"></div></div>
-                            <div class="flex flex-col items-center"><div class="px-2 py-1 rounded-lg border text-[10px] font-bold font-mono" :class="darkMode?'bg-gray-800 border-gray-600 text-cyan-400':'bg-gray-100 border-gray-400 text-cyan-600'">SW 2</div></div>
-                            <div class="flex flex-col items-center w-8"><div class="text-[8px] text-orange-400 font-mono">↩</div><div class="w-full h-0.5 bg-orange-300"></div></div>
-                        </template>
-                        <div v-else class="px-6 text-gray-600 text-xs font-mono italic">— aggiungi cabine per lo schema —</div>
+                <div class="space-y-1">
+                    <!-- Cabina primaria (inizio) -->
+                    <div class="flex items-center gap-3 py-2 px-3 rounded-xl" :class="darkMode?'bg-purple-950/50':'bg-purple-50'">
+                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0" :class="darkMode?'bg-purple-700 text-white':'bg-purple-600 text-white'">1</span>
+                        <i class="ph ph-database text-purple-400 text-sm flex-shrink-0"></i>
+                        <span class="font-bold text-sm" :class="darkMode?'text-purple-300':'text-purple-700'">{{ currentSheet.anello_primaria||'Cabina Primaria' }} <span class="text-[9px] font-mono opacity-50">— inizio anello</span></span>
                     </div>
-                </div>
-                <div class="flex flex-wrap gap-3 mt-3 pt-3 border-t text-[10px] font-mono" :class="darkMode?'border-gray-800':'border-gray-200'">
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Completata</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Bypassata</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-gray-500 inline-block"></span> Non completata</span>
-                    <span class="text-blue-400">→ Andata</span>
-                    <span class="text-orange-400">← Ritorno</span>
+                    <!-- Cabine secondarie -->
+                    <div v-for="(cab,i) in (currentSheet.cabine_secondarie||[])" :key="cab.id" class="flex items-center gap-3 py-2 px-3 rounded-xl" :class="darkMode?'bg-gray-900/40':'bg-gray-50'">
+                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0" :class="cab.stato==='COMPLETATA'?(darkMode?'bg-emerald-700 text-white':'bg-emerald-600 text-white'):cab.stato==='BYPASSATA'?(darkMode?'bg-amber-700 text-white':'bg-amber-500 text-white'):(darkMode?'bg-gray-700 text-white':'bg-gray-400 text-white')">{{ i+2 }}</span>
+                        <i class="ph text-sm flex-shrink-0" :class="cab.stato==='COMPLETATA'?'ph-check-circle text-emerald-400':cab.stato==='BYPASSATA'?'ph-lightning text-amber-400':'ph-circle text-gray-500'"></i>
+                        <span class="font-bold text-sm flex-1" :class="darkMode?'text-white':'text-gray-900'">
+                            {{ cab.nome||cab.codice||('Cabina '+(i+1)) }}
+                            <span v-if="cab.codice&&cab.nome" class="text-[9px] font-mono opacity-50 ml-1">{{ cab.codice }}</span>
+                        </span>
+                        <span v-if="cab.stato==='BYPASSATA'" class="text-[9px] font-mono text-amber-400">BYPASS</span>
+                    </div>
+                    <!-- Ritorno primaria (fine) -->
+                    <div v-if="currentSheet.cabine_secondarie&&currentSheet.cabine_secondarie.length>0" class="flex items-center gap-3 py-2 px-3 rounded-xl" :class="darkMode?'bg-purple-950/50':'bg-purple-50'">
+                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0" :class="darkMode?'bg-purple-700 text-white':'bg-purple-600 text-white'">{{ (currentSheet.cabine_secondarie.length+2) }}</span>
+                        <i class="ph ph-arrow-u-up-left text-purple-400 text-sm flex-shrink-0"></i>
+                        <span class="font-bold text-sm" :class="darkMode?'text-purple-300':'text-purple-700'">{{ currentSheet.anello_primaria||'Cabina Primaria' }} <span class="text-[9px] font-mono opacity-50">— chiusura anello</span></span>
+                    </div>
+                    <div v-if="!currentSheet.cabine_secondarie||currentSheet.cabine_secondarie.length===0" class="py-4 text-center text-xs font-mono text-gray-500 italic">aggiungi cabine secondarie per visualizzare l'ordine</div>
                 </div>
             </div>
-        </div><!-- /cabine layout -->
+
+            <!-- BRETELLAGGIO POP -->
+            <div class="rounded-2xl border-2 p-5" :class="darkMode?'bg-[#121212] border-cyan-900':'bg-white border-cyan-200'">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-git-branch text-cyan-400 text-lg"></i>
+                        <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-cyan-400':'text-cyan-700'">Bretellaggio POP</span>
+                    </div>
+                    <button @click="(currentSheet.bretellaggio||[]).push({nodo:'',direzione:'andata'}); if(!currentSheet.bretellaggio) currentSheet.bretellaggio=[]"
+                            @click.prevent="addBretellaggioStep(currentSheet)"
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all hover:scale-105"
+                            :class="darkMode?'border-cyan-700 text-cyan-400 hover:bg-cyan-900/40':'border-cyan-400 text-cyan-600 hover:bg-cyan-50'">
+                        <i class="ph ph-plus-circle"></i> Aggiungi Nodo
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <!-- Primaria (inizio) -->
+                    <div class="flex items-center gap-2 py-1.5">
+                        <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center" :class="darkMode?'bg-cyan-900 text-cyan-300':'bg-cyan-100 text-cyan-700'"><i class="ph ph-database text-xs"></i></div>
+                        <span class="text-xs font-bold font-mono" :class="darkMode?'text-cyan-300':'text-cyan-700'">{{ currentSheet.anello_primaria||'Primaria' }}</span>
+                        <span class="text-[9px] text-gray-500">— punto di partenza</span>
+                    </div>
+                    <!-- Nodi intermedi -->
+                    <div v-for="(step, sIdx) in (currentSheet.bretellaggio||[])" :key="sIdx" class="flex items-center gap-2 py-1.5 group">
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <div class="w-px h-4 mx-2.5" :class="darkMode?'bg-cyan-800':'bg-cyan-300'"></div>
+                        </div>
+                        <select v-model="step.direzione" class="text-[10px] font-bold outline-none cursor-pointer border rounded-lg px-1.5 py-0.5 flex-shrink-0"
+                                :class="darkMode?'border-gray-700 bg-[#1a1a1a] text-gray-300':'border-gray-300 bg-white text-gray-700'">
+                            <option value="andata">→</option>
+                            <option value="ritorno">←</option>
+                        </select>
+                        <input v-model="step.nodo" class="flex-1 bg-transparent text-xs font-bold font-mono outline-none border-b" :class="darkMode?'border-cyan-900 text-white':'border-cyan-200 text-black'" placeholder="PFP 04W, ROE-012, ...">
+                        <button @click="currentSheet.bretellaggio.splice(sIdx,1)" class="opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 text-xs transition-opacity flex-shrink-0"><i class="ph ph-x"></i></button>
+                    </div>
+                    <!-- Ritorno (fine) -->
+                    <div class="flex items-center gap-2 py-1.5">
+                        <div class="w-px h-4 mx-2.5" :class="darkMode?'bg-cyan-800':'bg-cyan-300'"></div>
+                        <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center" :class="darkMode?'bg-cyan-900 text-cyan-300':'bg-cyan-100 text-cyan-700'"><i class="ph ph-arrow-u-up-left text-xs"></i></div>
+                        <span class="text-xs font-bold font-mono" :class="darkMode?'text-cyan-300':'text-cyan-700'">{{ currentSheet.anello_primaria||'Primaria' }}</span>
+                        <span class="text-[9px] text-gray-500">— chiusura anello</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CALCOLATORE COLORE FIBRA (configurable) -->
+            <div class="rounded-2xl border-2 p-5" :class="darkMode?'bg-[#121212] border-yellow-900':'bg-white border-yellow-200'">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-palette text-yellow-400 text-lg"></i>
+                        <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-yellow-400':'text-yellow-700'">Calcolatore Colore Fibra</span>
+                    </div>
+                    <button @click="openFiberManager" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all hover:scale-105" :class="darkMode?'border-yellow-800 text-yellow-400 hover:bg-yellow-900/30':'border-yellow-400 text-yellow-700 hover:bg-yellow-50'">
+                        <i class="ph ph-gear"></i> Gestisci Standard
+                    </button>
+                </div>
+
+                <!-- Standard selector per questo foglio -->
+                <div class="grid grid-cols-2 gap-3 mb-4 p-3 rounded-xl border" :class="darkMode?'bg-yellow-950/20 border-yellow-900':'bg-yellow-50 border-yellow-200'">
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Standard (questo foglio)</label>
+                        <select v-model="currentSheet.fiber_standard_id" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
+                            <option v-for="s in fiberStandards" :key="s.id" :value="s.id">{{ s.nome }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Fibre/Tubetto (questo foglio)</label>
+                        <select v-model.number="currentSheet.fiber_per_tubetto" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
+                            <option :value="12">12</option><option :value="24">24</option><option :value="48">48</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Input fibra + calcola -->
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">N° Fibra</label>
+                        <input v-model.number="fiberCalc.num" type="number" min="1" @input="calcolaFibra" class="f-input font-mono font-black text-xl" :class="darkMode?'text-white border-yellow-900':'text-black border-yellow-300'" placeholder="49">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Standard</label>
+                        <select v-model="fiberCalc.standardId" @change="calcolaFibra" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
+                            <option v-for="s in fiberStandards" :key="s.id" :value="s.id">{{ s.nome }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Fibre/Tubetto</label>
+                        <select v-model.number="fiberCalc.perTubetto" @change="calcolaFibra" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
+                            <option :value="12">12</option><option :value="24">24</option><option :value="48">48</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Risultato -->
+                <div v-if="fiberCalc.result" class="rounded-xl p-4 border" :class="darkMode?'bg-yellow-950/30 border-yellow-800':'bg-yellow-50 border-yellow-300'">
+                    <!-- Riga principale: catena leggibile -->
+                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                        <span class="text-xs font-black" :class="darkMode?'text-gray-300':'text-gray-700'">Fibra</span>
+                        <span class="text-xl font-black font-mono" :class="darkMode?'text-white':'text-gray-900'">{{ fiberCalc.num }}</span>
+                        <span class="text-sm text-gray-500 font-bold mx-1">→</span>
+                        <!-- Tubetto -->
+                        <span class="text-xs font-black" :class="darkMode?'text-gray-300':'text-gray-700'">Tubetto</span>
+                        <span class="text-xl font-black font-mono" :class="darkMode?'text-white':'text-gray-900'">{{ fiberCalc.result.tubetto }}</span>
+                        <span v-if="fiberCalc.result.tubettoHex" class="w-5 h-5 rounded flex-shrink-0 border-2 border-gray-400" :style="'background:'+fiberCalc.result.tubettoHex"></span>
+                        <span class="text-sm font-bold" :class="darkMode?'text-gray-300':'text-gray-700'">{{ fiberCalc.result.tubettoLabel }}</span>
+                        <span class="text-sm text-gray-500 font-bold mx-1">→</span>
+                        <!-- Fibra nel tubetto -->
+                        <span class="text-xs font-black" :class="darkMode?'text-gray-300':'text-gray-700'">Fibra</span>
+                        <span class="text-xl font-black font-mono" :class="darkMode?'text-white':'text-gray-900'">{{ fiberCalc.result.posizione }}</span>
+                        <span class="w-5 h-5 rounded-full flex-shrink-0 border-2 border-gray-400" :style="'background:'+fiberCalc.result.colorHex"></span>
+                        <span class="text-sm font-bold" :class="darkMode?'text-white':'text-gray-900'">{{ fiberCalc.result.colore }}</span>
+                        <span class="text-sm text-gray-500 font-bold mx-1">→</span>
+                        <!-- Tipo fibra badge -->
+                        <span class="text-sm font-black uppercase tracking-wide px-3 py-1 rounded-lg"
+                              :class="fiberCalc.result.tipo==='Normale'?(darkMode?'bg-green-900/70 text-green-300 border border-green-700':'bg-green-100 text-green-700 border border-green-400'):fiberCalc.result.tipo==='Striata'?(darkMode?'bg-yellow-900/70 text-yellow-300 border border-yellow-700':'bg-yellow-100 text-yellow-700 border border-yellow-400'):(darkMode?'bg-red-900/70 text-red-300 border border-red-700':'bg-red-100 text-red-700 border border-red-400')">
+                            {{ fiberCalc.result.tipo.toUpperCase() }}
+                        </span>
+                    </div>
+                    <!-- Riga secondaria: dettagli compatti -->
+                    <div class="flex flex-wrap gap-4 pt-2 border-t text-[10px] font-mono" :class="darkMode?'border-yellow-900 text-gray-500':'border-yellow-200 text-gray-500'">
+                        <span>Tubetto <strong :class="darkMode?'text-gray-300':'text-gray-700'">#{{ fiberCalc.result.tubetto }}</strong></span>
+                        <span>Pos. nel tubetto <strong :class="darkMode?'text-gray-300':'text-gray-700'">#{{ fiberCalc.result.posizione }}</strong></span>
+                        <span>Colore fibra <strong :class="darkMode?'text-gray-300':'text-gray-700'">{{ fiberCalc.result.colore }}</strong></span>
+                        <span>Tubetto <strong :class="darkMode?'text-gray-300':'text-gray-700'">{{ fiberCalc.result.tubettoLabel }}</strong></span>
+                    </div>
+                </div>
+                <div v-else-if="fiberStandards.length===0" class="text-center py-4 text-xs text-gray-500 font-mono italic">
+                    Crea uno standard fibra per usare il calcolatore →
+                    <button @click="openFiberManager" class="underline text-yellow-500 ml-1">Gestisci Standard</button>
+                </div>
+            </div>
+
+        </div><!-- /cabine -->
+
+        <!-- ══ BRETELLAGGIO: layout dedicato ══ -->
+        <div v-if="sheetType==='bretellaggio' && currentSheet.rows[0]" class="space-y-6">
+            <!-- Intestazione scheda -->
+            <div class="rounded-2xl p-5 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-yellow-800':'bg-white border-yellow-300'">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-xl bg-yellow-500/20 flex items-center justify-center"><i class="ph ph-git-branch text-yellow-400 text-lg"></i></div>
+                    <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-yellow-400':'text-yellow-700'">Dati POP</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div><label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">POP di Appartenenza</label><input v-model="currentSheet.rows[0].pop" class="f-input font-mono font-black text-lg" :class="darkMode?'text-white border-yellow-900':'text-black border-yellow-300'" placeholder="Es. NA/10"></div>
+                    <div><label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Splitter</label><input v-model="currentSheet.rows[0].splitter_num" class="f-input font-mono font-bold" :class="darkMode?'text-white border-yellow-900':'text-black border-yellow-300'" placeholder="Splitter 7"></div>
+                    <div><label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">PFP di Appartenenza</label><input v-model="currentSheet.rows[0].pfp_appartenenza" class="f-input font-mono font-bold" :class="darkMode?'text-white border-yellow-900':'text-black border-yellow-300'" placeholder="PFP-04W"></div>
+                    <div><label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Att. OTDR (dB)</label><input v-model="currentSheet.rows[0].att_otdr" type="number" step="0.1" class="f-input font-mono font-bold text-lg" :class="darkMode?'text-white border-yellow-900':'text-black border-yellow-300'" placeholder="0.0"></div>
+                </div>
+                <div class="mt-4"><label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Istruzioni Telaio / Bretellaggio</label><textarea v-model="currentSheet.rows[0].istruzioni_telaio" rows="3" class="f-textarea" :class="darkMode?'text-white border-yellow-900':'text-black border-yellow-300'" placeholder="Rack 3, shelf 2 — bretellaggio da porta A su PFP-04W verso porta 5 su Switch 1..."></textarea></div>
+            </div>
+            <!-- Splitter Primario -->
+            <div class="rounded-2xl p-5 border-2" :class="darkMode?'bg-[#121212] border-orange-800':'bg-white border-orange-300'">
+                <div class="flex items-center gap-2 mb-4"><div class="w-8 h-8 rounded-xl bg-orange-500/20 flex items-center justify-center"><i class="ph ph-tree-structure text-orange-400 text-lg"></i></div><span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-orange-400':'text-orange-700'">Splitter Primario (1→4)</span></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div><label class="field-label" :class="darkMode?'text-orange-400':'text-orange-700'">Attenuazione (dB)</label><input v-model="currentSheet.rows[0].spl_pri_att" type="number" step="0.1" class="f-input font-mono font-bold text-lg" :class="darkMode?'text-white border-orange-900':'text-black border-orange-300'" placeholder="0.0"></div>
+                    <div><label class="field-label" :class="darkMode?'text-orange-400':'text-orange-700'">N° Splitter Primari</label><input v-model="currentSheet.rows[0].spl_pri_n" type="number" min="1" max="4" class="f-input font-mono font-bold text-lg" :class="darkMode?'text-white border-orange-900':'text-black border-orange-300'" placeholder="1"></div>
+                    <div><label class="field-label" :class="darkMode?'text-orange-400':'text-orange-700'">Codice Seriale</label><input v-model="currentSheet.rows[0].spl_pri_seriale" class="f-input font-mono" :class="darkMode?'text-white border-orange-900':'text-black border-orange-300'" placeholder="SN-XXXXXXXX"></div>
+                </div>
+            </div>
+            <!-- PFS + Splitter Secondari -->
+            <div class="rounded-2xl p-5 border-2" :class="darkMode?'bg-[#121212] border-cyan-800':'bg-white border-cyan-300'">
+                <div class="flex items-center gap-2 mb-4"><div class="w-8 h-8 rounded-xl bg-cyan-500/20 flex items-center justify-center"><i class="ph ph-circles-three text-cyan-400 text-lg"></i></div><span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-cyan-400':'text-cyan-700'">PFS + Splitter Secondari (max 4)</span></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-for="(pfs,pi) in currentSheet.rows[0].pfs_list" :key="pi" class="rounded-xl p-4 border space-y-3" :class="darkMode?'bg-gray-900/40 border-gray-700':'bg-gray-50 border-gray-200'">
+                        <div class="flex items-center gap-2 mb-1"><span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0" :class="darkMode?'bg-cyan-800 text-cyan-300':'bg-cyan-200 text-cyan-700'">{{ pi+1 }}</span><span class="font-black text-xs uppercase tracking-wider" :class="darkMode?'text-cyan-400':'text-cyan-700'">PFS {{ pi+1 }}</span></div>
+                        <div><label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Nome / Codice PFS</label><input v-model="pfs.nome" class="f-input font-mono font-bold" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" :placeholder="'Es. PFS-0'+(pi+1)"></div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Att. Sec. (dB)</label><input v-model="pfs.att" type="number" step="0.1" class="f-input font-mono font-bold" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" placeholder="0.0"></div>
+                            <div><label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">N° Splitter Sec.</label><input v-model="pfs.n_sec" type="number" min="1" max="16" class="f-input font-mono font-bold" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" placeholder="1"></div>
+                        </div>
+                        <div><label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Cod. Seriale Splitter Sec.</label><input v-model="pfs.seriale" class="f-input font-mono text-sm" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" placeholder="SN-XXXXXXXX"></div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /bretellaggio -->
 
         <!-- ══ GUASTI + CREATION: summary chips + card grid ══ -->
-        <template v-if="sheetType!=='cabine'">
+        <template v-if="sheetType!=='cabine' && sheetType!=='bretellaggio'">
         <div v-if="currentSheet.rows.length>0" class="mb-5 flex flex-wrap gap-3 text-[11px] font-bold">
             <div v-for="(count,stato) in statsSummary" :key="stato" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" :class="statoChipClass(stato)">
                 <span>{{ statoEmoji(stato) }}</span><span>{{ statoLabel(stato) }}: {{ count }}</span>
@@ -545,6 +812,10 @@
             <i class="ph text-3xl" :class="isListening?'ph-microphone-fill':'ph-microphone'"></i>
         </button>
         <div class="flex gap-3">
+            <button @click="openFiberManager" class="group flex flex-col items-center gap-1">
+                <div class="w-11 h-11 rounded-xl border flex items-center justify-center group-hover:-translate-y-1 transition-all" :class="darkMode?'border-gray-600 bg-gray-800 text-yellow-400':'border-gray-200 bg-white text-yellow-500'"><i class="ph ph-palette text-xl"></i></div>
+                <span class="text-[9px] font-bold opacity-60" :class="darkMode?'text-white':'text-black'">FIBRA</span>
+            </button>
             <button @click="exportPDF" class="group flex flex-col items-center gap-1">
                 <div class="w-11 h-11 rounded-xl border flex items-center justify-center group-hover:-translate-y-1 transition-all" :class="darkMode?'border-gray-600 bg-gray-800 text-red-400':'border-gray-200 bg-white text-red-500'"><i class="ph ph-file-pdf text-xl"></i></div>
                 <span class="text-[9px] font-bold opacity-60" :class="darkMode?'text-white':'text-black'">PDF</span>
@@ -640,21 +911,25 @@
                     </div>
                 </div>
 
-                <!-- 02 Lavorazioni (cresce a riempire spazio) -->
+                <!-- 02 Lavorazioni ADATTIVO per tipo -->
                 <div style="flex:1;min-height:0;overflow:hidden;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #d1d5db;margin-bottom:3px;padding-bottom:2px;">
-                        <span style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#111827;">02. Dettaglio Lavorazioni</span>
+                        <span style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#111827;">
+                            02. {{ rapp.tipo==='guasti'?'Dettaglio Guasti':rapp.tipo==='creation'?'Dettaglio Lavorazioni':rapp.tipo==='cabine'?'Riepilogo Anello':'Dettaglio Bretellaggio' }}
+                        </span>
                         <div class="no-print" style="display:flex;gap:8px;">
                             <button @click="showImportModal=true" style="font-size:8px;color:#2563eb;font-weight:700;">AGGIORNA</button>
-                            <button @click="addWork" style="font-size:8px;color:#16a34a;font-weight:700;">+ RIGA</button>
+                            <button v-if="rapp.tipo==='guasti'||rapp.tipo==='creation'" @click="addWork" style="font-size:8px;color:#16a34a;font-weight:700;">+ RIGA</button>
                         </div>
                     </div>
-                    <div style="overflow:hidden;max-height:100%;">
+
+                    <!-- GUASTI / CREATION: tabella works -->
+                    <div v-if="rapp.tipo==='guasti'||rapp.tipo==='creation'" style="overflow:hidden;max-height:100%;">
                         <table class="tech-table">
                             <thead><tr>
                                 <th style="width:16px;">N.</th>
-                                <th style="width:33%;">INDIRIZZO (LOCALITÀ)</th>
-                                <th>DESCRIZIONE / NOTE TECNICHE</th>
+                                <th style="width:30%;">INDIRIZZO</th>
+                                <th>{{ rapp.tipo==='guasti'?'PROBLEMA / INTERVENTO':'NODO / EL.OTTICO / UI / GIUNZIONI' }}</th>
                                 <th style="width:22px;text-align:center;">Q.</th>
                                 <th style="width:12px;" class="no-print"></th>
                             </tr></thead>
@@ -665,6 +940,127 @@
                                     <td style="padding-right:5px;"><textarea v-model="work.desc" rows="1" class="r-input" style="color:#374151;" placeholder="Dettagli..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
                                     <td style="text-align:center;"><input type="number" v-model="work.qty" class="r-input text-center font-bold mono"></td>
                                     <td style="text-align:center;" class="no-print"><button @click="rapp.works.splice(i,1)" style="color:#f87171;">×</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- CABINE: anello + tabella cabine secondarie -->
+                    <div v-if="rapp.tipo==='cabine'" style="overflow:hidden;max-height:100%;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;">
+                            <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#7c3aed;text-transform:uppercase;">Anello</span>
+                                <div style="font-size:10px;font-weight:800;color:#111827;">{{ rapp.cabineData.anello_primaria||'—' }} <span style="font-weight:400;color:#6b7280;">{{ rapp.cabineData.anello_nome }}</span></div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">
+                                <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:3px;padding:3px 5px;">
+                                    <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#2563eb;">SW1 → Porta</span>
+                                    <div style="font-size:10px;font-weight:800;color:#111827;">{{ rapp.cabineData.sw1_porta||'—' }} <span style="color:#6b7280;font-size:8px;">PP {{ rapp.cabineData.pp_andata||'—' }}</span></div>
+                                </div>
+                                <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:3px;padding:3px 5px;">
+                                    <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#ea580c;">SW2 → Porta</span>
+                                    <div style="font-size:10px;font-weight:800;color:#111827;">{{ rapp.cabineData.sw2_porta||'—' }} <span style="color:#6b7280;font-size:8px;">PP {{ rapp.cabineData.pp_ritorno||'—' }}</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <table class="tech-table">
+                            <thead><tr>
+                                <th style="width:18px;">N.</th>
+                                <th>NOME CABINA (CODICE)</th>
+                                <th style="width:55px;">STATO</th>
+                                <th>FIBRE PFS / PFP</th>
+                                <th>CONNESSIONI</th>
+                                <th>NOTE</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr v-for="(cab,i) in rapp.cabineData.cabine" :key="i">
+                                    <td style="font-weight:700;color:#9ca3af;font-family:'JetBrains Mono',monospace;">{{ i+1 }}</td>
+                                    <td style="font-weight:700;">
+                                        {{ cab.nome }}{{ cab.codice?' ('+cab.codice+')':'' }}
+                                    </td>
+                                    <td>
+                                        <span style="font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;"
+                                              :style="cab.stato==='COMPLETATA'?'background:#d1fae5;color:#065f46':cab.stato==='BYPASSATA'?'background:#fef3c7;color:#92400e':'background:#fee2e2;color:#991b1b'">
+                                            {{ cab.stato==='COMPLETATA'?'✅ OK':cab.stato==='BYPASSATA'?'⚡ BYPASS':'🔴 KO' }}
+                                        </span>
+                                        <div v-if="cab.stato==='BYPASSATA'&&cab.motivo" style="font-size:7px;color:#b45309;margin-top:1px;">{{ cab.motivo.replace(/_/g,' ') }}</div>
+                                    </td>
+                                    <td style="font-size:8px;font-family:'JetBrains Mono',monospace;color:#374151;">
+                                        <div v-if="cab.pfs_f1||cab.pfs_f2||cab.pfs_f3||cab.pfs_f4">PFS: {{ [cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ') }}</div>
+                                        <div v-if="cab.pfp_f1||cab.pfp_f2||cab.pfp_f3||cab.pfp_f4">PFP: {{ [cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ') }}</div>
+                                    </td>
+                                    <td style="font-size:8px;color:#374151;">
+                                        <div v-for="(cn,ci) in cab.connessioni" :key="ci" style="white-space:nowrap;">
+                                            M{{ cn.modulo }} F{{ cn.fibre }} → {{ cn.destinazione }}
+                                        </div>
+                                    </td>
+                                    <td style="font-size:8px;color:#6b7280;">{{ cab.note }}</td>
+                                </tr>
+                                <tr v-if="!rapp.cabineData.cabine||!rapp.cabineData.cabine.length">
+                                    <td colspan="6" style="text-align:center;color:#9ca3af;font-size:9px;padding:8px;">Nessuna cabina — importa dati</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- BRETELLAGGIO: POP + splitter + PFS -->
+                    <div v-if="rapp.tipo==='bretellaggio'" style="overflow:hidden;max-height:100%;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:5px;">
+                            <div style="background:#fefce8;border:1px solid #fde047;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#a16207;text-transform:uppercase;">POP</span>
+                                <div style="font-size:11px;font-weight:900;color:#111827;font-family:'JetBrains Mono',monospace;">{{ rapp.brData.pop||'—' }}</div>
+                            </div>
+                            <div style="background:#fefce8;border:1px solid #fde047;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#a16207;text-transform:uppercase;">Splitter</span>
+                                <div style="font-size:10px;font-weight:800;color:#111827;">{{ rapp.brData.splitter_num||'—' }}</div>
+                            </div>
+                            <div style="background:#fefce8;border:1px solid #fde047;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#a16207;text-transform:uppercase;">PFP</span>
+                                <div style="font-size:10px;font-weight:800;color:#111827;font-family:'JetBrains Mono',monospace;">{{ rapp.brData.pfp_appartenenza||'—' }}</div>
+                            </div>
+                            <div style="background:#fefce8;border:1px solid #fde047;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#a16207;text-transform:uppercase;">Att. OTDR</span>
+                                <div style="font-size:11px;font-weight:900;color:#111827;font-family:'JetBrains Mono',monospace;">{{ rapp.brData.att_otdr||'—' }} <span style="font-size:8px;font-weight:400;">dB</span></div>
+                            </div>
+                        </div>
+                        <div v-if="rapp.brData.istruzioni_telaio" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:3px;padding:4px 6px;margin-bottom:5px;font-size:8px;color:#374151;">
+                            <span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#6b7280;text-transform:uppercase;display:block;margin-bottom:1px;">Istruzioni Telaio</span>
+                            {{ rapp.brData.istruzioni_telaio }}
+                        </div>
+                        <!-- Splitter primario -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:5px;">
+                            <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#c2410c;text-transform:uppercase;">Spl. Primario — Att.</span>
+                                <div style="font-size:10px;font-weight:800;color:#111827;">{{ rapp.brData.spl_pri_att||'—' }} dB</div>
+                            </div>
+                            <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#c2410c;text-transform:uppercase;">N° Spl. Primari</span>
+                                <div style="font-size:10px;font-weight:800;color:#111827;">{{ rapp.brData.spl_pri_n||'—' }}</div>
+                            </div>
+                            <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#c2410c;text-transform:uppercase;">Seriale</span>
+                                <div style="font-size:9px;font-weight:700;color:#111827;font-family:'JetBrains Mono',monospace;">{{ rapp.brData.spl_pri_seriale||'—' }}</div>
+                            </div>
+                        </div>
+                        <!-- PFS list -->
+                        <table class="tech-table">
+                            <thead><tr>
+                                <th style="width:16px;">PFS</th>
+                                <th>NOME / CODICE</th>
+                                <th style="width:40px;">ATT. SEC.</th>
+                                <th style="width:36px;">N° SPL.</th>
+                                <th>SERIALE SPL. SEC.</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr v-for="(pfs,i) in rapp.brData.pfs_list" :key="i">
+                                    <td style="font-weight:700;color:#9ca3af;font-family:'JetBrains Mono',monospace;">{{ i+1 }}</td>
+                                    <td style="font-weight:700;">{{ pfs.nome||'—' }}</td>
+                                    <td style="text-align:center;font-family:'JetBrains Mono',monospace;">{{ pfs.att||'—' }} dB</td>
+                                    <td style="text-align:center;font-weight:700;">{{ pfs.n_sec||'—' }}</td>
+                                    <td style="font-family:'JetBrains Mono',monospace;font-size:8px;">{{ pfs.seriale||'—' }}</td>
+                                </tr>
+                                <tr v-if="!rapp.brData.pfs_list||!rapp.brData.pfs_list.length">
+                                    <td colspan="5" style="text-align:center;color:#9ca3af;font-size:9px;padding:6px;">Importa dati per visualizzare i PFS</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -720,10 +1116,10 @@
         </div>
         <p class="text-gray-400 text-xs mb-5">Scegli da quale foglio importare. I dati attuali verranno sostituiti.</p>
         <div class="space-y-3">
-            <button v-for="type in ['guasti','creation','cabine']" :key="type" @click="doImport(type)"
+            <button v-for="type in ['guasti','creation','cabine','bretellaggio']" :key="type" @click="doImport(type)"
                     class="w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all group"
-                    :class="type==='guasti'?'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 hover:border-orange-400':type==='creation'?'border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-400':'border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-400'">
-                <i class="text-xl" :class="type==='guasti'?'ph ph-lightning-fill text-orange-400':type==='creation'?'ph ph-cable-car text-cyan-400':'ph ph-buildings text-purple-400'"></i>
+                    :class="type==='guasti'?'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 hover:border-orange-400':type==='creation'?'border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-400':type==='bretellaggio'?'border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 hover:border-yellow-400':'border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-400'">
+                <i class="text-xl" :class="type==='guasti'?'ph ph-wrench text-orange-400':type==='creation'?'ph ph-cable-car text-cyan-400':type==='bretellaggio'?'ph ph-git-branch text-yellow-400':'ph ph-circle-dashed text-purple-400'"></i>
                 <div class="text-left flex-1">
                     <div class="text-white font-black capitalize">{{ type }}</div>
                     <div class="text-[10px] font-mono" :class="type==='guasti'?'text-orange-400/60':type==='creation'?'text-cyan-400/60':'text-purple-400/60'">
@@ -779,6 +1175,122 @@
     </div>
 </div>
 
+<!-- ══ MODAL: Gestione Standard Fibra ══ -->
+<div v-if="showFiberManager" class="fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-3xl my-4 rounded-3xl shadow-2xl border overflow-hidden" :class="darkMode?'bg-[#111] border-gray-700':'bg-white border-gray-200'">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b" :class="darkMode?'border-gray-800 bg-[#0a0a0a]':'border-gray-200 bg-gray-50'">
+            <h2 class="font-black text-lg flex items-center gap-2" :class="darkMode?'text-white':'text-gray-900'">
+                <i class="ph ph-palette text-yellow-400"></i> Standard Fibra Ottica
+            </h2>
+            <div class="flex items-center gap-2">
+                <button @click="addStandard" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-yellow-500 hover:bg-yellow-400 text-black transition-all">
+                    <i class="ph ph-plus-circle"></i> Nuovo Standard
+                </button>
+                <button @click="showFiberManager=false; fiberManagerEdit=null" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-500/10 transition-colors">
+                    <i class="ph ph-x text-gray-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex h-[75vh]">
+            <!-- Lista standard (colonna sinistra) -->
+            <div class="w-48 flex-shrink-0 border-r overflow-y-auto p-2" :class="darkMode?'border-gray-800 bg-[#0d0d0d]':'border-gray-200 bg-gray-50'">
+                <div v-for="std in fiberStandards" :key="std.id"
+                     @click="fiberManagerEdit=std"
+                     class="flex items-center justify-between px-3 py-2.5 rounded-xl mb-1 cursor-pointer transition-all"
+                     :class="fiberManagerEdit&&fiberManagerEdit.id===std.id ? (darkMode?'bg-yellow-900/40 border border-yellow-700':'bg-yellow-50 border border-yellow-400') : (darkMode?'hover:bg-gray-800':'hover:bg-gray-100')">
+                    <span class="font-bold text-xs truncate" :class="darkMode?'text-white':'text-gray-900'">{{ std.nome }}</span>
+                    <button @click.stop="deleteStandard(std.id)" class="text-red-500/60 hover:text-red-500 ml-1 flex-shrink-0 text-xs"><i class="ph ph-trash"></i></button>
+                </div>
+                <div v-if="fiberStandards.length===0" class="text-center py-6 text-xs font-mono text-gray-500 italic">Nessuno standard</div>
+            </div>
+
+            <!-- Editor standard (colonna destra) -->
+            <div class="flex-1 overflow-y-auto p-5">
+                <div v-if="!fiberManagerEdit" class="flex items-center justify-center h-full text-gray-500 text-xs font-mono italic">
+                    Seleziona o crea uno standard
+                </div>
+                <div v-else class="space-y-5">
+
+                    <!-- Nome -->
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Nome Standard</label>
+                        <input v-model="fiberManagerEdit.nome" class="f-input font-bold text-lg" :class="darkMode?'text-white border-yellow-900':'text-black border-yellow-400'" placeholder="Es. Open Fiber">
+                    </div>
+
+                    <!-- Tipo tubetti -->
+                    <div class="flex items-center gap-4 p-3 rounded-xl border" :class="darkMode?'border-gray-700 bg-gray-900/40':'border-gray-200 bg-gray-50'">
+                        <span class="text-xs font-bold" :class="darkMode?'text-gray-300':'text-gray-700'">Tubetti:</span>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" :name="'tub_'+fiberManagerEdit.id" :value="false" v-model="fiberManagerEdit.tubettiNumerati" class="accent-yellow-500">
+                            <span class="text-xs font-bold" :class="darkMode?'text-white':'text-gray-900'">🎨 Colorati</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" :name="'tub_'+fiberManagerEdit.id" :value="true" v-model="fiberManagerEdit.tubettiNumerati" class="accent-yellow-500">
+                            <span class="text-xs font-bold" :class="darkMode?'text-white':'text-gray-900'">🔢 Numerati (TIM)</span>
+                        </label>
+                    </div>
+
+                    <!-- 12 colori fibre -->
+                    <div>
+                        <div class="text-xs font-black uppercase tracking-wider mb-3" :class="darkMode?'text-cyan-400':'text-cyan-700'">🧵 12 Colori Fibre (in ordine)</div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div v-for="(c, ci) in fiberManagerEdit.colori12" :key="ci" class="flex items-center gap-2 p-2 rounded-lg border" :class="darkMode?'border-gray-700 bg-gray-900/30':'border-gray-200 bg-gray-50'">
+                                <span class="text-[9px] font-mono text-gray-500 w-4 text-right flex-shrink-0">{{ ci+1 }}</span>
+                                <input type="color" v-model="c.h" class="w-7 h-7 rounded-lg border-0 cursor-pointer flex-shrink-0 p-0" style="padding:1px;">
+                                <input v-model="c.n" class="flex-1 bg-transparent text-xs font-bold outline-none border-b min-w-0" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'" placeholder="Nome">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Colori tubetti (solo se non numerati) -->
+                    <div v-if="!fiberManagerEdit.tubettiNumerati">
+                        <div class="text-xs font-black uppercase tracking-wider mb-3" :class="darkMode?'text-purple-400':'text-purple-700'">🟡 Colori Tubetti (in ordine)</div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div v-for="(c, ci) in fiberManagerEdit.tubettiColori" :key="ci" class="flex items-center gap-2 p-2 rounded-lg border" :class="darkMode?'border-gray-700 bg-gray-900/30':'border-gray-200 bg-gray-50'">
+                                <span class="text-[9px] font-mono text-gray-500 w-4 text-right flex-shrink-0">{{ ci+1 }}</span>
+                                <input type="color" v-model="c.h" class="w-7 h-7 rounded-lg border-0 cursor-pointer flex-shrink-0 p-0" style="padding:1px;">
+                                <input v-model="c.n" class="flex-1 bg-transparent text-xs font-bold outline-none border-b min-w-0" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-black'" placeholder="Nome">
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button @click="fiberManagerEdit.tubettiColori.push({n:'Nuovo',h:'#888888'})" class="text-[10px] font-bold text-purple-500 hover:text-purple-400 flex items-center gap-1"><i class="ph ph-plus-circle"></i> Aggiungi tubetto</button>
+                            <button v-if="fiberManagerEdit.tubettiColori.length>0" @click="fiberManagerEdit.tubettiColori.pop()" class="text-[10px] font-bold text-red-500/60 hover:text-red-500 flex items-center gap-1 ml-3"><i class="ph ph-minus-circle"></i> Rimuovi</button>
+                        </div>
+                    </div>
+
+                    <!-- Anteprima -->
+                    <div class="p-3 rounded-xl border" :class="darkMode?'border-gray-700 bg-gray-900/30':'border-gray-200 bg-gray-50'">
+                        <div class="text-[9px] font-mono uppercase font-bold mb-2" :class="darkMode?'text-gray-400':'text-gray-500'">Anteprima colori fibra</div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <div v-for="(c,i) in fiberManagerEdit.colori12" :key="i" class="flex flex-col items-center gap-0.5">
+                                <span class="w-6 h-6 rounded-full border-2 border-gray-300" :style="'background:'+c.h" :title="c.n"></span>
+                                <span class="text-[7px] font-mono text-gray-500">{{ i+1 }}</span>
+                            </div>
+                        </div>
+                        <div v-if="!fiberManagerEdit.tubettiNumerati && fiberManagerEdit.tubettiColori.length>0" class="mt-2">
+                            <div class="text-[9px] font-mono uppercase font-bold mb-1.5" :class="darkMode?'text-gray-400':'text-gray-500'">Anteprima tubetti</div>
+                            <div class="flex flex-wrap gap-1.5">
+                                <div v-for="(c,i) in fiberManagerEdit.tubettiColori" :key="i" class="flex flex-col items-center gap-0.5">
+                                    <span class="w-5 h-5 rounded-md border-2 border-gray-300" :style="'background:'+c.h" :title="c.n"></span>
+                                    <span class="text-[7px] font-mono text-gray-500">{{ i+1 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Salva nota -->
+                    <div class="text-[10px] text-gray-500 font-mono italic text-center pb-2">
+                        Le modifiche vengono salvate automaticamente in tempo reale ✓
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="toast" :class="{show:toastVisible}">{{ toastMsg }}</div>
 </div><!-- /app -->
 
@@ -798,11 +1310,15 @@ createApp({
             toastMsg: '',
             sheetType: null,
             tipiElementoOttico: ['PFP','PFS','PDA','PDI','PTA','PD','PAC/PAL','POP/PCN'],
-            allSheets: { guasti:[], creation:[], cabine:[] },
+            allSheets: { guasti:[], creation:[], cabine:[], bretellaggio:[] },
             currentSheetIdx: 0,
             recognition: null,
             dictationMemory: JSON.parse(localStorage.getItem('fiber_memory')) || { 'tubo r k':'Tubo Rame', 'fibra uno':'Fibra 1Gb' },
             newRule: { wrong:'', right:'' },
+            fiberCalc: { num:null, perTubetto:24, standardId:null, result:null },
+            showFiberManager: false,
+            fiberManagerEdit: null,   // standard correntemente in editing
+            fiberStandards: [],       // caricati da localStorage in mounted
             rapp: {
                 tipo: 'guasti',
                 logoSrc: localStorage.getItem('delta_logo')||'',
@@ -810,7 +1326,10 @@ createApp({
                 cliente:'Open Fiber', localita:'', assistente:'', matricolaSquadra:'',
                 workers:[{role:'CS',name:'',matricola:'',h_ord:8,h_str:'',h_vg:'',notes:''},{role:'DIP',name:'',matricola:'',h_ord:8,h_str:'',h_vg:'',notes:''}],
                 works:[{address:'',desc:'',qty:''}],
-                mezzo:'',targa:'',km:'',showFuel:false,fuelLitres:'',fuelEuro:'',signatureName:''
+                mezzo:'',targa:'',km:'',showFuel:false,fuelLitres:'',fuelEuro:'',signatureName:'',
+                // Dati specifici per tipo
+                cabineData:{ anello_primaria:'', anello_nome:'', sw1_porta:'', pp_andata:'', sw2_porta:'', pp_ritorno:'', cabine:[] },
+                brData:{ pop:'', splitter_num:'', pfp_appartenenza:'', att_otdr:'', istruzioni_telaio:'', spl_pri_att:'', spl_pri_n:'', spl_pri_seriale:'', pfs_list:[] }
             }
         };
     },
@@ -831,7 +1350,7 @@ createApp({
         },
         sheetsByType() {
             const res={};
-            for(const t of ['guasti','creation','cabine']){
+            for(const t of ['guasti','creation','cabine','bretellaggio']){
                 const sheets=this.allSheets[t]||[];
                 if(sheets.length>0){
                     res[t]={ rows:sheets.flatMap(s=>s.rows||[]), team:sheets[0].team, date:sheets[0].date, matricola:sheets[0].matricola };
@@ -848,10 +1367,28 @@ createApp({
         if(savedType && this.allSheets[savedType]?.length>0){ this.sheetType=savedType; this.view='editor'; }
         const savedTipi=localStorage.getItem('fiber_tipi_ottico');
         if(savedTipi){ try{ this.tipiElementoOttico=JSON.parse(savedTipi); }catch(e){} }
+        // Carica standard fibra
+        const savedStd=localStorage.getItem('fiber_standards');
+        if(savedStd){ try{ this.fiberStandards=JSON.parse(savedStd); }catch(e){} }
+        if(this.fiberStandards.length===0){
+            // Standard predefiniti modificabili
+            this.fiberStandards=[
+                { id:'of', nome:'Open Fiber', tubettiNumerati:false,
+                  colori12:[{n:'Blu',h:'#3b82f6'},{n:'Arancio',h:'#f97316'},{n:'Verde',h:'#22c55e'},{n:'Marrone',h:'#92400e'},{n:'Grigio',h:'#9ca3af'},{n:'Bianco',h:'#e5e7eb'},{n:'Rosso',h:'#ef4444'},{n:'Nero',h:'#374151'},{n:'Giallo',h:'#eab308'},{n:'Viola',h:'#8b5cf6'},{n:'Rosa',h:'#ec4899'},{n:'Turchese',h:'#06b6d4'}],
+                  tubettiColori:[{n:'Blu',h:'#3b82f6'},{n:'Arancio',h:'#f97316'},{n:'Verde',h:'#22c55e'},{n:'Marrone',h:'#92400e'},{n:'Grigio',h:'#9ca3af'},{n:'Bianco',h:'#e5e7eb'},{n:'Rosso',h:'#ef4444'},{n:'Nero',h:'#374151'},{n:'Giallo',h:'#eab308'},{n:'Viola',h:'#8b5cf6'},{n:'Rosa',h:'#ec4899'},{n:'Turchese',h:'#06b6d4'}]
+                },
+                { id:'tim', nome:'TIM', tubettiNumerati:true,
+                  colori12:[{n:'Blu',h:'#3b82f6'},{n:'Arancio',h:'#f97316'},{n:'Verde',h:'#22c55e'},{n:'Marrone',h:'#92400e'},{n:'Grigio',h:'#9ca3af'},{n:'Bianco',h:'#e5e7eb'},{n:'Rosso',h:'#ef4444'},{n:'Nero',h:'#374151'},{n:'Giallo',h:'#eab308'},{n:'Viola',h:'#8b5cf6'},{n:'Rosa',h:'#ec4899'},{n:'Turchese',h:'#06b6d4'}],
+                  tubettiColori:[]
+                }
+            ];
+        }
+        if(!this.fiberCalc.standardId && this.fiberStandards.length>0) this.fiberCalc.standardId=this.fiberStandards[0].id;
         this.initSpeech();
     },
     watch: {
         allSheets:{ handler(v){ localStorage.setItem('fiber_all_sheets',JSON.stringify(v)); }, deep:true },
+        fiberStandards:{ handler(v){ localStorage.setItem('fiber_standards',JSON.stringify(v)); }, deep:true },
         tipiElementoOttico:{ handler(v){ localStorage.setItem('fiber_tipi_ottico',JSON.stringify(v)); }, deep:true },
         darkMode(v){ localStorage.setItem('fiber_theme',v?'dark':'light'); },
         sheetType(v){ if(v) localStorage.setItem('fiber_sheet_type',v); }
@@ -874,12 +1411,76 @@ createApp({
             }
             this.currentSheetIdx=0; this.view='editor';
         },
-        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],anello_primaria:'',anello_nome:'',cabine_secondarie:[]}; },
-        newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',cabina_primaria:'',pfp:'',fibre_utilizzate:'',tratte_fibra:'',giunzioni:'',materiale_list:[],tempMaterial:'',extras:[]}; },
-        newCabina(){ return{id:Date.now()+Math.random(),nome:'',codice:'',connessioni:[],fibra_andata_1:'',fibra_andata_2:'',fibra_ritorno_1:'',fibra_ritorno_2:'',origine_fibre:'PFS',stato:'',motivo_bypass:'',note:''}; },
-        addCabina(){
-            if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie=[];
-            this.currentSheet.cabine_secondarie.push(this.newCabina());
+        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],anello_primaria:'',anello_nome:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[]}; },
+        newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
+            /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
+        }; },
+        newCabina(){ return{id:Date.now()+Math.random(),nome:'',codice:'',connessioni:[],pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato:'',motivo_bypass:'',note:''}; },
+        addCabina(){ if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie=[]; this.currentSheet.cabine_secondarie.push(this.newCabina()); },
+        addBretellaggioStep(sheet){ if(!sheet.bretellaggio) sheet.bretellaggio=[]; sheet.bretellaggio.push({nodo:'',direzione:'andata'}); },
+
+        // ── FIBER STANDARDS ──
+        getStandardById(id){ return this.fiberStandards.find(s=>s.id===id)||null; },
+
+        calcolaFibraWith(num, perTubetto, standardId){
+            const f=Number(num), pt=Number(perTubetto);
+            const std=this.getStandardById(standardId);
+            if(!f||f<1||!std) return null;
+            const tubetto=Math.ceil(f/pt);
+            const posizione=((f-1)%pt)+1;
+            const pos12=((posizione-1)%12)+1;
+            const gruppo=Math.ceil(posizione/12);
+            const tipoArr=['Normale','Striata','Doppio striato'];
+            const tipo=tipoArr[Math.min(gruppo-1,2)];
+            const tipoClass=gruppo===1?(this.darkMode?'text-green-400':'text-green-600'):gruppo===2?(this.darkMode?'text-yellow-400':'text-yellow-600'):(this.darkMode?'text-red-400':'text-red-600');
+            const fc=std.colori12[pos12-1]||{n:'?',h:'#888'};
+            const colore=fc.n, colorHex=fc.h;
+            let tubettoLabel, tubettoHex, tubettoStyle;
+            if(std.tubettiNumerati){
+                tubettoLabel='N° '+tubetto;
+                tubettoHex=''; 
+                tubettoStyle=this.darkMode?'color:#d1d5db':'color:#374151';
+            } else {
+                const tc=std.tubettiColori[(tubetto-1)%Math.max(std.tubettiColori.length,1)]||{n:'?',h:'#888'};
+                tubettoLabel=tc.n; tubettoHex=tc.h;
+                tubettoStyle='color:'+tc.h;
+            }
+            return {tubetto,posizione,colore,colorHex,tipo,tipoClass,tubettoLabel,tubettoHex,tubettoStyle};
+        },
+
+        calcolaFibra(){
+            this.fiberCalc.result=this.calcolaFibraWith(this.fiberCalc.num, this.fiberCalc.perTubetto, this.fiberCalc.standardId);
+        },
+
+        // Calcolo inline per un singolo numero fibra (usato nei campi PFS/PFP)
+        inlineFibra(num, sheet){
+            if(!num||!sheet) return null;
+            const sid=sheet.fiber_standard_id||( this.fiberStandards[0]&&this.fiberStandards[0].id)||null;
+            const pt=sheet.fiber_per_tubetto||24;
+            return this.calcolaFibraWith(num, pt, sid);
+        },
+
+        // ── FIBER MANAGER ──
+        openFiberManager(){ this.fiberManagerEdit=null; this.showFiberManager=true; },
+
+        newStandard(){
+            return { id:'std_'+Date.now(), nome:'Nuovo Standard', tubettiNumerati:false,
+                colori12: Array.from({length:12},(_,i)=>({n:'Colore '+(i+1),h:'#888888'})),
+                tubettiColori: Array.from({length:12},(_,i)=>({n:'Tubetto '+(i+1),h:'#888888'}))
+            };
+        },
+
+        addStandard(){
+            const s=this.newStandard();
+            this.fiberStandards.push(s);
+            this.fiberManagerEdit=s;
+        },
+
+        deleteStandard(id){
+            if(!confirm('Eliminare questo standard?')) return;
+            const i=this.fiberStandards.findIndex(s=>s.id===id);
+            if(i>=0) this.fiberStandards.splice(i,1);
+            if(this.fiberManagerEdit&&this.fiberManagerEdit.id===id) this.fiberManagerEdit=null;
         },
 
         // ── SHEETS ──
@@ -981,36 +1582,102 @@ createApp({
         // ── RAPPORTINO ──
         openRapportino(){ this.rapp.tipo=this.sheetType; this.view='rapportino'; },
         doImport(type){
-            const data=this.sheetsByType[type];
-            if(!data||data.rows.length===0){this.showToast('Nessun dato per questo tipo');return;}
+            const sheets=this.allSheets[type]||[];
+            if(!sheets.length){ this.showToast('Nessun dato per questo tipo'); return; }
+            const fs=sheets[0];
             this.rapp.tipo=type;
-            const fs=this.allSheets[type][0];
             this.rapp.displayDate=this.formatDateIT(fs.date);
             if(fs.matricola) this.rapp.matricolaSquadra=fs.matricola;
+            // Squadra
             if(fs.team){
                 const names=fs.team.split(/\s*[-\/,]\s*/).filter(Boolean);
-                names.forEach((n,i)=>{if(i<this.rapp.workers.length)this.rapp.workers[i].name=this.smartFormat(n.trim());else this.rapp.workers.push({role:'OP',name:this.smartFormat(n.trim()),matricola:'',h_ord:8,h_str:'',h_vg:'',notes:''});});
+                names.forEach((n,i)=>{
+                    const nm=this.smartFormat(n.trim());
+                    if(i<this.rapp.workers.length) this.rapp.workers[i].name=nm;
+                    else this.rapp.workers.push({role:'OP',name:nm,matricola:'',h_ord:8,h_str:'',h_vg:'',notes:''});
+                });
             }
-            const cities=new Set(); this.rapp.works=[];
-            data.rows.forEach(r=>{
-                const loc=r.localita||r.cabina_primaria||'';
-                if(loc) cities.add(loc.toUpperCase());
-                let addr='';
-                if(type==='cabine') addr=[r.cabina_primaria,r.pfp].filter(Boolean).join(' → ').toUpperCase();
-                else addr=r.indirizzo?(r.localita?`${r.indirizzo} (${r.localita})`:r.indirizzo).toUpperCase():(r.localita||'').toUpperCase();
-                const dp=[];
-                if(type==='guasti'){if(r.desc_problema)dp.push(this.smartFormat(r.desc_problema));if(r.intervento)dp.push(`Int: ${this.smartFormat(r.intervento)}`);if(r.permuta)dp.push(`Permuta: ${r.permuta}`);if(r.pop_pfs)dp.push(`Nodo: ${r.pop_pfs}`);}
-                else if(type==='creation'){if(r.pop_pfs)dp.push(`Nodo: ${r.pop_pfs}`);if(r.elemento_ottico)dp.push(`EO: ${r.elemento_ottico}`);if(r.permuta)dp.push(`Permuta: ${r.permuta}`);if(r.num_giunzioni)dp.push(`Giun: ${r.num_giunzioni}`);}
-                else if(type==='cabine'){if(r.pop_pfs)dp.push(`Nodo: ${r.pop_pfs}`);if(r.fibre_utilizzate)dp.push(`Fibre: ${r.fibre_utilizzate}`);if(r.tratte_fibra)dp.push(`Tratte: ${r.tratte_fibra}`);if(r.giunzioni)dp.push(`Giun: ${r.giunzioni}`);}
-                if(r.note)dp.push(this.smartFormat(r.note));
-                if(r.stato)dp.push(r.stato.replace(/_/g,' '));
-                if(r.materiale_list?.length)dp.push(`Mat: ${r.materiale_list.map(m=>this.smartFormat(m.text)).join(', ')}`);
-                r.extras?.forEach(e=>{if(e.key&&e.value)dp.push(`${e.key}: ${e.value}`);});
-                if(addr||dp.length) this.rapp.works.push({address:addr||'–',desc:dp.join(' | '),qty:'1'});
-            });
-            this.rapp.localita=Array.from(cities).join(', ');
+
+            if(type==='guasti'||type==='creation'){
+                const rows=sheets.flatMap(s=>s.rows||[]);
+                if(!rows.length){ this.showToast('Nessun dato per questo tipo'); return; }
+                const cities=new Set(); this.rapp.works=[];
+                rows.forEach(r=>{
+                    const loc=r.localita||'';
+                    if(loc) cities.add(loc.toUpperCase());
+                    const addr=r.indirizzo?(r.localita?`${r.indirizzo} (${r.localita})`:r.indirizzo).toUpperCase():(r.localita||'').toUpperCase();
+                    const dp=[];
+                    if(type==='guasti'){
+                        if(r.desc_problema) dp.push(this.smartFormat(r.desc_problema));
+                        if(r.intervento)    dp.push(`Int: ${this.smartFormat(r.intervento)}`);
+                        if(r.permuta)       dp.push(`Permuta: ${r.permuta}`);
+                        if(r.pop_pfs)       dp.push(`Nodo: ${r.pop_pfs}`);
+                    } else {
+                        if(r.pop_pfs)              dp.push(`Nodo: ${r.pop_pfs}`);
+                        if(r.tipo_elemento_ottico) dp.push(`Tipo EO: ${r.tipo_elemento_ottico}`);
+                        if(r.ui_servite)           dp.push(`UI: ${r.ui_servite}`);
+                        if(r.num_giunzioni)        dp.push(`Giun: ${r.num_giunzioni}`);
+                    }
+                    if(r.note)  dp.push(this.smartFormat(r.note));
+                    if(r.stato) dp.push(r.stato.replace(/_/g,' '));
+                    if(r.materiale_list?.length) dp.push(`Mat: ${r.materiale_list.map(m=>this.smartFormat(m.text)).join(', ')}`);
+                    if(addr||dp.length) this.rapp.works.push({address:addr||'–',desc:dp.join(' | '),qty:'1'});
+                });
+                this.rapp.localita=Array.from(cities).join(', ');
+
+            } else if(type==='cabine'){
+                // Import struttura anello + cabine secondarie
+                this.rapp.cabineData={
+                    anello_primaria: fs.anello_primaria||'',
+                    anello_nome:     fs.anello_nome||'',
+                    sw1_porta:       fs.sw1_porta||'',
+                    pp_andata:       fs.pp_andata||'',
+                    sw2_porta:       fs.sw2_porta||'',
+                    pp_ritorno:      fs.pp_ritorno||'',
+                    cabine: (fs.cabine_secondarie||[]).map(cab=>({
+                        nome:    cab.nome||'',
+                        codice:  cab.codice||'',
+                        stato:   cab.stato||'',
+                        motivo:  cab.motivo_bypass||'',
+                        pfs_f1:  cab.pfs_f1||'', pfs_f2: cab.pfs_f2||'',
+                        pfs_f3:  cab.pfs_f3||'', pfs_f4: cab.pfs_f4||'',
+                        pfp_f1:  cab.pfp_f1||'', pfp_f2: cab.pfp_f2||'',
+                        pfp_f3:  cab.pfp_f3||'', pfp_f4: cab.pfp_f4||'',
+                        connessioni: (cab.connessioni||[]).map(c=>{
+                            // Risolvi id cabina in label Nome (Codice)
+                            let dest=c.destinazione||'';
+                            if(dest==='__primaria__'){
+                                dest=fs.anello_primaria||'Primaria';
+                            } else {
+                                const found=(fs.cabine_secondarie||[]).find(x=>x.id===dest);
+                                if(found) dest=(found.nome||'')+(found.codice?' ('+found.codice+')':'');
+                            }
+                            return {modulo:c.modulo, fibre:c.fibre, destinazione:dest};
+                        }),
+                        note: cab.note||''
+                    }))
+                };
+                this.rapp.localita=fs.anello_nome||fs.anello_primaria||'';
+
+            } else if(type==='bretellaggio'){
+                const rows=sheets.flatMap(s=>s.rows||[]);
+                const r=rows[0]||{};
+                this.rapp.brData={
+                    pop:              r.pop||'',
+                    splitter_num:     r.splitter_num||'',
+                    pfp_appartenenza: r.pfp_appartenenza||'',
+                    att_otdr:         r.att_otdr||'',
+                    istruzioni_telaio:r.istruzioni_telaio||'',
+                    spl_pri_att:      r.spl_pri_att||'',
+                    spl_pri_n:        r.spl_pri_n||'',
+                    spl_pri_seriale:  r.spl_pri_seriale||'',
+                    pfs_list:         (r.pfs_list||[]).map(p=>({nome:p.nome||'',att:p.att||'',n_sec:p.n_sec||'',seriale:p.seriale||''}))
+                };
+                this.rapp.localita=r.pop||'';
+            }
+
             this.showImportModal=false;
-            this.showToast(`✓ Importati ${data.rows.length} interventi da ${type}`);
+            this.showToast(`✓ Dati importati da ${type}`);
         },
 
         triggerLogoUpload(){ this.$refs.logoInput.click(); },
