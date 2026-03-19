@@ -1956,16 +1956,24 @@ createApp({
                 const body=(s.cabine_secondarie||[]).map((cab,i)=>{
                     const pfsFibre=[cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ');
                     const pfpFibre=[cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ');
-                    const conns=(cab.connessioni||[]).map(c=>{
+                    const connLines=(cab.connessioni||[]).map(c=>{
                         let dest=c.destinazione||'';
                         if(dest==='__primaria__') dest=s.anello_primaria||'Prim.';
                         else { const f=(s.cabine_secondarie||[]).find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
-                        return `M${c.modulo} F${c.fibre}→${dest}`;
+                        return `M${c.modulo} F${c.fibre} → ${dest}`;
                     }).join('\n');
                     const stato=cab.stato==='COMPLETATA'?'✅ OK':cab.stato==='BYPASSATA'?'⚡ BYPASS':'🔴 KO';
-                    return[i+1,`${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''}`,stato,pfsFibre||'—',pfpFibre||'—',conns||'—',cab.note||''];
+                    // Cabina cell: nome (codice) + connessioni sotto
+                    const cabinaCell=`${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''}`+(connLines?'\n\n'+connLines:'');
+                    return[i+1, cabinaCell, stato, pfsFibre||'—', pfpFibre||'—', cab.note||''];
                 });
-                doc.autoTable({head:[['N.','CABINA','STATO','PFS','PFP','CONN.','NOTE']],body,startY:36,theme:'grid',headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},styles:{fontSize:6.5,cellPadding:2,valign:'top'},columnStyles:{0:{cellWidth:8},2:{cellWidth:20}}});
+                doc.autoTable({
+                    head:[['N.','CABINA + CONNESSIONI','STATO','PFS','PFP','NOTE']],
+                    body, startY:36, theme:'grid',
+                    headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},
+                    styles:{fontSize:6.5, cellPadding:2, valign:'top', overflow:'linebreak'},
+                    columnStyles:{0:{cellWidth:8}, 1:{cellWidth:72}, 2:{cellWidth:18}, 3:{cellWidth:25}, 4:{cellWidth:25}, 5:{cellWidth:'auto'}}
+                });
             } else if(type==='bretellaggio'){
                 const r=s.rows?.[0]||{};
                 let y=26;
