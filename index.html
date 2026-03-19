@@ -265,19 +265,31 @@
         <div v-if="sheetType==='cabine'" class="space-y-6">
 
             <!-- HEADER ANELLO PRIMARIO -->
-            <div class="rounded-2xl p-5 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-purple-800':'bg-white border-purple-300'">
-                <div class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 rounded-xl bg-purple-500/20 flex items-center justify-center"><i class="ph ph-circle-dashed text-purple-400 text-lg"></i></div>
-                    <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Anello Primario</span>
+            <div class="rounded-2xl p-4 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-purple-800':'bg-white border-purple-300'">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0"><i class="ph ph-circle-dashed text-purple-400 text-lg"></i></div>
+                    <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Cabina Primaria &amp; Anello</span>
                 </div>
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <!-- Riga 1: codice + nome primaria -->
+                <div class="grid grid-cols-2 gap-3 mb-3">
                     <div>
-                        <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Codice Cabina Primaria</label>
-                        <input v-model="currentSheet.anello_primaria" class="f-input font-mono font-black text-lg" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. CP-001">
+                        <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Codice Primaria</label>
+                        <input v-model="currentSheet.anello_primaria" class="f-input font-mono font-black text-base" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. CP-001">
                     </div>
                     <div>
+                        <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Nome Primaria</label>
+                        <input v-model="currentSheet.nome_primaria" class="f-input smart-caps" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. Montedonzelli">
+                    </div>
+                </div>
+                <!-- Riga 2: nome anello + id anello -->
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
                         <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Nome Anello</label>
-                        <input v-model="currentSheet.anello_nome" class="f-input smart-caps" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. Anello Nord - Via Roma">
+                        <input v-model="currentSheet.anello_nome" class="f-input smart-caps" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. Anello Nord">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">ID Anello</label>
+                        <input v-model="currentSheet.id_anello" class="f-input font-mono font-bold" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. AN-042">
                     </div>
                 </div>
                 <!-- Switch + Patch Panel -->
@@ -328,18 +340,26 @@
                          class="rounded-2xl border-2 overflow-hidden transition-all"
                          :class="cabStatoClass(cab)">
                         <!-- Cabina header -->
-                        <div class="flex items-center justify-between px-5 py-3 border-b" :class="darkMode?'border-gray-800 bg-black/20':'border-gray-100 bg-gray-50/50'">
-                            <div class="flex items-center gap-3">
-                                <span class="font-mono font-black text-xs px-2 py-1 rounded-md" :class="darkMode?'bg-purple-900/60 text-purple-300':'bg-purple-100 text-purple-700'">#{{ cIdx+1 }}</span>
-                                <span v-if="cab.nome" class="font-bold text-sm" :class="darkMode?'text-white':'text-gray-900'">{{ cab.nome }}</span>
-                                <span v-if="cab.codice" class="font-mono text-xs" :class="darkMode?'text-gray-400':'text-gray-500'">{{ cab.codice }}</span>
+                        <div class="flex items-center justify-between px-4 py-3 border-b" :class="darkMode?'border-gray-800 bg-black/20':'border-gray-100 bg-gray-50/50'">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <!-- Numero anello (editabile inline) -->
+                                <div class="flex items-center gap-1 flex-shrink-0">
+                                    <span class="text-[9px] font-mono font-bold" :class="darkMode?'text-purple-400':'text-purple-600'">#</span>
+                                    <input v-model="cab.numero" type="number" min="1"
+                                           class="w-10 bg-transparent font-black font-mono text-sm outline-none text-center border-b"
+                                           :class="darkMode?'border-purple-700 text-purple-300':'border-purple-400 text-purple-700'"
+                                           :placeholder="String(cIdx+1)"
+                                           title="Numero cabina nell'anello">
+                                </div>
+                                <span v-if="cab.nome" class="font-bold text-sm truncate" :class="darkMode?'text-white':'text-gray-900'">{{ cab.nome }}</span>
+                                <span v-if="cab.codice" class="font-mono text-xs flex-shrink-0" :class="darkMode?'text-gray-400':'text-gray-500'">({{ cab.codice }})</span>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 flex-shrink-0">
                                 <span v-if="cab.stato" class="text-[10px] font-bold uppercase px-2 py-1 rounded-full"
                                       :class="cab.stato==='COMPLETATA'?'bg-emerald-500/20 text-emerald-400':cab.stato==='BYPASSATA'?'bg-amber-500/20 text-amber-400':'bg-red-500/20 text-red-400'">
                                     {{ cab.stato==='COMPLETATA'?'✅':cab.stato==='BYPASSATA'?'⚡':'🔴' }} {{ cab.stato.replace('_',' ') }}
                                 </span>
-                                <button @click="currentSheet.cabine_secondarie.splice(cIdx,1)" class="text-gray-500 hover:text-red-500 transition-colors p-1"><i class="ph ph-trash text-base"></i></button>
+                                <button @click="currentSheet.cabine_secondarie.splice(cIdx,1)" class="text-gray-500 hover:text-red-500 transition-colors p-1 flex-shrink-0"><i class="ph ph-trash text-base"></i></button>
                             </div>
                         </div>
                         <!-- Cabina body -->
@@ -482,14 +502,13 @@
                                                 <option value="1-2">F 1-2</option><option value="3-4">F 3-4</option><option value="5-6">F 5-6</option><option value="7-8">F 7-8</option>
                                             </select>
                                             <i class="ph ph-arrow-right text-gray-500 text-xs flex-shrink-0"></i>
-                                            <!-- DROPDOWN cabine origine/destinazione: valore = id, label = Nome (Codice) -->
                                             <select v-model="conn.destinazione" class="flex-1 text-xs font-bold outline-none border-b cursor-pointer" :class="darkMode?'border-gray-600 text-white bg-[#111]':'border-gray-300 text-black bg-white'">
                                                 <option value="">-- Cabina --</option>
                                                 <option :value="'__primaria__'">
-                                                    🟣 {{ currentSheet.anello_primaria||'Primaria' }}{{ currentSheet.anello_nome ? ' ('+currentSheet.anello_nome+')' : '' }}
+                                                    🟣 {{ primariaLabel(currentSheet) }}
                                                 </option>
-                                                <option v-for="(c2,i2) in (currentSheet.cabine_secondarie||[])" :key="c2.id" :value="c2.id">
-                                                    {{ c2.nome||('Cabina '+(i2+1)) }}{{ c2.codice ? ' ('+c2.codice+')' : '' }}
+                                                <option v-for="(c2,i2) in sortedCabine" :key="c2.id" :value="c2.id">
+                                                    {{ cabLabel(c2, i2) }}
                                                 </option>
                                             </select>
                                             <button @click="cab.connessioni.splice(connIdx,1)" class="text-red-500/60 hover:text-red-500 text-xs flex-shrink-0"><i class="ph ph-x"></i></button>
@@ -508,38 +527,60 @@
                 </div>
             </div>
 
-            <!-- SCHEMA ANELLO (semplificato: lista ordinata) -->
-            <div class="rounded-2xl border-2 p-5" :class="darkMode?'bg-[#121212] border-purple-900':'bg-white border-purple-200'">
-                <div class="flex items-center gap-2 mb-4">
-                    <i class="ph ph-list-numbers text-purple-400 text-lg"></i>
-                    <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Ordine Anello</span>
+                <!-- Schema ordine anello (lista) -->
+                <div class="rounded-2xl border-2 p-4" :class="darkMode?'bg-[#121212] border-purple-900':'bg-white border-purple-200'">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="ph ph-list-numbers text-purple-400 text-lg"></i>
+                        <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Ordine Anello</span>
+                        <span v-if="currentSheet.id_anello" class="ml-1 text-[10px] font-mono px-2 py-0.5 rounded-full" :class="darkMode?'bg-purple-900/40 text-purple-400':'bg-purple-100 text-purple-700'">{{ currentSheet.id_anello }}</span>
+                    </div>
+                    <div class="space-y-1">
+                        <!-- Primaria inizio -->
+                        <div class="flex items-center gap-3 py-2 px-3 rounded-xl" :class="darkMode?'bg-purple-950/50':'bg-purple-50'">
+                            <span class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0" :class="darkMode?'bg-purple-700 text-white':'bg-purple-600 text-white'">1</span>
+                            <i class="ph ph-database text-purple-400 text-sm flex-shrink-0"></i>
+                            <div class="min-w-0">
+                                <span class="font-bold text-sm" :class="darkMode?'text-purple-300':'text-purple-700'">
+                                    {{ currentSheet.nome_primaria||currentSheet.anello_primaria||'Cabina Primaria' }}
+                                </span>
+                                <span v-if="currentSheet.anello_primaria" class="font-mono text-[10px] ml-1.5 opacity-60">({{ currentSheet.anello_primaria }})</span>
+                                <span class="text-[9px] font-mono opacity-40 ml-1">— inizio</span>
+                            </div>
+                        </div>
+                        <!-- Cabine secondarie ordinate per numero -->
+                        <div v-for="(cab,i) in sortedCabine" :key="cab.id"
+                             class="flex items-center gap-3 py-2 px-3 rounded-xl"
+                             :class="darkMode?'bg-gray-900/40':'bg-gray-50'">
+                            <span class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0"
+                                  :class="cab.stato==='COMPLETATA'?(darkMode?'bg-emerald-700 text-white':'bg-emerald-600 text-white'):cab.stato==='BYPASSATA'?(darkMode?'bg-amber-700 text-white':'bg-amber-500 text-white'):(darkMode?'bg-gray-700 text-white':'bg-gray-400 text-white')">
+                                {{ cab.numero||i+2 }}
+                            </span>
+                            <i class="ph text-sm flex-shrink-0" :class="cab.stato==='COMPLETATA'?'ph-check-circle text-emerald-400':cab.stato==='BYPASSATA'?'ph-lightning text-amber-400':'ph-circle text-gray-500'"></i>
+                            <div class="flex-1 min-w-0">
+                                <span class="font-bold text-sm" :class="darkMode?'text-white':'text-gray-900'">
+                                    {{ cab.nome||('Cabina '+(i+1)) }}
+                                </span>
+                                <span v-if="cab.codice" class="font-mono text-[10px] ml-1.5 opacity-60">({{ cab.codice }})</span>
+                                <span v-if="cab.stato==='BYPASSATA'" class="ml-2 text-[9px] font-mono text-amber-400">BYPASS</span>
+                            </div>
+                        </div>
+                        <!-- Ritorno primaria fine -->
+                        <div v-if="currentSheet.cabine_secondarie&&currentSheet.cabine_secondarie.length>0"
+                             class="flex items-center gap-3 py-2 px-3 rounded-xl" :class="darkMode?'bg-purple-950/50':'bg-purple-50'">
+                            <span class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0" :class="darkMode?'bg-purple-700 text-white':'bg-purple-600 text-white'">↩</span>
+                            <i class="ph ph-arrow-u-up-left text-purple-400 text-sm flex-shrink-0"></i>
+                            <div>
+                                <span class="font-bold text-sm" :class="darkMode?'text-purple-300':'text-purple-700'">
+                                    {{ currentSheet.nome_primaria||currentSheet.anello_primaria||'Cabina Primaria' }}
+                                </span>
+                                <span v-if="currentSheet.anello_primaria" class="font-mono text-[10px] ml-1.5 opacity-60">({{ currentSheet.anello_primaria }})</span>
+                                <span class="text-[9px] font-mono opacity-40 ml-1">— chiusura</span>
+                            </div>
+                        </div>
+                        <div v-if="!currentSheet.cabine_secondarie||currentSheet.cabine_secondarie.length===0"
+                             class="py-4 text-center text-xs font-mono text-gray-500 italic">aggiungi cabine secondarie</div>
+                    </div>
                 </div>
-                <div class="space-y-1">
-                    <!-- Cabina primaria (inizio) -->
-                    <div class="flex items-center gap-3 py-2 px-3 rounded-xl" :class="darkMode?'bg-purple-950/50':'bg-purple-50'">
-                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0" :class="darkMode?'bg-purple-700 text-white':'bg-purple-600 text-white'">1</span>
-                        <i class="ph ph-database text-purple-400 text-sm flex-shrink-0"></i>
-                        <span class="font-bold text-sm" :class="darkMode?'text-purple-300':'text-purple-700'">{{ currentSheet.anello_primaria||'Cabina Primaria' }} <span class="text-[9px] font-mono opacity-50">— inizio anello</span></span>
-                    </div>
-                    <!-- Cabine secondarie -->
-                    <div v-for="(cab,i) in (currentSheet.cabine_secondarie||[])" :key="cab.id" class="flex items-center gap-3 py-2 px-3 rounded-xl" :class="darkMode?'bg-gray-900/40':'bg-gray-50'">
-                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0" :class="cab.stato==='COMPLETATA'?(darkMode?'bg-emerald-700 text-white':'bg-emerald-600 text-white'):cab.stato==='BYPASSATA'?(darkMode?'bg-amber-700 text-white':'bg-amber-500 text-white'):(darkMode?'bg-gray-700 text-white':'bg-gray-400 text-white')">{{ i+2 }}</span>
-                        <i class="ph text-sm flex-shrink-0" :class="cab.stato==='COMPLETATA'?'ph-check-circle text-emerald-400':cab.stato==='BYPASSATA'?'ph-lightning text-amber-400':'ph-circle text-gray-500'"></i>
-                        <span class="font-bold text-sm flex-1" :class="darkMode?'text-white':'text-gray-900'">
-                            {{ cab.nome||cab.codice||('Cabina '+(i+1)) }}
-                            <span v-if="cab.codice&&cab.nome" class="text-[9px] font-mono opacity-50 ml-1">{{ cab.codice }}</span>
-                        </span>
-                        <span v-if="cab.stato==='BYPASSATA'" class="text-[9px] font-mono text-amber-400">BYPASS</span>
-                    </div>
-                    <!-- Ritorno primaria (fine) -->
-                    <div v-if="currentSheet.cabine_secondarie&&currentSheet.cabine_secondarie.length>0" class="flex items-center gap-3 py-2 px-3 rounded-xl" :class="darkMode?'bg-purple-950/50':'bg-purple-50'">
-                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0" :class="darkMode?'bg-purple-700 text-white':'bg-purple-600 text-white'">{{ (currentSheet.cabine_secondarie.length+2) }}</span>
-                        <i class="ph ph-arrow-u-up-left text-purple-400 text-sm flex-shrink-0"></i>
-                        <span class="font-bold text-sm" :class="darkMode?'text-purple-300':'text-purple-700'">{{ currentSheet.anello_primaria||'Cabina Primaria' }} <span class="text-[9px] font-mono opacity-50">— chiusura anello</span></span>
-                    </div>
-                    <div v-if="!currentSheet.cabine_secondarie||currentSheet.cabine_secondarie.length===0" class="py-4 text-center text-xs font-mono text-gray-500 italic">aggiungi cabine secondarie per visualizzare l'ordine</div>
-                </div>
-            </div>
 
             <!-- BRETELLAGGIO POP -->
             <div class="rounded-2xl border-2 p-5" :class="darkMode?'bg-[#121212] border-cyan-900':'bg-white border-cyan-200'">
@@ -983,8 +1024,13 @@
                     <div v-if="rapp.tipo==='cabine'" style="overflow:hidden;max-height:100%;">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;">
                             <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:3px;padding:3px 6px;">
-                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#7c3aed;text-transform:uppercase;">Anello</span>
-                                <div style="font-size:10px;font-weight:800;color:#111827;">{{ rapp.cabineData.anello_primaria||'—' }} <span style="font-weight:400;color:#6b7280;">{{ rapp.cabineData.anello_nome }}</span></div>
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#7c3aed;text-transform:uppercase;">Cabina Primaria</span>
+                                <div style="font-size:10px;font-weight:800;color:#111827;">
+                                    {{ rapp.cabineData.nome_primaria||rapp.cabineData.anello_primaria||'—' }}
+                                    <span v-if="rapp.cabineData.anello_primaria&&rapp.cabineData.nome_primaria" style="font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:400;color:#6b7280;">({{ rapp.cabineData.anello_primaria }})</span>
+                                    <span v-if="rapp.cabineData.id_anello" style="font-size:8px;font-family:'JetBrains Mono',monospace;font-weight:700;color:#7c3aed;margin-left:4px;">ID: {{ rapp.cabineData.id_anello }}</span>
+                                </div>
+                                <div v-if="rapp.cabineData.anello_nome" style="font-size:8px;color:#6b7280;margin-top:1px;">{{ rapp.cabineData.anello_nome }}</div>
                             </div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">
                                 <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:3px;padding:3px 5px;">
@@ -1000,17 +1046,23 @@
                         <table class="tech-table">
                             <thead><tr>
                                 <th style="width:18px;">N.</th>
-                                <th>NOME CABINA (CODICE)</th>
+                                <th style="width:20px;">#</th>
+                                <th>NOME CABINA (CODICE) + CONNESSIONI</th>
                                 <th style="width:55px;">STATO</th>
                                 <th>FIBRE PFS / PFP</th>
-                                <th>CONNESSIONI</th>
                                 <th>NOTE</th>
                             </tr></thead>
                             <tbody>
                                 <tr v-for="(cab,i) in rapp.cabineData.cabine" :key="i">
                                     <td style="font-weight:700;color:#9ca3af;font-family:'JetBrains Mono',monospace;">{{ i+1 }}</td>
+                                    <td style="font-weight:900;color:#7c3aed;font-family:'JetBrains Mono',monospace;text-align:center;">{{ cab.numero||'—' }}</td>
                                     <td style="font-weight:700;">
                                         {{ cab.nome }}{{ cab.codice?' ('+cab.codice+')':'' }}
+                                        <template v-if="cab.connessioni&&cab.connessioni.length">
+                                            <div v-for="(cn,ci) in cab.connessioni" :key="ci" style="font-size:8px;font-weight:400;color:#374151;margin-top:1px;">
+                                                M{{ cn.modulo }} F{{ cn.fibre }} → {{ cn.destinazione }}
+                                            </div>
+                                        </template>
                                     </td>
                                     <td>
                                         <span style="font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;"
@@ -1022,11 +1074,6 @@
                                     <td style="font-size:8px;font-family:'JetBrains Mono',monospace;color:#374151;">
                                         <div v-if="cab.pfs_f1||cab.pfs_f2||cab.pfs_f3||cab.pfs_f4">PFS: {{ [cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ') }}</div>
                                         <div v-if="cab.pfp_f1||cab.pfp_f2||cab.pfp_f3||cab.pfp_f4">PFP: {{ [cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ') }}</div>
-                                    </td>
-                                    <td style="font-size:8px;color:#374151;">
-                                        <div v-for="(cn,ci) in cab.connessioni" :key="ci" style="white-space:nowrap;">
-                                            M{{ cn.modulo }} F{{ cn.fibre }} → {{ cn.destinazione }}
-                                        </div>
                                     </td>
                                     <td style="font-size:8px;color:#6b7280;">{{ cab.note }}</td>
                                 </tr>
@@ -1417,6 +1464,21 @@ createApp({
                 }
             }
             return res;
+        },
+        sortedCabine(){
+            if(!this.currentSheet?.cabine_secondarie) return [];
+            return [...this.currentSheet.cabine_secondarie].sort((a,b)=>{
+                const na=Number(a.numero)||9999, nb=Number(b.numero)||9999;
+                return na-nb;
+            });
+        },
+        sortedCabine(){
+            if(!this.currentSheet?.cabine_secondarie) return [];
+            return [...this.currentSheet.cabine_secondarie].sort((a,b)=>{
+                const na=Number(a.numero)||9999;
+                const nb=Number(b.numero)||9999;
+                return na-nb;
+            });
         }
     },
     mounted() {
@@ -1485,11 +1547,11 @@ createApp({
             }
             this.currentSheetIdx=0; this.view='editor';
         },
-        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],anello_primaria:'',anello_nome:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[]}; },
+        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[]}; },
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
         }; },
-        newCabina(){ return{id:Date.now()+Math.random(),nome:'',codice:'',connessioni:[],pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato:'',motivo_bypass:'',note:''}; },
+        newCabina(){ return{id:Date.now()+Math.random(),numero:'',nome:'',codice:'',connessioni:[],pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato:'',motivo_bypass:'',note:''}; },
         addCabina(){ if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie=[]; this.currentSheet.cabine_secondarie.push(this.newCabina()); },
         addBretellaggioStep(sheet){ if(!sheet.bretellaggio) sheet.bretellaggio=[]; sheet.bretellaggio.push({nodo:'',direzione:'andata'}); },
 
@@ -1634,6 +1696,20 @@ createApp({
             if(this.darkMode) return{DA_SBLOCCARE:'border-green-700 bg-green-950/40 text-green-400',OCCORRE_ASSISTENTE:'border-yellow-700 bg-yellow-950/40 text-yellow-400',NEGATO_ACCESSO:'border-red-700 bg-red-950/40 text-red-400',NON_REALIZZATO:'border-red-800 bg-red-950/60 text-red-300',OCCORRE_MATERIALE:'border-orange-700 bg-orange-950/40 text-orange-400',COMPLETATO:'border-emerald-700 bg-emerald-950/40 text-emerald-400'}[s]||'border-gray-700 text-gray-400';
             return{DA_SBLOCCARE:'border-green-400 bg-green-50 text-green-700',OCCORRE_ASSISTENTE:'border-yellow-400 bg-yellow-50 text-yellow-700',NEGATO_ACCESSO:'border-red-400 bg-red-50 text-red-700',NON_REALIZZATO:'border-red-600 bg-red-100 text-red-800',OCCORRE_MATERIALE:'border-orange-400 bg-orange-50 text-orange-700',COMPLETATO:'border-emerald-400 bg-emerald-50 text-emerald-700'}[s]||'border-gray-300 text-gray-600';
         },
+        cabLabel(cab, idx){
+            // Restituisce "N. Nome (Codice)" oppure fallback
+            const n = cab.numero || (idx+1);
+            const nome = cab.nome || '';
+            const codice = cab.codice ? `(${cab.codice})` : '';
+            return `${n}. ${nome} ${codice}`.trim().replace(/\s+/g,' ');
+        },
+        primariaLabel(sheet){
+            // "Nome Primaria (Codice) — ID Anello"
+            const nome = sheet.nome_primaria || '';
+            const codice = sheet.anello_primaria ? `(${sheet.anello_primaria})` : '';
+            const id = sheet.id_anello ? `— ${sheet.id_anello}` : '';
+            return [nome, codice, id].filter(Boolean).join(' ').trim() || 'Cabina Primaria';
+        },
         cabStatoClass(cab){
             const dm={COMPLETATA:'bg-emerald-950/40 border-emerald-700',NON_COMPLETATA:'bg-red-950/40 border-red-700',BYPASSATA:'bg-amber-950/40 border-amber-700'};
             const lm={COMPLETATA:'bg-emerald-50 border-emerald-400',NON_COMPLETATA:'bg-red-50 border-red-400',BYPASSATA:'bg-amber-50 border-amber-400'};
@@ -1757,15 +1833,18 @@ createApp({
                 this.rapp.localita=Array.from(cities).join(', ');
 
             } else if(type==='cabine'){
-                // Import struttura anello + cabine secondarie
+                const priLabel=(fs.nome_primaria||fs.anello_primaria||'Primaria')+(fs.anello_primaria&&fs.nome_primaria?' ('+fs.anello_primaria+')':'');
                 this.rapp.cabineData={
                     anello_primaria: fs.anello_primaria||'',
+                    nome_primaria:   fs.nome_primaria||'',
+                    id_anello:       fs.id_anello||'',
                     anello_nome:     fs.anello_nome||'',
                     sw1_porta:       fs.sw1_porta||'',
                     pp_andata:       fs.pp_andata||'',
                     sw2_porta:       fs.sw2_porta||'',
                     pp_ritorno:      fs.pp_ritorno||'',
-                    cabine: (fs.cabine_secondarie||[]).map(cab=>({
+                    cabine: [...(fs.cabine_secondarie||[])].sort((a,b)=>(Number(a.numero)||9999)-(Number(b.numero)||9999)).map(cab=>({
+                        numero:  cab.numero||'',
                         nome:    cab.nome||'',
                         codice:  cab.codice||'',
                         stato:   cab.stato||'',
@@ -1775,10 +1854,9 @@ createApp({
                         pfp_f1:  cab.pfp_f1||'', pfp_f2: cab.pfp_f2||'',
                         pfp_f3:  cab.pfp_f3||'', pfp_f4: cab.pfp_f4||'',
                         connessioni: (cab.connessioni||[]).map(c=>{
-                            // Risolvi id cabina in label Nome (Codice)
                             let dest=c.destinazione||'';
                             if(dest==='__primaria__'){
-                                dest=fs.anello_primaria||'Primaria';
+                                dest=priLabel;
                             } else {
                                 const found=(fs.cabine_secondarie||[]).find(x=>x.id===dest);
                                 if(found) dest=(found.nome||'')+(found.codice?' ('+found.codice+')':'');
@@ -1788,7 +1866,7 @@ createApp({
                         note: cab.note||''
                     }))
                 };
-                this.rapp.localita=fs.anello_nome||fs.anello_primaria||'';
+                this.rapp.localita=fs.anello_nome||fs.nome_primaria||fs.anello_primaria||'';
 
             } else if(type==='bretellaggio'){
                 const rows=sheets.flatMap(s=>s.rows||[]);
@@ -1887,12 +1965,18 @@ createApp({
                 });
 
             } else if(this.sheetType==='cabine'){
-                msg+=`🏭 Anello: *${s.anello_primaria||'—'}* ${s.anello_nome?'('+s.anello_nome+')':''}\n`;
-                if(s.sw1_porta) msg+=`🔌 SW1 Porta ${s.sw1_porta} | PP ${s.pp_andata||'—'}\n`;
-                if(s.sw2_porta) msg+=`🔌 SW2 Porta ${s.sw2_porta} | PP ${s.pp_ritorno||'—'}\n\n`;
-                (s.cabine_secondarie||[]).forEach((cab,i)=>{
+                const priLabel=(s.nome_primaria||s.anello_primaria||'—')+(s.anello_primaria&&s.nome_primaria?' ('+s.anello_primaria+')':'');
+                msg+=`🏭 *${priLabel}*`;
+                if(s.id_anello) msg+=`  |  ID: ${s.id_anello}`;
+                if(s.anello_nome) msg+=`  |  Anello: ${s.anello_nome}`;
+                msg+='\n';
+                if(s.sw1_porta) msg+=`🔌 SW1→P${s.sw1_porta} PP:${s.pp_andata||'—'}  |  SW2→P${s.sw2_porta||'—'} PP:${s.pp_ritorno||'—'}\n`;
+                msg+='\n';
+                const sortedCabsWA=[...(s.cabine_secondarie||[])].sort((a,b)=>(Number(a.numero)||9999)-(Number(b.numero)||9999));
+                sortedCabsWA.forEach((cab,i)=>{
+                    const numStr=cab.numero?`#${cab.numero}`:`#${i+1}`;
                     const statoIcon=cab.stato==='COMPLETATA'?'✅':cab.stato==='BYPASSATA'?'⚡':'🔴';
-                    msg+=`*#${i+1}* 🏢 ${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''} ${statoIcon}\n`;
+                    msg+=`*${numStr}* 🏢 ${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''} ${statoIcon}\n`;
                     if(cab.stato==='BYPASSATA'&&cab.motivo_bypass) msg+=`  ⚡ ${cab.motivo_bypass.replace(/_/g,' ')}\n`;
                     const pfsFibre=[cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean);
                     const pfpFibre=[cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean);
@@ -1900,10 +1984,9 @@ createApp({
                     if(pfpFibre.length) msg+=`  🟣 PFP: ${pfpFibre.join(', ')}\n`;
                     if(cab.connessioni?.length){
                         cab.connessioni.forEach(c=>{
-                            // Risolvi id in nome
                             let dest=c.destinazione||'';
-                            if(dest==='__primaria__') dest=s.anello_primaria||'Primaria';
-                            else{ const f=(s.cabine_secondarie||[]).find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
+                            if(dest==='__primaria__') dest=priLabel;
+                            else{ const f=sortedCabsWA.find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
                             msg+=`  🔗 M${c.modulo} F${c.fibre} → ${dest}\n`;
                         });
                     }
@@ -1949,30 +2032,33 @@ createApp({
                 const body=s.rows.map(r=>[this.smartFormat(r.localita),this.smartFormat(r.indirizzo),r.pop_pfs||'',r.tipo_elemento_ottico||'',r.ui_servite||'',r.num_giunzioni||'',r.stato?.replace(/_/g,' ')||'',this.smartFormat(r.note)]);
                 doc.autoTable({head:[['LOC','INDIR','NODO','EL.OTT','UI','GIUN','STATO','NOTE']],body,startY:22,theme:'grid',headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},styles:{fontSize:6.5,cellPadding:2,valign:'top'}});
             } else if(type==='cabine'){
-                // Header anello
+                const priLabel=(s.nome_primaria||s.anello_primaria||'—')+(s.anello_primaria&&s.nome_primaria?' ('+s.anello_primaria+')':'');
                 doc.setFontSize(9); doc.setTextColor(60,60,60); doc.setFont('helvetica','normal');
-                doc.text(`Anello: ${s.anello_primaria||'—'} ${s.anello_nome?'('+s.anello_nome+')':''}`,8,26);
+                let hdrLine=`Primaria: ${priLabel}`;
+                if(s.id_anello) hdrLine+=`  |  ID Anello: ${s.id_anello}`;
+                if(s.anello_nome) hdrLine+=`  |  Anello: ${s.anello_nome}`;
+                doc.text(hdrLine,8,26);
                 if(s.sw1_porta) doc.text(`SW1→Porta ${s.sw1_porta} PP:${s.pp_andata||'—'}  |  SW2→Porta ${s.sw2_porta||'—'} PP:${s.pp_ritorno||'—'}`,8,31);
-                const body=(s.cabine_secondarie||[]).map((cab,i)=>{
+                const sortedCabs=[...(s.cabine_secondarie||[])].sort((a,b)=>(Number(a.numero)||9999)-(Number(b.numero)||9999));
+                const body=sortedCabs.map((cab,i)=>{
                     const pfsFibre=[cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ');
                     const pfpFibre=[cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ');
                     const connLines=(cab.connessioni||[]).map(c=>{
                         let dest=c.destinazione||'';
-                        if(dest==='__primaria__') dest=s.anello_primaria||'Prim.';
-                        else { const f=(s.cabine_secondarie||[]).find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
+                        if(dest==='__primaria__') dest=priLabel;
+                        else { const f=sortedCabs.find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
                         return `M${c.modulo} F${c.fibre} → ${dest}`;
                     }).join('\n');
-                    const stato=cab.stato==='COMPLETATA'?'✅ OK':cab.stato==='BYPASSATA'?'⚡ BYPASS':'🔴 KO';
-                    // Cabina cell: nome (codice) + connessioni sotto
-                    const cabinaCell=`${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''}`+(connLines?'\n\n'+connLines:'');
-                    return[i+1, cabinaCell, stato, pfsFibre||'—', pfpFibre||'—', cab.note||''];
+                    const stato=cab.stato==='COMPLETATA'?'OK':cab.stato==='BYPASSATA'?'BYPASS':'KO';
+                    const cabinaCell=`${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''}`+(connLines?'\n'+connLines:'');
+                    return[i+1, cab.numero||'—', cabinaCell, stato, pfsFibre||'—', pfpFibre||'—', cab.note||''];
                 });
                 doc.autoTable({
-                    head:[['N.','CABINA + CONNESSIONI','STATO','PFS','PFP','NOTE']],
+                    head:[['N.','#','CABINA + CONNESSIONI','STATO','PFS','PFP','NOTE']],
                     body, startY:36, theme:'grid',
                     headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},
                     styles:{fontSize:6.5, cellPadding:2, valign:'top', overflow:'linebreak'},
-                    columnStyles:{0:{cellWidth:8}, 1:{cellWidth:72}, 2:{cellWidth:18}, 3:{cellWidth:25}, 4:{cellWidth:25}, 5:{cellWidth:'auto'}}
+                    columnStyles:{0:{cellWidth:8},1:{cellWidth:10},2:{cellWidth:64},3:{cellWidth:16},4:{cellWidth:22},5:{cellWidth:22},6:{cellWidth:'auto'}}
                 });
             } else if(type==='bretellaggio'){
                 const r=s.rows?.[0]||{};
@@ -2004,16 +2090,38 @@ createApp({
                     return row;
                 });
             } else if(type==='cabine'){
-                data=(s.cabine_secondarie||[]).map((cab,i)=>{
+                const priLabel=(s.nome_primaria||s.anello_primaria||'')+(s.anello_primaria&&s.nome_primaria?' ('+s.anello_primaria+')':'');
+                const sortedCabs=[...(s.cabine_secondarie||[])].sort((a,b)=>(Number(a.numero)||9999)-(Number(b.numero)||9999));
+                data=sortedCabs.map((cab,i)=>{
                     const pfsFibre=[cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ');
                     const pfpFibre=[cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ');
                     const conns=(cab.connessioni||[]).map(c=>{
                         let dest=c.destinazione||'';
-                        if(dest==='__primaria__') dest=s.anello_primaria||'Primaria';
-                        else { const f=(s.cabine_secondarie||[]).find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
+                        if(dest==='__primaria__') dest=priLabel||'Primaria';
+                        else { const f=sortedCabs.find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
                         return `M${c.modulo} F${c.fibre}→${dest}`;
                     }).join(' | ');
-                    return {...base,'N°':i+1,'Nome Cabina':cab.nome||'—',Codice:cab.codice||'',Stato:cab.stato||'','Motivo Bypass':cab.motivo_bypass?.replace(/_/g,' ')||'','PFS Fibre':pfsFibre,'PFP Fibre':pfpFibre,Connessioni:conns,Note:cab.note||'','Anello':s.anello_primaria||'','Nome Anello':s.anello_nome||'','SW1 Porta':s.sw1_porta||'','PP Andata':s.pp_andata||'','SW2 Porta':s.sw2_porta||'','PP Ritorno':s.pp_ritorno||''};
+                    return {
+                        ...base,
+                        'N° Riga':     i+1,
+                        'N° Anello':   cab.numero||'',
+                        'Nome Cabina': cab.nome||'—',
+                        'Codice':      cab.codice||'',
+                        'Stato':       cab.stato||'',
+                        'Motivo Bypass': cab.motivo_bypass?.replace(/_/g,' ')||'',
+                        'PFS Fibre':   pfsFibre,
+                        'PFP Fibre':   pfpFibre,
+                        'Connessioni': conns,
+                        'Note':        cab.note||'',
+                        'Primaria':    s.nome_primaria||s.anello_primaria||'',
+                        'Cod. Primaria': s.anello_primaria||'',
+                        'ID Anello':   s.id_anello||'',
+                        'Nome Anello': s.anello_nome||'',
+                        'SW1 Porta':   s.sw1_porta||'',
+                        'PP Andata':   s.pp_andata||'',
+                        'SW2 Porta':   s.sw2_porta||'',
+                        'PP Ritorno':  s.pp_ritorno||''
+                    };
                 });
                 sheetName='Cabine';
             } else if(type==='bretellaggio'){
@@ -2037,7 +2145,7 @@ createApp({
         },
         restoreData(e){
             const f=e.target.files[0]; if(!f)return;
-            const r=new FileReader();
+            const r=h FileReader();
             r.onload=ev=>{
                 try{
                     const data=JSON.parse(ev.target.result);
