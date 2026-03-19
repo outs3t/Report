@@ -19,35 +19,42 @@
         }
     </script>
     <style>
-        body { transition:background-color .3s,color .3s; }
-        .f-input  { width:100%; background:transparent; border-bottom-width:1px; padding:8px 0; outline:none; font-weight:600; transition:all .3s; }
+        /* ── BASE ── */
+        *{ -webkit-tap-highlight-color:transparent; box-sizing:border-box; }
+        body { transition:background-color .3s,color .3s; -webkit-text-size-adjust:100%; }
+
+        /* ── INPUTS ── */
+        .f-input  { width:100%; background:transparent; border-bottom-width:1px; padding:10px 0; outline:none; font-weight:600; transition:all .3s; font-size:16px; /* 16px prevents iOS zoom */ }
         .f-input:focus { border-color:#ff8000 !important; }
-        .f-textarea { width:100%; background:transparent; border:1px solid; border-radius:8px; padding:10px; outline:none; resize:vertical; min-height:72px; font-size:13px; font-weight:500; transition:all .3s; }
+        .f-textarea { width:100%; background:transparent; border:1px solid; border-radius:12px; padding:12px; outline:none; resize:vertical; min-height:80px; font-size:16px; font-weight:500; transition:all .3s; }
         .f-textarea:focus { border-color:#ff8000 !important; }
+        select.f-input { font-size:16px; }
+
         .smart-caps { text-transform:capitalize; }
-        .field-label { font-size:10px; text-transform:uppercase; font-weight:700; margin-bottom:4px; display:block; letter-spacing:.05em; }
-        .checkbox-box { min-width:22px; height:22px; border:2px solid #06b6d4; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
+        .field-label { font-size:11px; text-transform:uppercase; font-weight:700; margin-bottom:6px; display:block; letter-spacing:.05em; }
+        .checkbox-box { min-width:26px; height:26px; border:2px solid #06b6d4; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
         .checkbox-box.active { background-color:#06b6d4; }
-        ::-webkit-scrollbar { height:4px; width:4px; }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { height:3px; width:3px; }
         ::-webkit-scrollbar-thumb { background:#ff8000; border-radius:10px; }
-        ::-webkit-scrollbar-track { background:transparent; }
+
+        /* ── MIC ── */
         @keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(255,128,0,.7);}50%{transform:scale(1.05);}100%{box-shadow:0 0 0 0 rgba(255,128,0,0);transform:scale(1);} }
         .mic-active { animation:pulse-ring 1.5s infinite; }
+
+        /* ── DATE PICKER ── */
         input[type="date"]::-webkit-calendar-picker-indicator { cursor:pointer; filter:invert(.5); }
         .dark input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(1); }
 
         /* ── RAPPORTINO PANEL ── */
-        .rapportino-panel { position:fixed; inset:0; z-index:80; background:#111827; transform:translateX(100%); transition:transform .4s cubic-bezier(.25,.46,.45,.94); overflow-y:auto; }
+        .rapportino-panel { position:fixed; inset:0; z-index:80; background:#111827; transform:translateX(100%); transition:transform .35s cubic-bezier(.25,.46,.45,.94); overflow-y:auto; }
         .rapportino-panel.open { transform:translateX(0); }
 
-        /* ── A4: altura fija, una sola pagina ── */
-        .a4-page {
-            width:210mm; height:296mm; background:white; margin:0 auto;
-            padding:6mm 9mm; box-shadow:0 20px 50px rgba(0,0,0,.5);
-            display:flex; flex-direction:column; position:relative; overflow:hidden;
-        }
-        @media (max-width:800px) { .a4-page { min-width:210mm; } .screen-wrapper { justify-content:flex-start; } }
-        .screen-wrapper { padding:40px 10px; display:flex; justify-content:center; overflow-x:auto; }
+        /* ── A4 PAGE ── */
+        .a4-page { width:210mm; height:296mm; background:white; margin:0 auto; padding:6mm 9mm; box-shadow:0 20px 50px rgba(0,0,0,.5); display:flex; flex-direction:column; position:relative; overflow:hidden; }
+        @media (max-width:900px) { .a4-page { min-width:210mm; } .screen-wrapper { justify-content:flex-start; } }
+        .screen-wrapper { padding:24px 10px 40px; display:flex; justify-content:center; overflow-x:auto; }
 
         /* ── RAPPORTINO INPUTS ── */
         .r-input { width:100%; background:transparent; border:none; outline:none; font-size:10px; font-weight:600; color:#111827; padding:0; margin:0; text-transform:capitalize; font-family:'Inter',sans-serif; }
@@ -65,12 +72,34 @@
         .header-bar { border-left:4px solid #2563eb; padding-left:8px; }
 
         /* ── TOAST ── */
-        .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:#ff8000; color:white; font-weight:700; font-size:12px; padding:10px 24px; border-radius:100px; z-index:200; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; }
+        .toast { position:fixed; bottom:env(safe-area-inset-bottom,0px); bottom:calc(env(safe-area-inset-bottom,0px) + 88px); left:50%; transform:translateX(-50%) translateY(20px); background:#ff8000; color:white; font-weight:700; font-size:13px; padding:11px 28px; border-radius:100px; z-index:300; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; white-space:nowrap; }
         .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-        /* ── WELCOME ── */
-        .type-card { border:2px solid transparent; border-radius:20px; padding:24px; cursor:pointer; transition:all .25s; }
-        .type-card:hover { transform:translateY(-4px); }
+        /* ── WELCOME CARDS ── */
+        .type-card { border:2px solid transparent; border-radius:18px; padding:20px; cursor:pointer; transition:all .2s; active:scale(0.97); }
+        @media (hover:hover){ .type-card:hover { transform:translateY(-3px); } }
+        .type-card:active { transform:scale(.97); }
+
+        /* ── MOBILE NAV / TABS ── */
+        .sheet-tab { flex:0 0 auto; padding:8px 16px; border-radius:10px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; cursor:pointer; transition:all .2s; white-space:nowrap; }
+
+        /* ── CARD ── */
+        .fiber-card { border-radius:20px; border-width:2px; overflow:hidden; transition:all .3s; }
+
+        /* ── BOTTOM BAR ── */
+        .bottom-bar { position:fixed; bottom:0; left:0; right:0; z-index:50; padding-bottom:env(safe-area-inset-bottom,0px); }
+
+        /* ── MODAL FULLSCREEN ON MOBILE ── */
+        @media (max-width:640px) {
+            .modal-full { position:fixed !important; inset:0 !important; border-radius:0 !important; max-width:100% !important; height:100% !important; overflow-y:auto; }
+            .fiber-manager-layout { flex-direction:column !important; height:auto !important; }
+            .fiber-manager-sidebar { width:100% !important; border-right:none !important; border-bottom:1px solid rgba(255,255,255,.1); flex-direction:row; flex-wrap:wrap; padding:8px; gap:6px; }
+            .fiber-manager-sidebar .std-item { flex:0 0 auto; border-radius:10px; }
+            .fiber-manager-main { flex:1; min-height:60vh; }
+        }
+
+        /* ── MISC ── */
+        .safe-pb { padding-bottom:calc(env(safe-area-inset-bottom,0px) + 90px); }
 
         @page { size:A4 portrait; margin:0; }
         @media print {
@@ -165,7 +194,7 @@
 <!-- ══════════════════════════════════
      EDITOR
 ══════════════════════════════════ -->
-<div v-if="view==='editor'" class="pb-48">
+<div v-if="view==='editor'" class="safe-pb">
 
     <!-- HEADER -->
     <header class="sticky top-0 z-40 border-b shadow-lg backdrop-blur-xl" :class="darkMode?'bg-[#0a0a0a]/95 border-gray-800':'bg-white/95 border-gray-200'">
@@ -193,38 +222,42 @@
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="flex overflow-x-auto gap-1 px-4 pb-0 max-w-7xl mx-auto border-b" :class="darkMode?'bg-black/40 border-gray-800':'bg-gray-50 border-gray-200'">
+        <!-- Sheet chips – mobile horizontal scroll -->
+        <div class="flex overflow-x-auto gap-2 px-3 py-2 border-b" :class="darkMode?'border-gray-800 bg-[#0a0a0a]':'border-gray-200 bg-gray-50'" style="scrollbar-width:none;">
             <div v-for="(sheet,idx) in sheets" :key="sheet.id" @click="currentSheetIdx=idx"
-                 class="px-5 py-3 text-xs font-bold whitespace-nowrap rounded-t-lg cursor-pointer relative group uppercase tracking-wide border-t border-x transition-all"
-                 :class="[darkMode?'border-gray-800':'border-gray-300', currentSheetIdx===idx ? (darkMode?'bg-fiber-darkcard text-fiber-orange border-b-[#121212]':'bg-white text-fiber-orange border-b-white shadow-sm') : (darkMode?'bg-transparent text-gray-500 border-b-gray-800 hover:text-gray-300':'bg-transparent text-gray-400 border-b-gray-200 hover:text-gray-600')]">
+                 class="sheet-tab flex-shrink-0 flex items-center gap-1.5"
+                 :class="currentSheetIdx===idx ? (darkMode?'bg-[#ff8000]/15 text-[#ff8000] border border-[#ff8000]/40':'bg-orange-50 text-orange-700 border border-orange-300') : (darkMode?'bg-gray-800/60 text-gray-400 border border-gray-700/50':'bg-white text-gray-500 border border-gray-200')">
                 {{ sheet.name }}
-                <button v-if="sheets.length>1" @click.stop="removeSheet(idx)" class="ml-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                <button v-if="sheets.length>1" @click.stop="removeSheet(idx)" class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] opacity-60 hover:opacity-100 hover:text-red-500 transition-all ml-0.5">✕</button>
             </div>
-            <button @click="addSheet" class="px-4 py-2 font-bold text-cyan-500 hover:text-cyan-400"><i class="ph ph-plus-circle text-lg"></i></button>
+            <button @click="addSheet" class="sheet-tab flex-shrink-0 border border-dashed" :class="darkMode?'border-gray-700 text-cyan-500':'border-gray-300 text-cyan-600'">
+                <i class="ph ph-plus text-sm"></i>
+            </button>
         </div>
 
-        <!-- Team / Matricola / Data -->
+        <!-- Team / Matricola / Data – mobile stack -->
         <div class="border-b" :class="darkMode?'bg-fiber-darkcard border-gray-800':'bg-white border-gray-200'">
-            <div v-if="currentSheet" class="max-w-7xl mx-auto p-4 flex flex-wrap gap-4 justify-between items-center">
-                <div class="flex-1 min-w-[180px]">
-                    <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode?'text-cyan-400':'text-cyan-700'">Squadra Operativa</label>
-                    <input v-model="currentSheet.team" class="w-full bg-transparent font-bold text-xl outline-none placeholder-gray-600 smart-caps" :class="darkMode?'text-white':'text-gray-900'" placeholder="Inserisci Squadra...">
+            <div v-if="currentSheet" class="p-3 space-y-3">
+                <div class="flex gap-3 items-end">
+                    <div class="flex-1">
+                        <label class="field-label" :class="darkMode?'text-cyan-400':'text-cyan-700'">Squadra</label>
+                        <input v-model="currentSheet.team" class="w-full bg-transparent font-bold text-lg outline-none placeholder-gray-600 smart-caps" :class="darkMode?'text-white':'text-gray-900'" placeholder="Inserisci Squadra...">
+                    </div>
+                    <div class="text-right">
+                        <label class="field-label" :class="darkMode?'text-cyan-400':'text-cyan-700'">Data</label>
+                        <input type="date" v-model="currentSheet.date" class="bg-transparent font-mono font-bold text-sm outline-none text-right" :class="darkMode?'text-white':'text-gray-900'">
+                    </div>
                 </div>
-                <div class="text-center">
-                    <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode?'text-cyan-400':'text-cyan-700'">N° Matricola</label>
-                    <input v-model="currentSheet.matricola" class="bg-transparent font-mono font-bold text-lg outline-none text-center w-28 border-b" :class="darkMode?'text-[#ff8000] border-gray-700':'text-orange-600 border-gray-300'" placeholder="000000">
-                </div>
-                <div class="text-right">
-                    <label class="text-[10px] uppercase font-bold tracking-wider mb-1 block" :class="darkMode?'text-cyan-400':'text-cyan-700'">Data Intervento</label>
-                    <input type="date" v-model="currentSheet.date" class="bg-transparent font-mono font-bold text-lg outline-none text-right" :class="darkMode?'text-white':'text-gray-900'">
+                <div>
+                    <label class="field-label" :class="darkMode?'text-cyan-400':'text-cyan-700'">N° Matricola</label>
+                    <input v-model="currentSheet.matricola" class="bg-transparent font-mono font-bold text-base outline-none w-full border-b" :class="darkMode?'text-[#ff8000] border-gray-700':'text-orange-600 border-gray-300'" placeholder="000000">
                 </div>
             </div>
         </div>
     </header>
 
     <!-- MAIN GRID -->
-    <main class="max-w-7xl mx-auto p-4 md:p-6">
+    <main class="max-w-7xl mx-auto px-3 pt-4 pb-2 md:px-6">
         <div v-if="!currentSheet" class="flex items-center justify-center h-64 text-gray-500 text-sm">Caricamento...</div>
         <template v-if="currentSheet">
 
@@ -575,7 +608,7 @@
                     <div>
                         <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Fibre/Tubetto (questo foglio)</label>
                         <select v-model.number="currentSheet.fiber_per_tubetto" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
-                            <option :value="12">12</option><option :value="24">24</option><option :value="48">48</option>
+                            <option :value="12">12</option><option :value="24">24</option><option :value="36">36</option>
                         </select>
                     </div>
                 </div>
@@ -595,7 +628,7 @@
                     <div>
                         <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Fibre/Tubetto</label>
                         <select v-model.number="fiberCalc.perTubetto" @change="calcolaFibra" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
-                            <option :value="12">12</option><option :value="24">24</option><option :value="48">48</option>
+                            <option :value="12">12</option><option :value="24">24</option><option :value="36">36</option>
                         </select>
                     </div>
                 </div>
@@ -802,27 +835,28 @@
         </template><!-- /currentSheet -->
     </main>
 
-    <!-- BOTTOM BAR -->
-    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 p-3 backdrop-blur-2xl rounded-2xl shadow-2xl border flex items-center gap-8 px-10 transition-colors" :class="darkMode?'bg-[#151515]/95 border-gray-700':'bg-white/95 border-gray-200 shadow-xl'">
-        <button @click="exportWhatsapp" class="group flex flex-col items-center gap-1">
-            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-green-500 to-green-700 text-white flex items-center justify-center shadow-lg group-hover:-translate-y-1 transition-transform"><i class="ph ph-whatsapp-logo text-2xl"></i></div>
-            <span class="text-[9px] font-bold opacity-60" :class="darkMode?'text-white':'text-black'">INVIA</span>
-        </button>
-        <button @click="toggleDictation" class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all -mt-10 border-4 border-transparent" :class="[isListening?'bg-gradient-to-r from-orange-500 to-red-600 text-white mic-active shadow-orange-500/50':(darkMode?'bg-[#2a2a2a] text-white border-[#151515]':'bg-white text-gray-800 border-gray-100')]">
-            <i class="ph text-3xl" :class="isListening?'ph-microphone-fill':'ph-microphone'"></i>
-        </button>
-        <div class="flex gap-3">
-            <button @click="openFiberManager" class="group flex flex-col items-center gap-1">
-                <div class="w-11 h-11 rounded-xl border flex items-center justify-center group-hover:-translate-y-1 transition-all" :class="darkMode?'border-gray-600 bg-gray-800 text-yellow-400':'border-gray-200 bg-white text-yellow-500'"><i class="ph ph-palette text-xl"></i></div>
-                <span class="text-[9px] font-bold opacity-60" :class="darkMode?'text-white':'text-black'">FIBRA</span>
+    <!-- BOTTOM BAR – mobile native -->
+    <div class="bottom-bar" :class="darkMode?'bg-[#111]/96 border-t border-gray-800':'bg-white/96 border-t border-gray-200'" style="backdrop-filter:blur(20px);">
+        <div class="flex items-center justify-around px-1 py-2 max-w-sm mx-auto">
+            <button @click="exportWhatsapp" class="flex flex-col items-center gap-0.5 min-w-[56px] py-1">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"><i class="ph ph-whatsapp-logo text-2xl"></i></div>
+                <span class="text-[10px] font-bold" :class="darkMode?'text-gray-400':'text-gray-500'">WA</span>
             </button>
-            <button @click="exportPDF" class="group flex flex-col items-center gap-1">
-                <div class="w-11 h-11 rounded-xl border flex items-center justify-center group-hover:-translate-y-1 transition-all" :class="darkMode?'border-gray-600 bg-gray-800 text-red-400':'border-gray-200 bg-white text-red-500'"><i class="ph ph-file-pdf text-xl"></i></div>
-                <span class="text-[9px] font-bold opacity-60" :class="darkMode?'text-white':'text-black'">PDF</span>
+            <button @click="openFiberManager" class="flex flex-col items-center gap-0.5 min-w-[56px] py-1">
+                <div class="w-12 h-12 rounded-2xl border flex items-center justify-center active:scale-95 transition-transform" :class="darkMode?'border-yellow-800/60 bg-yellow-900/20 text-yellow-400':'border-yellow-200 bg-yellow-50 text-yellow-600'"><i class="ph ph-palette text-xl"></i></div>
+                <span class="text-[10px] font-bold" :class="darkMode?'text-gray-400':'text-gray-500'">FIBRA</span>
             </button>
-            <button @click="exportExcel" class="group flex flex-col items-center gap-1">
-                <div class="w-11 h-11 rounded-xl border flex items-center justify-center group-hover:-translate-y-1 transition-all" :class="darkMode?'border-gray-600 bg-gray-800 text-green-400':'border-gray-200 bg-white text-green-600'"><i class="ph ph-file-xls text-xl"></i></div>
-                <span class="text-[9px] font-bold opacity-60" :class="darkMode?'text-white':'text-black'">XLS</span>
+            <button @click="toggleDictation" class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl transition-all -mt-5 active:scale-95"
+                    :class="isListening?'bg-gradient-to-r from-orange-500 to-red-600 text-white mic-active':(darkMode?'bg-[#222] text-white border-2 border-gray-700':'bg-white text-gray-800 border-2 border-gray-200')">
+                <i class="ph text-3xl" :class="isListening?'ph-microphone-fill':'ph-microphone'"></i>
+            </button>
+            <button @click="exportPDF" class="flex flex-col items-center gap-0.5 min-w-[56px] py-1">
+                <div class="w-12 h-12 rounded-2xl border flex items-center justify-center active:scale-95 transition-transform" :class="darkMode?'border-red-900/60 bg-red-900/10 text-red-400':'border-red-200 bg-red-50 text-red-500'"><i class="ph ph-file-pdf text-xl"></i></div>
+                <span class="text-[10px] font-bold" :class="darkMode?'text-gray-400':'text-gray-500'">PDF</span>
+            </button>
+            <button @click="exportExcel" class="flex flex-col items-center gap-0.5 min-w-[56px] py-1">
+                <div class="w-12 h-12 rounded-2xl border flex items-center justify-center active:scale-95 transition-transform" :class="darkMode?'border-green-900/60 bg-green-900/10 text-green-400':'border-green-200 bg-green-50 text-green-600'"><i class="ph ph-file-xls text-xl"></i></div>
+                <span class="text-[10px] font-bold" :class="darkMode?'text-gray-400':'text-gray-500'">XLS</span>
             </button>
         </div>
     </div>
@@ -1177,26 +1211,52 @@
 
 <!-- ══ MODAL: Gestione Standard Fibra ══ -->
 <div v-if="showFiberManager" class="fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
-    <div class="w-full max-w-3xl my-4 rounded-3xl shadow-2xl border overflow-hidden" :class="darkMode?'bg-[#111] border-gray-700':'bg-white border-gray-200'">
+    <div class="w-full max-w-3xl my-4 rounded-3xl shadow-2xl border overflow-hidden modal-full" :class="darkMode?'bg-[#111] border-gray-700':'bg-white border-gray-200'">
 
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b" :class="darkMode?'border-gray-800 bg-[#0a0a0a]':'border-gray-200 bg-gray-50'">
-            <h2 class="font-black text-lg flex items-center gap-2" :class="darkMode?'text-white':'text-gray-900'">
-                <i class="ph ph-palette text-yellow-400"></i> Standard Fibra Ottica
+        <div class="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" :class="darkMode?'border-gray-800 bg-[#0a0a0a]':'border-gray-200 bg-gray-50'">
+            <h2 class="font-black text-base flex items-center gap-2" :class="darkMode?'text-white':'text-gray-900'">
+                <i class="ph ph-palette text-yellow-400"></i> Standard Fibra
             </h2>
-            <div class="flex items-center gap-2">
-                <button @click="addStandard" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-yellow-500 hover:bg-yellow-400 text-black transition-all">
-                    <i class="ph ph-plus-circle"></i> Nuovo Standard
+            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                <!-- Import -->
+                <label class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold border cursor-pointer active:scale-95 transition-all"
+                       :class="darkMode?'border-gray-600 bg-gray-800 text-cyan-400 hover:bg-gray-700':'border-gray-300 bg-white text-cyan-600 hover:bg-gray-50'"
+                       title="Importa standard da file JSON">
+                    <i class="ph ph-upload-simple"></i>
+                    <span class="hidden sm:block">Importa</span>
+                    <input type="file" accept=".json" @change="importFiberStandardsFile" class="hidden">
+                </label>
+                <!-- Export -->
+                <button @click="exportFiberStandards"
+                        class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold border active:scale-95 transition-all"
+                        :class="darkMode?'border-gray-600 bg-gray-800 text-green-400 hover:bg-gray-700':'border-gray-300 bg-white text-green-600 hover:bg-gray-50'"
+                        title="Esporta tutti gli standard in JSON">
+                    <i class="ph ph-download-simple"></i>
+                    <span class="hidden sm:block">Esporta</span>
                 </button>
-                <button @click="showFiberManager=false; fiberManagerEdit=null" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-500/10 transition-colors">
-                    <i class="ph ph-x text-gray-400"></i>
+                <!-- Reset predefiniti -->
+                <button @click="resetFiberStandards"
+                        class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold border active:scale-95 transition-all"
+                        :class="darkMode?'border-gray-600 bg-gray-800 text-orange-400 hover:bg-gray-700':'border-gray-300 bg-white text-orange-600 hover:bg-gray-50'"
+                        title="Ripristina colori predefiniti OF e TIM">
+                    <i class="ph ph-arrow-counter-clockwise"></i>
+                    <span class="hidden sm:block">Reset</span>
+                </button>
+                <!-- Nuovo -->
+                <button @click="addStandard" class="flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-bold bg-yellow-500 hover:bg-yellow-400 text-black transition-all active:scale-95">
+                    <i class="ph ph-plus-circle"></i>
+                    <span class="hidden sm:block">Nuovo</span>
+                </button>
+                <button @click="showFiberManager=false; fiberManagerEdit=null" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-500/10">
+                    <i class="ph ph-x text-gray-400 text-lg"></i>
                 </button>
             </div>
         </div>
 
-        <div class="flex h-[75vh]">
-            <!-- Lista standard (colonna sinistra) -->
-            <div class="w-48 flex-shrink-0 border-r overflow-y-auto p-2" :class="darkMode?'border-gray-800 bg-[#0d0d0d]':'border-gray-200 bg-gray-50'">
+        <div class="flex fiber-manager-layout" style="height:70vh;">
+            <!-- Lista standard (sidebar) -->
+            <div class="fiber-manager-sidebar w-44 flex-shrink-0 border-r overflow-y-auto p-2" :class="darkMode?'border-gray-800 bg-[#0d0d0d]':'border-gray-200 bg-gray-50'">
                 <div v-for="std in fiberStandards" :key="std.id"
                      @click="fiberManagerEdit=std"
                      class="flex items-center justify-between px-3 py-2.5 rounded-xl mb-1 cursor-pointer transition-all"
@@ -1208,7 +1268,7 @@
             </div>
 
             <!-- Editor standard (colonna destra) -->
-            <div class="flex-1 overflow-y-auto p-5">
+            <div class="fiber-manager-main flex-1 overflow-y-auto p-5">
                 <div v-if="!fiberManagerEdit" class="flex items-center justify-center h-full text-gray-500 text-xs font-mono italic">
                     Seleziona o crea uno standard
                 </div>
@@ -1371,14 +1431,28 @@ createApp({
         const savedStd=localStorage.getItem('fiber_standards');
         if(savedStd){ try{ this.fiberStandards=JSON.parse(savedStd); }catch(e){} }
         if(this.fiberStandards.length===0){
-            // Standard predefiniti modificabili
             this.fiberStandards=[
                 { id:'of', nome:'Open Fiber', tubettiNumerati:false,
-                  colori12:[{n:'Blu',h:'#3b82f6'},{n:'Arancio',h:'#f97316'},{n:'Verde',h:'#22c55e'},{n:'Marrone',h:'#92400e'},{n:'Grigio',h:'#9ca3af'},{n:'Bianco',h:'#e5e7eb'},{n:'Rosso',h:'#ef4444'},{n:'Nero',h:'#374151'},{n:'Giallo',h:'#eab308'},{n:'Viola',h:'#8b5cf6'},{n:'Rosa',h:'#ec4899'},{n:'Turchese',h:'#06b6d4'}],
-                  tubettiColori:[{n:'Blu',h:'#3b82f6'},{n:'Arancio',h:'#f97316'},{n:'Verde',h:'#22c55e'},{n:'Marrone',h:'#92400e'},{n:'Grigio',h:'#9ca3af'},{n:'Bianco',h:'#e5e7eb'},{n:'Rosso',h:'#ef4444'},{n:'Nero',h:'#374151'},{n:'Giallo',h:'#eab308'},{n:'Viola',h:'#8b5cf6'},{n:'Rosa',h:'#ec4899'},{n:'Turchese',h:'#06b6d4'}]
+                  colori12:[
+                    {n:'Rosso',h:'#ef4444'},{n:'Verde',h:'#22c55e'},{n:'Giallo',h:'#eab308'},
+                    {n:'Marrone',h:'#92400e'},{n:'Blu',h:'#3b82f6'},{n:'Viola',h:'#8b5cf6'},
+                    {n:'Grigio',h:'#9ca3af'},{n:'Arancio',h:'#f97316'},{n:'Rosa',h:'#ec4899'},
+                    {n:'Bianco',h:'#f9fafb'},{n:'Nero',h:'#111827'},{n:'Turchese',h:'#06b6d4'}
+                  ],
+                  tubettiColori:[
+                    {n:'Rosso',h:'#ef4444'},{n:'Verde',h:'#22c55e'},{n:'Giallo',h:'#eab308'},
+                    {n:'Marrone',h:'#92400e'},{n:'Blu',h:'#3b82f6'},{n:'Viola',h:'#8b5cf6'},
+                    {n:'Grigio',h:'#9ca3af'},{n:'Arancio',h:'#f97316'},{n:'Rosa',h:'#ec4899'},
+                    {n:'Bianco',h:'#f9fafb'},{n:'Nero',h:'#111827'},{n:'Turchese',h:'#06b6d4'}
+                  ]
                 },
                 { id:'tim', nome:'TIM', tubettiNumerati:true,
-                  colori12:[{n:'Blu',h:'#3b82f6'},{n:'Arancio',h:'#f97316'},{n:'Verde',h:'#22c55e'},{n:'Marrone',h:'#92400e'},{n:'Grigio',h:'#9ca3af'},{n:'Bianco',h:'#e5e7eb'},{n:'Rosso',h:'#ef4444'},{n:'Nero',h:'#374151'},{n:'Giallo',h:'#eab308'},{n:'Viola',h:'#8b5cf6'},{n:'Rosa',h:'#ec4899'},{n:'Turchese',h:'#06b6d4'}],
+                  colori12:[
+                    {n:'Rosso',h:'#ef4444'},{n:'Verde',h:'#22c55e'},{n:'Giallo',h:'#eab308'},
+                    {n:'Marrone',h:'#92400e'},{n:'Blu',h:'#3b82f6'},{n:'Viola',h:'#8b5cf6'},
+                    {n:'Nero',h:'#111827'},{n:'Rosa',h:'#ec4899'},{n:'Arancio',h:'#f97316'},
+                    {n:'Turchese',h:'#06b6d4'},{n:'Bianco',h:'#f9fafb'},{n:'Grigio',h:'#9ca3af'}
+                  ],
                   tubettiColori:[]
                 }
             ];
@@ -1464,9 +1538,16 @@ createApp({
         openFiberManager(){ this.fiberManagerEdit=null; this.showFiberManager=true; },
 
         newStandard(){
+            // Prime 6 fibre standard come punto di partenza
+            const base6=[
+                {n:'Rosso',h:'#ef4444'},{n:'Verde',h:'#22c55e'},{n:'Giallo',h:'#eab308'},
+                {n:'Marrone',h:'#92400e'},{n:'Blu',h:'#3b82f6'},{n:'Viola',h:'#8b5cf6'}
+            ];
+            const fill12=Array.from({length:12},(_,i)=>i<6?{...base6[i]}:{n:'Colore '+(i+1),h:'#888888'});
+            const fill12t=Array.from({length:12},(_,i)=>i<6?{...base6[i]}:{n:'Tubetto '+(i+1),h:'#888888'});
             return { id:'std_'+Date.now(), nome:'Nuovo Standard', tubettiNumerati:false,
-                colori12: Array.from({length:12},(_,i)=>({n:'Colore '+(i+1),h:'#888888'})),
-                tubettiColori: Array.from({length:12},(_,i)=>({n:'Tubetto '+(i+1),h:'#888888'}))
+                colori12: fill12,
+                tubettiColori: fill12t
             };
         },
 
@@ -1481,6 +1562,56 @@ createApp({
             const i=this.fiberStandards.findIndex(s=>s.id===id);
             if(i>=0) this.fiberStandards.splice(i,1);
             if(this.fiberManagerEdit&&this.fiberManagerEdit.id===id) this.fiberManagerEdit=null;
+        },
+
+        // ── EXPORT / IMPORT / RESET standard fibra ──
+        exportFiberStandards(){
+            const blob=new Blob([JSON.stringify({fiberStandards:this.fiberStandards},null,2)],{type:'application/json'});
+            const a=document.createElement('a');
+            a.href=URL.createObjectURL(blob);
+            a.download=`colorazione_fibra_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            this.showToast('✓ Colorazione esportata');
+        },
+
+        importFiberStandardsFile(e){
+            const f=e.target.files[0]; if(!f) return;
+            const r=new FileReader();
+            r.onload=ev=>{
+                try{
+                    const data=JSON.parse(ev.target.result);
+                    const imported=data.fiberStandards||data;
+                    if(!Array.isArray(imported)||!imported.length) throw new Error('formato non valido');
+                    // Merge: aggiunge quelli non presenti, aggiorna quelli con stesso id
+                    imported.forEach(std=>{
+                        const idx=this.fiberStandards.findIndex(s=>s.id===std.id);
+                        if(idx>=0) this.fiberStandards.splice(idx,1,std);
+                        else this.fiberStandards.push(std);
+                    });
+                    this.showToast(`✓ ${imported.length} standard importati`);
+                } catch(err){ alert('File non valido: '+err.message); }
+            };
+            r.readAsText(f);
+            e.target.value=''; // reset input
+        },
+
+        resetFiberStandards(){
+            if(!confirm('Ripristinare i colori predefiniti di Open Fiber e TIM?\n(Gli standard custom non verranno eliminati)')) return;
+            const ofIdx=this.fiberStandards.findIndex(s=>s.id==='of');
+            const timIdx=this.fiberStandards.findIndex(s=>s.id==='tim');
+            const defaultOF={ id:'of', nome:'Open Fiber', tubettiNumerati:false,
+                colori12:[{n:'Rosso',h:'#ef4444'},{n:'Verde',h:'#22c55e'},{n:'Giallo',h:'#eab308'},{n:'Marrone',h:'#92400e'},{n:'Blu',h:'#3b82f6'},{n:'Viola',h:'#8b5cf6'},{n:'Grigio',h:'#9ca3af'},{n:'Arancio',h:'#f97316'},{n:'Rosa',h:'#ec4899'},{n:'Bianco',h:'#f9fafb'},{n:'Nero',h:'#111827'},{n:'Turchese',h:'#06b6d4'}],
+                tubettiColori:[{n:'Rosso',h:'#ef4444'},{n:'Verde',h:'#22c55e'},{n:'Giallo',h:'#eab308'},{n:'Marrone',h:'#92400e'},{n:'Blu',h:'#3b82f6'},{n:'Viola',h:'#8b5cf6'},{n:'Grigio',h:'#9ca3af'},{n:'Arancio',h:'#f97316'},{n:'Rosa',h:'#ec4899'},{n:'Bianco',h:'#f9fafb'},{n:'Nero',h:'#111827'},{n:'Turchese',h:'#06b6d4'}]
+            };
+            const defaultTIM={ id:'tim', nome:'TIM', tubettiNumerati:true,
+                colori12:[{n:'Rosso',h:'#ef4444'},{n:'Verde',h:'#22c55e'},{n:'Giallo',h:'#eab308'},{n:'Marrone',h:'#92400e'},{n:'Blu',h:'#3b82f6'},{n:'Viola',h:'#8b5cf6'},{n:'Nero',h:'#111827'},{n:'Rosa',h:'#ec4899'},{n:'Arancio',h:'#f97316'},{n:'Turchese',h:'#06b6d4'},{n:'Bianco',h:'#f9fafb'},{n:'Grigio',h:'#9ca3af'}],
+                tubettiColori:[]
+            };
+            if(ofIdx>=0) this.fiberStandards.splice(ofIdx,1,defaultOF); else this.fiberStandards.unshift(defaultOF);
+            if(timIdx>=0) this.fiberStandards.splice(this.fiberStandards.findIndex(s=>s.id==='tim'),1,defaultTIM); else this.fiberStandards.splice(1,0,defaultTIM);
+            if(this.fiberManagerEdit?.id==='of') this.fiberManagerEdit=this.fiberStandards.find(s=>s.id==='of');
+            if(this.fiberManagerEdit?.id==='tim') this.fiberManagerEdit=this.fiberStandards.find(s=>s.id==='tim');
+            this.showToast('✓ Colori predefiniti ripristinati');
         },
 
         // ── SHEETS ──
@@ -1726,57 +1857,169 @@ createApp({
 
         // ── WhatsApp ──
         exportWhatsapp(){
-            const s=this.currentSheet; if(!s)return;
-            let msg=`*FIBER REPORT · ${this.sheetType.toUpperCase()}*\n📅 ${this.formatDateIT(s.date)} | 👷 ${this.smartFormat(s.team)}\n\n`;
-            s.rows.forEach((r,i)=>{
-                const addr=r.localita||r.cabina_primaria;
-                if(addr||r.indirizzo){
-                    msg+=`*#${i+1}* 📍 ${this.smartFormat(addr)}, ${this.smartFormat(r.indirizzo||'')}\n`;
-                    if(this.sheetType==='guasti'){if(r.pop_pfs)msg+=`🔌 Nodo: ${r.pop_pfs}\n`;if(r.permuta)msg+=`🔄 ${r.permuta}\n`;if(r.desc_problema)msg+=`⚠️ ${r.desc_problema}\n`;if(r.intervento)msg+=`🔧 ${r.intervento}\n`;}
-                    else if(this.sheetType==='creation'){if(r.pop_pfs)msg+=`🔌 ${r.pop_pfs}\n`;if(r.permuta)msg+=`🔄 ${r.permuta}\n`;if(r.num_giunzioni)msg+=`🔀 Giun: ${r.num_giunzioni}\n`;}
-                    else if(this.sheetType==='cabine'){if(r.pfp)msg+=`📦 PFP: ${r.pfp}\n`;if(r.pop_pfs)msg+=`🔌 ${r.pop_pfs}\n`;if(r.fibre_utilizzate)msg+=`💡 ${r.fibre_utilizzate}\n`;if(r.tratte_fibra)msg+=`↔️ ${r.tratte_fibra}\n`;}
-                    if(r.note)msg+=`📝 ${r.note}\n`;
-                    if(r.stato)msg+=`🚦 ${r.stato.replace(/_/g,' ')}\n`;
-                    if(r.materiale_list?.length){msg+=`🛠\n`;r.materiale_list.forEach(m=>msg+=`${m.checked?'✅':'⬜'} ${this.smartFormat(m.text)}\n`);}
+            const s=this.currentSheet; if(!s) return;
+            const date=this.formatDateIT(s.date);
+            const team=this.smartFormat(s.team||'');
+            let msg=`*FIBER REPORT · ${(this.sheetType||'').toUpperCase()}*\n📅 ${date} | 👷 ${team}\n\n`;
+
+            if(this.sheetType==='guasti'||this.sheetType==='creation'){
+                s.rows.forEach((r,i)=>{
+                    const addr=[r.localita,r.indirizzo].filter(Boolean).map(v=>this.smartFormat(v)).join(' – ');
+                    msg+=`*#${i+1}* 📍 ${addr||'—'}\n`;
+                    if(this.sheetType==='guasti'){
+                        if(r.pop_pfs)        msg+=`🔌 Nodo: ${r.pop_pfs}\n`;
+                        if(r.permuta)        msg+=`🔄 Permuta: ${r.permuta}\n`;
+                        if(r.desc_problema)  msg+=`⚠️ Problema: ${this.smartFormat(r.desc_problema)}\n`;
+                        if(r.intervento)     msg+=`🔧 Intervento: ${this.smartFormat(r.intervento)}\n`;
+                    } else {
+                        if(r.pop_pfs)               msg+=`🔌 Nodo: ${r.pop_pfs}\n`;
+                        if(r.tipo_elemento_ottico)  msg+=`📡 El.Ottico: ${r.tipo_elemento_ottico}\n`;
+                        if(r.ui_servite)            msg+=`🏠 UI Servite: ${r.ui_servite}\n`;
+                        if(r.num_giunzioni)         msg+=`🔀 Giunzioni: ${r.num_giunzioni}\n`;
+                    }
+                    if(r.note)  msg+=`📝 ${this.smartFormat(r.note)}\n`;
+                    if(r.stato) msg+=`🚦 ${r.stato.replace(/_/g,' ')}\n`;
+                    if(r.materiale_list?.length){
+                        msg+=`🛠 Materiale:\n`;
+                        r.materiale_list.forEach(m=>msg+=`  ${m.checked?'✅':'⬜'} ${this.smartFormat(m.text)}\n`);
+                    }
                     msg+='─────\n';
-                }
-            });
+                });
+
+            } else if(this.sheetType==='cabine'){
+                msg+=`🏭 Anello: *${s.anello_primaria||'—'}* ${s.anello_nome?'('+s.anello_nome+')':''}\n`;
+                if(s.sw1_porta) msg+=`🔌 SW1 Porta ${s.sw1_porta} | PP ${s.pp_andata||'—'}\n`;
+                if(s.sw2_porta) msg+=`🔌 SW2 Porta ${s.sw2_porta} | PP ${s.pp_ritorno||'—'}\n\n`;
+                (s.cabine_secondarie||[]).forEach((cab,i)=>{
+                    const statoIcon=cab.stato==='COMPLETATA'?'✅':cab.stato==='BYPASSATA'?'⚡':'🔴';
+                    msg+=`*#${i+1}* 🏢 ${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''} ${statoIcon}\n`;
+                    if(cab.stato==='BYPASSATA'&&cab.motivo_bypass) msg+=`  ⚡ ${cab.motivo_bypass.replace(/_/g,' ')}\n`;
+                    const pfsFibre=[cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean);
+                    const pfpFibre=[cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean);
+                    if(pfsFibre.length) msg+=`  🔵 PFS: ${pfsFibre.join(', ')}\n`;
+                    if(pfpFibre.length) msg+=`  🟣 PFP: ${pfpFibre.join(', ')}\n`;
+                    if(cab.connessioni?.length){
+                        cab.connessioni.forEach(c=>{
+                            // Risolvi id in nome
+                            let dest=c.destinazione||'';
+                            if(dest==='__primaria__') dest=s.anello_primaria||'Primaria';
+                            else{ const f=(s.cabine_secondarie||[]).find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
+                            msg+=`  🔗 M${c.modulo} F${c.fibre} → ${dest}\n`;
+                        });
+                    }
+                    if(cab.note) msg+=`  📝 ${cab.note}\n`;
+                    msg+='─────\n';
+                });
+
+            } else if(this.sheetType==='bretellaggio'){
+                const r=s.rows?.[0]||{};
+                msg+=`🏗️ POP: *${r.pop||'—'}*\n`;
+                msg+=`📦 Splitter: ${r.splitter_num||'—'} | PFP: ${r.pfp_appartenenza||'—'}\n`;
+                if(r.att_otdr)    msg+=`📊 Att. OTDR: ${r.att_otdr} dB\n`;
+                if(r.istruzioni_telaio) msg+=`📋 Istruzioni: ${r.istruzioni_telaio}\n\n`;
+                msg+=`🔷 Splitter Primario:\n`;
+                if(r.spl_pri_att) msg+=`  Att: ${r.spl_pri_att} dB\n`;
+                if(r.spl_pri_n)   msg+=`  N°: ${r.spl_pri_n}\n`;
+                if(r.spl_pri_seriale) msg+=`  SN: ${r.spl_pri_seriale}\n\n`;
+                (r.pfs_list||[]).filter(p=>p.nome).forEach((p,i)=>{
+                    msg+=`🔹 PFS ${i+1}: *${p.nome}*\n`;
+                    if(p.att)     msg+=`  Att Sec: ${p.att} dB\n`;
+                    if(p.n_sec)   msg+=`  N° Spl Sec: ${p.n_sec}\n`;
+                    if(p.seriale) msg+=`  SN: ${p.seriale}\n`;
+                });
+            }
             window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
         },
 
-        // ── PDF editor ──
+        // ── PDF editor (rapido, tutte le schede) ──
         exportPDF(){
             const{jsPDF}=window.jspdf; const doc=new jsPDF();
-            const s=this.currentSheet; if(!s)return;
-            doc.setFillColor(6,182,212);doc.rect(0,0,210,20,'F');
-            doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
-            doc.text(`FIBER REPORT · ${this.sheetType.toUpperCase()}`,10,13);
-            doc.setFontSize(9);doc.text(`${this.smartFormat(s.team)} – ${this.formatDateIT(s.date)}`,130,13);
-            const heads={guasti:['LOC','INDIR','NODO','PERMUTA','STATO','PROBLEMA','INTERVENTO'],creation:['LOC','INDIR','NODO','EL.OTT','PERMUTA','GIUN','STATO'],cabine:['CABINA','PFP','NODO','FIBRE','TRATTE','GIUN','STATO']};
-            const body=s.rows.map(r=>{
-                if(this.sheetType==='guasti') return[this.smartFormat(r.localita),this.smartFormat(r.indirizzo),r.pop_pfs,r.permuta,r.stato?.replace(/_/g,' ')||'',this.smartFormat(r.desc_problema),this.smartFormat(r.intervento)];
-                if(this.sheetType==='creation') return[this.smartFormat(r.localita),this.smartFormat(r.indirizzo),r.pop_pfs,r.elemento_ottico,r.permuta,r.num_giunzioni,r.stato?.replace(/_/g,' ')||''];
-                if(this.sheetType==='cabine') return[this.smartFormat(r.cabina_primaria),r.pfp,r.pop_pfs,r.fibre_utilizzate,this.smartFormat(r.tratte_fibra),r.giunzioni,r.stato?.replace(/_/g,' ')||''];
-                return[];
-            });
-            doc.autoTable({head:[heads[this.sheetType]||[]],body,startY:25,theme:'grid',headStyles:{fillColor:[6,182,212],textColor:255,fontStyle:'bold',fontSize:8},alternateRowStyles:{fillColor:[245,245,245]},styles:{fontSize:7,cellPadding:2,valign:'middle'}});
-            doc.save(`${this.sheetType}_${s.name}.pdf`);
+            const s=this.currentSheet; if(!s) return;
+            const type=this.sheetType;
+            const accentRGB=type==='guasti'?[255,128,0]:type==='creation'?[6,182,212]:type==='bretellaggio'?[234,179,8]:[168,85,247];
+            doc.setFillColor(...accentRGB); doc.rect(0,0,210,18,'F');
+            doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
+            doc.text(`FIBER REPORT · ${type.toUpperCase()}`,8,12);
+            doc.setFontSize(8); doc.text(`${this.smartFormat(s.team||'')}  ${this.formatDateIT(s.date)}`,130,12);
+
+            if(type==='guasti'){
+                const body=s.rows.map(r=>[this.smartFormat(r.localita),this.smartFormat(r.indirizzo),r.pop_pfs||'',r.permuta||'',r.stato?.replace(/_/g,' ')||'',this.smartFormat(r.desc_problema),this.smartFormat(r.intervento)]);
+                doc.autoTable({head:[['LOC','INDIR','NODO','PERMUTA','STATO','PROBLEMA','INTERVENTO']],body,startY:22,theme:'grid',headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},styles:{fontSize:6.5,cellPadding:2,valign:'top'}});
+            } else if(type==='creation'){
+                const body=s.rows.map(r=>[this.smartFormat(r.localita),this.smartFormat(r.indirizzo),r.pop_pfs||'',r.tipo_elemento_ottico||'',r.ui_servite||'',r.num_giunzioni||'',r.stato?.replace(/_/g,' ')||'',this.smartFormat(r.note)]);
+                doc.autoTable({head:[['LOC','INDIR','NODO','EL.OTT','UI','GIUN','STATO','NOTE']],body,startY:22,theme:'grid',headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},styles:{fontSize:6.5,cellPadding:2,valign:'top'}});
+            } else if(type==='cabine'){
+                // Header anello
+                doc.setFontSize(9); doc.setTextColor(60,60,60); doc.setFont('helvetica','normal');
+                doc.text(`Anello: ${s.anello_primaria||'—'} ${s.anello_nome?'('+s.anello_nome+')':''}`,8,26);
+                if(s.sw1_porta) doc.text(`SW1→Porta ${s.sw1_porta} PP:${s.pp_andata||'—'}  |  SW2→Porta ${s.sw2_porta||'—'} PP:${s.pp_ritorno||'—'}`,8,31);
+                const body=(s.cabine_secondarie||[]).map((cab,i)=>{
+                    const pfsFibre=[cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ');
+                    const pfpFibre=[cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ');
+                    const conns=(cab.connessioni||[]).map(c=>{
+                        let dest=c.destinazione||'';
+                        if(dest==='__primaria__') dest=s.anello_primaria||'Prim.';
+                        else { const f=(s.cabine_secondarie||[]).find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
+                        return `M${c.modulo} F${c.fibre}→${dest}`;
+                    }).join('\n');
+                    const stato=cab.stato==='COMPLETATA'?'✅ OK':cab.stato==='BYPASSATA'?'⚡ BYPASS':'🔴 KO';
+                    return[i+1,`${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''}`,stato,pfsFibre||'—',pfpFibre||'—',conns||'—',cab.note||''];
+                });
+                doc.autoTable({head:[['N.','CABINA','STATO','PFS','PFP','CONN.','NOTE']],body,startY:36,theme:'grid',headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},styles:{fontSize:6.5,cellPadding:2,valign:'top'},columnStyles:{0:{cellWidth:8},2:{cellWidth:20}}});
+            } else if(type==='bretellaggio'){
+                const r=s.rows?.[0]||{};
+                let y=26;
+                const info=`POP: ${r.pop||'—'}  |  Splitter: ${r.splitter_num||'—'}  |  PFP: ${r.pfp_appartenenza||'—'}  |  Att.OTDR: ${r.att_otdr||'—'} dB`;
+                doc.setFontSize(8.5); doc.setTextColor(60,60,60); doc.setFont('helvetica','normal');
+                doc.text(info,8,y); y+=8;
+                if(r.istruzioni_telaio){ const lines=doc.splitTextToSize(`Istruzioni: ${r.istruzioni_telaio}`,190); doc.text(lines,8,y); y+=lines.length*4+3; }
+                doc.text(`Spl.Primario → Att: ${r.spl_pri_att||'—'} dB  N°: ${r.spl_pri_n||'—'}  SN: ${r.spl_pri_seriale||'—'}`,8,y); y+=8;
+                const body=(r.pfs_list||[]).map((p,i)=>[i+1,p.nome||'—',p.att?p.att+' dB':'—',p.n_sec||'—',p.seriale||'—']);
+                doc.autoTable({head:[['PFS','NOME','ATT.SEC.','N°SPL.SEC.','SERIALE']],body,startY:y,theme:'grid',headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},styles:{fontSize:7,cellPadding:2,valign:'middle'}});
+            }
+            doc.save(`${type}_${s.name||'report'}.pdf`);
         },
 
         // ── Excel ──
         exportExcel(){
-            const s=this.currentSheet; if(!s)return;
-            const data=s.rows.map(r=>{
-                const base={Squadra:this.smartFormat(s.team),Data:this.formatDateIT(s.date),Stato:r.stato,Note:this.smartFormat(r.note),Materiale:r.materiale_list.map(m=>this.smartFormat(m.text)).join(', ')};
-                if(this.sheetType==='guasti') Object.assign(base,{Località:this.smartFormat(r.localita),Indirizzo:this.smartFormat(r.indirizzo),Nodo:r.pop_pfs,'El.Ottico':r.elemento_ottico,Permuta:r.permuta,Problema:this.smartFormat(r.desc_problema),Intervento:this.smartFormat(r.intervento)});
-                if(this.sheetType==='creation') Object.assign(base,{Località:this.smartFormat(r.localita),Indirizzo:this.smartFormat(r.indirizzo),Nodo:r.pop_pfs,'El.Ottico':r.elemento_ottico,Permuta:r.permuta,Giunzioni:r.num_giunzioni});
-                if(this.sheetType==='cabine') Object.assign(base,{Cabina:this.smartFormat(r.cabina_primaria),PFP:r.pfp,Nodo:r.pop_pfs,Fibre:r.fibre_utilizzate,Tratte:this.smartFormat(r.tratte_fibra),Giunzioni:r.giunzioni});
-                r.extras.forEach(e=>base[this.smartFormat(e.key)]=this.smartFormat(e.value));
-                return base;
-            });
-            const ws=XLSX.utils.json_to_sheet(data); const wb=XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb,ws,this.sheetType);
-            XLSX.writeFile(wb,`${this.sheetType}_${s.name}.xlsx`);
+            const s=this.currentSheet; if(!s) return;
+            const type=this.sheetType;
+            const base={Squadra:this.smartFormat(s.team||''),Data:this.formatDateIT(s.date)};
+            let data=[], sheetName=type;
+
+            if(type==='guasti'||type==='creation'){
+                data=s.rows.map(r=>{
+                    const row={...base,Stato:r.stato?.replace(/_/g,' ')||'',Note:this.smartFormat(r.note),Materiale:(r.materiale_list||[]).map(m=>this.smartFormat(m.text)).join(', ')};
+                    if(type==='guasti') Object.assign(row,{Località:this.smartFormat(r.localita),Indirizzo:this.smartFormat(r.indirizzo),Nodo:r.pop_pfs||'',Permuta:r.permuta||'',Problema:this.smartFormat(r.desc_problema),Intervento:this.smartFormat(r.intervento)});
+                    if(type==='creation') Object.assign(row,{Località:this.smartFormat(r.localita),Indirizzo:this.smartFormat(r.indirizzo),Nodo:r.pop_pfs||'','El.Ottico':r.tipo_elemento_ottico||'','UI Servite':r.ui_servite||'',Giunzioni:r.num_giunzioni||''});
+                    (r.extras||[]).forEach(e=>{ if(e.key) row[this.smartFormat(e.key)]=this.smartFormat(e.value); });
+                    return row;
+                });
+            } else if(type==='cabine'){
+                data=(s.cabine_secondarie||[]).map((cab,i)=>{
+                    const pfsFibre=[cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ');
+                    const pfpFibre=[cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ');
+                    const conns=(cab.connessioni||[]).map(c=>{
+                        let dest=c.destinazione||'';
+                        if(dest==='__primaria__') dest=s.anello_primaria||'Primaria';
+                        else { const f=(s.cabine_secondarie||[]).find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
+                        return `M${c.modulo} F${c.fibre}→${dest}`;
+                    }).join(' | ');
+                    return {...base,'N°':i+1,'Nome Cabina':cab.nome||'—',Codice:cab.codice||'',Stato:cab.stato||'','Motivo Bypass':cab.motivo_bypass?.replace(/_/g,' ')||'','PFS Fibre':pfsFibre,'PFP Fibre':pfpFibre,Connessioni:conns,Note:cab.note||'','Anello':s.anello_primaria||'','Nome Anello':s.anello_nome||'','SW1 Porta':s.sw1_porta||'','PP Andata':s.pp_andata||'','SW2 Porta':s.sw2_porta||'','PP Ritorno':s.pp_ritorno||''};
+                });
+                sheetName='Cabine';
+            } else if(type==='bretellaggio'){
+                const r=s.rows?.[0]||{};
+                const pfsRows=(r.pfs_list||[]).map((p,i)=>({...base,'PFS N°':i+1,'PFS Nome':p.nome||'','Att.Sec.(dB)':p.att||'','N°Spl.Sec.':p.n_sec||'','Seriale Spl.Sec.':p.seriale||'',POP:r.pop||'',Splitter:r.splitter_num||'',PFP:r.pfp_appartenenza||'','Att.OTDR(dB)':r.att_otdr||'','Istruzioni Telaio':r.istruzioni_telaio||'','Spl.Pri.Att.(dB)':r.spl_pri_att||'','N°Spl.Pri.':r.spl_pri_n||'','Seriale Spl.Pri.':r.spl_pri_seriale||''}));
+                data=pfsRows.length?pfsRows:[{...base,POP:r.pop||'',Splitter:r.splitter_num||'',PFP:r.pfp_appartenenza||'','Att.OTDR':r.att_otdr||''}];
+                sheetName='Bretellaggio';
+            }
+
+            if(!data.length){ this.showToast('Nessun dato da esportare'); return; }
+            const ws=XLSX.utils.json_to_sheet(data);
+            const wb=XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb,ws,sheetName);
+            XLSX.writeFile(wb,`${type}_${s.name||'export'}.xlsx`);
         },
 
         // ── Backup / Restore ──
