@@ -40,8 +40,7 @@
         ::-webkit-scrollbar-thumb { background:#ff8000; border-radius:10px; }
 
         /* ── MIC ── */
-        @keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(255,128,0,.7);}50%{transform:scale(1.05);}100%{box-shadow:0 0 0 0 rgba(255,128,0,0);transform:scale(1);} }
-        .mic-active { animation:pulse-ring 1.5s infinite; }
+        /* mic-active rimosso - ora usa animate-ping Tailwind */
 
         /* ── DATE PICKER ── */
         input[type="date"]::-webkit-calendar-picker-indicator { cursor:pointer; filter:invert(.5); }
@@ -290,6 +289,7 @@
                             <option value="Chiuso">Chiuso</option>
                             <option value="Chiuso (con Cabine da rilegare)">Chiuso (con Cabine da rilegare)</option>
                             <option value="Aperto">Aperto</option>
+                            <option value="Manca Bretellaggio">Manca Bretellaggio</option>
                         </select>
                     </div>
                     <div>
@@ -362,7 +362,7 @@
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <span v-if="cab.stato" class="text-[10px] font-bold uppercase px-2 py-1 rounded-full"
                                       :class="cab.stato==='COMPLETATA'?'bg-emerald-500/20 text-emerald-400':cab.stato==='BYPASSATA'?'bg-amber-500/20 text-amber-400':'bg-red-500/20 text-red-400'">
-                                    {{ cab.stato==='COMPLETATA'?'✅':cab.stato==='BYPASSATA'?'⚡':'🔴' }} {{ cab.stato.replace('_',' ') }}
+                                    {{ {'ONLINE':'🟢','PARZIALE':'🔵','OFFLINE':'🔴','BYPASSATA':'🟡','NON_ATTIVA':'⬜','NON_SOPRALLUOGATA':'🔍','DISMESSA':'🚫'}[cab.stato]||'⚪' }} {{ cab.stato.replace(/_/g,' ') }}
                                 </span>
                                 <button @click="currentSheet.cabine_secondarie.splice(cIdx,1)" class="text-gray-500 hover:text-red-500 transition-colors p-1 flex-shrink-0"><i class="ph ph-trash text-base"></i></button>
                             </div>
@@ -382,13 +382,38 @@
                                         <input v-model="cab.codice" class="f-input font-mono" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" placeholder="Es. CS-042">
                                     </div>
                                 </div>
+                                <!-- Prima / Ultima cabina anello -->
+                                <div class="flex gap-3">
+                                    <label class="flex items-center gap-2 cursor-pointer flex-1 px-3 py-2 rounded-xl border transition-all"
+                                           :class="cab.is_prima?(darkMode?'bg-green-900/30 border-green-600':'bg-green-50 border-green-400'):(darkMode?'border-gray-700':'border-gray-200')"
+                                           @click="currentSheet.cabine_secondarie.forEach(c2=>c2.is_prima=false); cab.is_prima=!cab.is_prima">
+                                        <div class="w-4 h-4 rounded-full flex-shrink-0 border-2 flex items-center justify-center transition-all"
+                                             :class="cab.is_prima?'border-green-500 bg-green-500':'border-gray-400'">
+                                            <i v-if="cab.is_prima" class="ph ph-check text-white text-[9px]"></i>
+                                        </div>
+                                        <span class="text-xs font-bold" :class="cab.is_prima?(darkMode?'text-green-400':'text-green-700'):(darkMode?'text-gray-400':'text-gray-500')">Prima Cabina</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer flex-1 px-3 py-2 rounded-xl border transition-all"
+                                           :class="cab.is_ultima?(darkMode?'bg-purple-900/30 border-purple-600':'bg-purple-50 border-purple-400'):(darkMode?'border-gray-700':'border-gray-200')"
+                                           @click="currentSheet.cabine_secondarie.forEach(c2=>c2.is_ultima=false); cab.is_ultima=!cab.is_ultima">
+                                        <div class="w-4 h-4 rounded-full flex-shrink-0 border-2 flex items-center justify-center transition-all"
+                                             :class="cab.is_ultima?'border-purple-500 bg-purple-500':'border-gray-400'">
+                                            <i v-if="cab.is_ultima" class="ph ph-check text-white text-[9px]"></i>
+                                        </div>
+                                        <span class="text-xs font-bold" :class="cab.is_ultima?(darkMode?'text-purple-400':'text-purple-700'):(darkMode?'text-gray-400':'text-gray-500')">Ultima Cabina</span>
+                                    </label>
+                                </div>
                                 <div>
                                     <label class="field-label" :class="darkMode?'text-gray-300':'text-gray-600'">Stato Lavori</label>
                                     <select v-model="cab.stato" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
                                         <option value="" :class="darkMode?'text-gray-400 bg-[#1a1a1a]':''">-- Stato --</option>
-                                        <option value="COMPLETATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">✅ Completata</option>
-                                        <option value="NON_COMPLETATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">🔴 Non Completata</option>
-                                        <option value="BYPASSATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">⚡ Bypassata</option>
+                                        <option value="ONLINE" :class="darkMode?'text-white bg-[#1a1a1a]':''">🟢 Online</option>
+                                        <option value="PARZIALE" :class="darkMode?'text-white bg-[#1a1a1a]':''">🔵 Parziale</option>
+                                        <option value="OFFLINE" :class="darkMode?'text-white bg-[#1a1a1a]':''">🔴 Offline</option>
+                                        <option value="BYPASSATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">🟡 Bypassata</option>
+                                        <option value="NON_ATTIVA" :class="darkMode?'text-white bg-[#1a1a1a]':''">⬜ Non Attiva</option>
+                                        <option value="NON_SOPRALLUOGATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">🔍 Non Sopralluogata</option>
+                                        <option value="DISMESSA" :class="darkMode?'text-white bg-[#1a1a1a]':''">🚫 Dismessa</option>
                                     </select>
                                 </div>
                                 <div v-if="cab.stato==='BYPASSATA'" class="rounded-xl p-3 border" :class="darkMode?'bg-amber-950/30 border-amber-700':'bg-amber-50 border-amber-300'">
@@ -401,6 +426,27 @@
                                         <option value="Manca Accesso">Manca Accesso</option>
                                         <option value="Manca Pte">Manca Pte</option>
                                     </select>
+                                </div>
+                                <!-- Online / Offline -->
+                                <div class="flex gap-3">
+                                    <label class="flex items-center gap-2 cursor-pointer flex-1 px-3 py-2 rounded-xl border transition-all"
+                                           :class="cab.online_stato==='ONLINE'?(darkMode?'bg-emerald-900/30 border-emerald-600':'bg-emerald-50 border-emerald-400'):(darkMode?'border-gray-700':'border-gray-200')"
+                                           @click="cab.online_stato = cab.online_stato==='ONLINE' ? '' : 'ONLINE'">
+                                        <div class="w-4 h-4 rounded-full flex-shrink-0 border-2 flex items-center justify-center"
+                                             :class="cab.online_stato==='ONLINE'?'border-emerald-500 bg-emerald-500':'border-gray-400'">
+                                            <i v-if="cab.online_stato==='ONLINE'" class="ph ph-check text-white text-[9px]"></i>
+                                        </div>
+                                        <span class="text-xs font-bold" :class="cab.online_stato==='ONLINE'?(darkMode?'text-emerald-400':'text-emerald-700'):(darkMode?'text-gray-400':'text-gray-500')">Online</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer flex-1 px-3 py-2 rounded-xl border transition-all"
+                                           :class="cab.online_stato==='OFFLINE'?(darkMode?'bg-red-900/30 border-red-600':'bg-red-50 border-red-400'):(darkMode?'border-gray-700':'border-gray-200')"
+                                           @click="cab.online_stato = cab.online_stato==='OFFLINE' ? '' : 'OFFLINE'">
+                                        <div class="w-4 h-4 rounded-full flex-shrink-0 border-2 flex items-center justify-center"
+                                             :class="cab.online_stato==='OFFLINE'?'border-red-500 bg-red-500':'border-gray-400'">
+                                            <i v-if="cab.online_stato==='OFFLINE'" class="ph ph-check text-white text-[9px]"></i>
+                                        </div>
+                                        <span class="text-xs font-bold" :class="cab.online_stato==='OFFLINE'?(darkMode?'text-red-400':'text-red-700'):(darkMode?'text-gray-400':'text-gray-500')">Offline</span>
+                                    </label>
                                 </div>
                                 <div>
                                     <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Note</label>
@@ -609,40 +655,79 @@
                                 :class="darkMode?'border-cyan-700 text-cyan-300 bg-cyan-900/20 hover:bg-cyan-900/50':'border-cyan-300 text-cyan-700 bg-cyan-50 hover:bg-cyan-100'">
                             <i class="ph ph-file-pdf text-sm"></i> Esporta PDF
                         </button>
-                        <button @click="addBretellaggioStep(currentSheet)"
-                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all hover:scale-105"
-                                :class="darkMode?'border-cyan-700 text-cyan-400 hover:bg-cyan-900/40':'border-cyan-400 text-cyan-600 hover:bg-cyan-50'">
-                            <i class="ph ph-plus-circle"></i> Aggiungi Nodo
-                        </button>
+
                     </div>
                 </div>
-                <div class="space-y-1">
-                    <!-- Primaria (inizio) -->
-                    <div class="flex items-center gap-2 py-1.5">
-                        <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center" :class="darkMode?'bg-cyan-900 text-cyan-300':'bg-cyan-100 text-cyan-700'"><i class="ph ph-database text-xs"></i></div>
-                        <span class="text-xs font-bold font-mono" :class="darkMode?'text-cyan-300':'text-cyan-700'">{{ currentSheet.anello_primaria||'Primaria' }}</span>
-                        <span class="text-[9px] text-gray-500">— punto di partenza</span>
-                    </div>
-                    <!-- Nodi intermedi -->
-                    <div v-for="(step, sIdx) in (currentSheet.bretellaggio||[])" :key="sIdx" class="flex items-center gap-2 py-1.5 group">
-                        <div class="flex items-center gap-1 flex-shrink-0">
-                            <div class="w-px h-4 mx-2.5" :class="darkMode?'bg-cyan-800':'bg-cyan-300'"></div>
+
+                <!-- SEZIONI ANDATA / RITORNO / INTER-POP con numerazione globale -->
+                <div class="space-y-4">
+                    <template v-for="(sez, si) in currentSheet.brtratte_sez" :key="si">
+                        <div class="rounded-xl border-2 overflow-hidden"
+                             :class="sez.tipo==='andata'?(darkMode?'border-blue-800':'border-blue-300'):sez.tipo==='ritorno'?(darkMode?'border-green-800':'border-green-300'):(darkMode?'border-orange-800':'border-orange-300')">
+                            <!-- Header sezione -->
+                            <div class="flex items-center justify-between px-4 py-2.5"
+                                 :class="sez.tipo==='andata'?(darkMode?'bg-blue-950/60':'bg-blue-50'):sez.tipo==='ritorno'?(darkMode?'bg-green-950/60':'bg-green-50'):(darkMode?'bg-orange-950/60':'bg-orange-50')">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                          :class="sez.tipo==='andata'?'bg-blue-400':sez.tipo==='ritorno'?'bg-green-400':'bg-orange-400'"></span>
+                                    <span class="font-black text-sm uppercase tracking-widest"
+                                          :class="sez.tipo==='andata'?(darkMode?'text-blue-300':'text-blue-700'):sez.tipo==='ritorno'?(darkMode?'text-green-300':'text-green-700'):(darkMode?'text-orange-300':'text-orange-700')">
+                                        {{ sez.tipo==='andata' ? 'Andata' : sez.tipo==='ritorno' ? 'Ritorno' : 'Bretellaggio Inter-POP' }}
+                                    </span>
+                                    <span class="text-[10px] font-mono opacity-50">{{ sez.righe.length }} righe</span>
+                                </div>
+                                <button @click="currentSheet.br_counter=(currentSheet.br_counter||0)+1; sez.righe.push({num:currentSheet.br_counter,da_fibre:'',da_cassetto:'',a_fibre:'',a_cassetto:'',da_pop:'',a_pop:''})"
+                                        class="text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all"
+                                        :class="sez.tipo==='andata'?(darkMode?'border-blue-700 text-blue-400 hover:bg-blue-900/40':'border-blue-300 text-blue-600 hover:bg-blue-50'):sez.tipo==='ritorno'?(darkMode?'border-green-700 text-green-400 hover:bg-green-900/40':'border-green-300 text-green-600 hover:bg-green-50'):(darkMode?'border-orange-700 text-orange-400 hover:bg-orange-900/40':'border-orange-300 text-orange-600 hover:bg-orange-50')">
+                                    <i class="ph ph-plus"></i> Riga
+                                </button>
+                            </div>
+                            <!-- Righe -->
+                            <div class="divide-y" :class="darkMode?'divide-gray-800/60':'divide-gray-100'">
+                                <div v-if="!sez.righe||!sez.righe.length" class="px-4 py-3 text-center text-xs font-mono italic" :class="darkMode?'text-gray-600':'text-gray-400'">
+                                    Nessuna riga — premi + Riga
+                                </div>
+                                <div v-for="(r, ri) in sez.righe" :key="ri" class="flex items-center gap-2 px-3 py-2 group">
+                                    <!-- Numero globale -->
+                                    <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 border"
+                                          :class="sez.tipo==='andata'?(darkMode?'bg-blue-900/50 border-blue-700 text-blue-300':'bg-blue-100 border-blue-300 text-blue-700'):sez.tipo==='ritorno'?(darkMode?'bg-green-900/50 border-green-700 text-green-300':'bg-green-100 border-green-300 text-green-700'):(darkMode?'bg-orange-900/50 border-orange-700 text-orange-300':'bg-orange-100 border-orange-300 text-orange-700')">
+                                        {{ r.num || (ri+1) }}
+                                    </span>
+                                    <!-- Inter-POP: POP origine -->
+                                    <input v-if="sez.tipo==='interpop'" v-model="r.da_pop"
+                                           class="w-14 bg-transparent text-xs font-black font-mono outline-none border-b text-center"
+                                           :class="darkMode?'border-orange-800 text-orange-300':'border-orange-300 text-orange-700'"
+                                           placeholder="NA_03">
+                                    <!-- Da fibre -->
+                                    <input v-model="r.da_fibre" class="w-20 bg-transparent text-xs font-black font-mono outline-none border-b text-center"
+                                           :class="sez.tipo==='andata'?(darkMode?'border-blue-800 text-blue-300':'border-blue-300 text-blue-700'):sez.tipo==='ritorno'?(darkMode?'border-green-800 text-green-300':'border-green-300 text-green-700'):(darkMode?'border-orange-800 text-orange-300':'border-orange-300 text-orange-700')"
+                                           placeholder="191-192">
+                                    <!-- Da cassetto -->
+                                    <input v-model="r.da_cassetto" class="w-12 bg-transparent text-xs font-black font-mono outline-none border-b text-center"
+                                           :class="darkMode?'border-gray-700 text-white':'border-gray-300 text-black'"
+                                           placeholder="04W">
+                                    <!-- Freccia -->
+                                    <span class="text-base font-black flex-shrink-0"
+                                          :class="sez.tipo==='andata'?(darkMode?'text-blue-400':'text-blue-600'):sez.tipo==='ritorno'?(darkMode?'text-green-400':'text-green-600'):(darkMode?'text-orange-400':'text-orange-600')">→</span>
+                                    <!-- A fibre -->
+                                    <input v-model="r.a_fibre" class="w-20 bg-transparent text-xs font-black font-mono outline-none border-b text-center"
+                                           :class="sez.tipo==='andata'?(darkMode?'border-blue-800 text-blue-300':'border-blue-300 text-blue-700'):sez.tipo==='ritorno'?(darkMode?'border-green-800 text-green-300':'border-green-300 text-green-700'):(darkMode?'border-orange-800 text-orange-300':'border-orange-300 text-orange-700')"
+                                           placeholder="150-151">
+                                    <!-- A cassetto -->
+                                    <input v-model="r.a_cassetto" class="w-12 bg-transparent text-xs font-black font-mono outline-none border-b text-center"
+                                           :class="darkMode?'border-gray-700 text-white':'border-gray-300 text-black'"
+                                           placeholder="02W">
+                                    <!-- Inter-POP: POP destinazione -->
+                                    <input v-if="sez.tipo==='interpop'" v-model="r.a_pop"
+                                           class="w-14 bg-transparent text-xs font-black font-mono outline-none border-b text-center"
+                                           :class="darkMode?'border-orange-800 text-orange-300':'border-orange-300 text-orange-700'"
+                                           placeholder="NA_05">
+                                    <!-- Delete -->
+                                    <button @click="sez.righe.splice(ri,1)" class="opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 ml-auto flex-shrink-0"><i class="ph ph-x text-xs"></i></button>
+                                </div>
+                            </div>
                         </div>
-                        <select v-model="step.direzione" class="text-[10px] font-bold outline-none cursor-pointer border rounded-lg px-1.5 py-0.5 flex-shrink-0"
-                                :class="darkMode?'border-gray-700 bg-[#1a1a1a] text-gray-300':'border-gray-300 bg-white text-gray-700'">
-                            <option value="andata">→</option>
-                            <option value="ritorno">←</option>
-                        </select>
-                        <input v-model="step.nodo" class="flex-1 bg-transparent text-xs font-bold font-mono outline-none border-b" :class="darkMode?'border-cyan-900 text-white':'border-cyan-200 text-black'" placeholder="PFP 04W, ROE-012, ...">
-                        <button @click="currentSheet.bretellaggio.splice(sIdx,1)" class="opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 text-xs transition-opacity flex-shrink-0"><i class="ph ph-x"></i></button>
-                    </div>
-                    <!-- Ritorno (fine) -->
-                    <div class="flex items-center gap-2 py-1.5">
-                        <div class="w-px h-4 mx-2.5" :class="darkMode?'bg-cyan-800':'bg-cyan-300'"></div>
-                        <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center" :class="darkMode?'bg-cyan-900 text-cyan-300':'bg-cyan-100 text-cyan-700'"><i class="ph ph-arrow-u-up-left text-xs"></i></div>
-                        <span class="text-xs font-bold font-mono" :class="darkMode?'text-cyan-300':'text-cyan-700'">{{ currentSheet.anello_primaria||'Primaria' }}</span>
-                        <span class="text-[9px] text-gray-500">— chiusura anello</span>
-                    </div>
+                    </template>
                 </div>
             </div>
 
@@ -907,9 +992,13 @@
                 <div class="w-12 h-12 rounded-2xl border flex items-center justify-center active:scale-95 transition-transform" :class="darkMode?'border-yellow-800/60 bg-yellow-900/20 text-yellow-400':'border-yellow-200 bg-yellow-50 text-yellow-600'"><i class="ph ph-palette text-xl"></i></div>
                 <span class="text-[10px] font-bold" :class="darkMode?'text-gray-400':'text-gray-500'">FIBRA</span>
             </button>
-            <button @click="toggleDictation" class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl transition-all -mt-5 active:scale-95"
-                    :class="isListening?'bg-gradient-to-r from-orange-500 to-red-600 text-white mic-active':(darkMode?'bg-[#222] text-white border-2 border-gray-700':'bg-white text-gray-800 border-2 border-gray-200')">
-                <i class="ph text-3xl" :class="isListening?'ph-microphone-fill':'ph-microphone'"></i>
+            <button @click="toggleDictation"
+                    class="w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-all -mt-5 active:scale-95 relative overflow-visible"
+                    :class="isListening?(darkMode?'bg-[#ff4500] text-white':'bg-[#ff4500] text-white'):(darkMode?'bg-[#222] text-white border-2 border-gray-700':'bg-white text-gray-800 border-2 border-gray-200')">
+                <!-- Anelli pulsanti quando in ascolto -->
+                <span v-if="isListening" class="absolute inset-0 rounded-full bg-red-500/30 animate-ping"></span>
+                <span v-if="isListening" class="absolute inset-0 rounded-full bg-orange-400/20 animate-ping" style="animation-delay:0.3s"></span>
+                <i class="ph text-3xl relative z-10" :class="isListening?'ph-microphone-fill':'ph-microphone'"></i>
             </button>
             <button @click="exportPDF" class="flex flex-col items-center gap-0.5 min-w-[56px] py-1">
                 <div class="w-12 h-12 rounded-2xl border flex items-center justify-center active:scale-95 transition-transform" :class="darkMode?'border-red-900/60 bg-red-900/10 text-red-400':'border-red-200 bg-red-50 text-red-500'"><i class="ph ph-file-pdf text-xl"></i></div>
@@ -1055,9 +1144,11 @@
                                 </div>
 
                             </div>
-                            <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:3px;padding:3px 6px;">
-                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#166534;text-transform:uppercase;">Stato Anello</span>
-                                <div style="font-size:10px;font-weight:800;color:#111827;">{{ rapp.cabineData.stato_anello||'—' }}</div>
+                            <div :style="{'background': rapp.cabineData.stato_anello==='Chiuso'?'#f0fdf4':rapp.cabineData.stato_anello==='Aperto'?'#fef2f2':rapp.cabineData.stato_anello==='Manca Bretellaggio'?'#fefce8':'#f0f9ff', 'border': rapp.cabineData.stato_anello==='Chiuso'?'1px solid #86efac':rapp.cabineData.stato_anello==='Aperto'?'1px solid #fca5a5':rapp.cabineData.stato_anello==='Manca Bretellaggio'?'1px solid #fde047':'1px solid #7dd3fc', 'border-radius':'3px','padding':'3px 6px'}">
+                                <span :style="{'font-size':'7px','font-family':'JetBrains Mono,monospace','text-transform':'uppercase','color': rapp.cabineData.stato_anello==='Chiuso'?'#166534':rapp.cabineData.stato_anello==='Aperto'?'#991b1b':rapp.cabineData.stato_anello==='Manca Bretellaggio'?'#854d0e':'#0c4a6e'}">Stato Anello</span>
+                                <div :style="{'font-size':'10px','font-weight':'800','color': rapp.cabineData.stato_anello==='Chiuso'?'#15803d':rapp.cabineData.stato_anello==='Aperto'?'#dc2626':rapp.cabineData.stato_anello==='Manca Bretellaggio'?'#d97706':'#0284c7'}">
+                                    {{ rapp.cabineData.stato_anello||'—' }}
+                                </div>
                             </div>
                         </div>
                         <table class="tech-table">
@@ -1083,10 +1174,14 @@
                                     </td>
                                     <td>
                                         <span style="font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;"
-                                              :style="cab.stato==='COMPLETATA'?'background:#d1fae5;color:#065f46':cab.stato==='BYPASSATA'?'background:#fef3c7;color:#92400e':'background:#fee2e2;color:#991b1b'">
-                                            {{ cab.stato==='COMPLETATA'?'✅ OK':cab.stato==='BYPASSATA'?'⚡ BYPASS':'🔴 KO' }}
+                                              :style="cab.stato==='ONLINE'?'background:#d1fae5;color:#065f46':cab.stato==='PARZIALE'?'background:#dbeafe;color:#1e40af':cab.stato==='BYPASSATA'?'background:#fef3c7;color:#92400e':cab.stato==='DISMESSA'?'background:#f4f4f5;color:#52525b':cab.stato==='NON_ATTIVA'?'background:#f3f4f6;color:#374151':'background:#fee2e2;color:#991b1b'">
+                                            {{ {'ONLINE':'🟢 ONLINE','PARZIALE':'🔵 PARZ.','OFFLINE':'🔴 OFFLINE','BYPASSATA':'🟡 BYPASS','NON_ATTIVA':'⬜ N.ATTIVA','NON_SOPRALLUOGATA':'🔍 N.SOPR.','DISMESSA':'🚫 DISMESSA'}[cab.stato]||'⚪ '+cab.stato }}
                                         </span>
                                         <div v-if="cab.stato==='BYPASSATA'&&cab.motivo" style="font-size:7px;color:#b45309;margin-top:1px;">{{ cab.motivo.replace(/_/g,' ') }}</div>
+                                        <div v-if="cab.online_stato" style="font-size:7px;font-weight:700;margin-top:1px;"
+                                             :style="cab.online_stato==='ONLINE'?'color:#15803d':'color:#dc2626'">
+                                            {{ cab.online_stato==='ONLINE'?'● Online':'● Offline' }}
+                                        </div>
                                     </td>
                                     <td style="font-size:8px;font-family:'JetBrains Mono',monospace;color:#374151;">
                                         <div v-if="cab.pfs_f1||cab.pfs_f2||cab.pfs_f3||cab.pfs_f4">PFS: {{ [cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ') }}</div>
@@ -1530,6 +1625,7 @@ createApp({
             ];
         }
         if(!this.fiberCalc.standardId && this.fiberStandards.length>0) this.fiberCalc.standardId=this.fiberStandards[0].id;
+        (this.allSheets.cabine||[]).forEach(sh=>this.initBrtratteSez(sh));
         this.initSpeech();
     },
     watch: {
@@ -1537,7 +1633,8 @@ createApp({
         fiberStandards:{ handler(v){ localStorage.setItem('fiber_standards',JSON.stringify(v)); }, deep:true },
         tipiElementoOttico:{ handler(v){ localStorage.setItem('fiber_tipi_ottico',JSON.stringify(v)); }, deep:true },
         darkMode(v){ localStorage.setItem('fiber_theme',v?'dark':'light'); },
-        sheetType(v){ if(v) localStorage.setItem('fiber_sheet_type',v); }
+        sheetType(v){ if(v) localStorage.setItem('fiber_sheet_type',v); },
+        currentSheetIdx(){ if(this.currentSheet && this.sheetType==='cabine') this.initBrtratteSez(this.currentSheet); }
     },
     methods: {
         formatDateIT(d){ if(!d)return''; const p=d.split('-'); return`${p[2]}/${p[1]}/${p[0]}`; },
@@ -1555,15 +1652,26 @@ createApp({
             } else if(this.allSheets[type][0].rows.length===0){
                 this.allSheets[type][0].rows.push(this.newRow());
             }
-            this.currentSheetIdx=0; this.view='editor';
+            this.currentSheetIdx=0; this.view='editor'; if(type==='cabine'&&this.currentSheet) this.initBrtratteSez(this.currentSheet);
         },
-        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[]}; },
+        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0}; },
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
         }; },
-        newCabina(){ return{id:Date.now()+Math.random(),numero:'',nome:'',codice:'',connessioni:[],pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato:'',motivo_bypass:'',note:''}; },
+        newCabina(){ return{id:Date.now()+Math.random(),numero:'',nome:'',codice:'',connessioni:[],pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato:'',motivo_bypass:'',note:'',is_prima:false,is_ultima:false,online_stato:''}; },
         addCabina(){ if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie=[]; this.currentSheet.cabine_secondarie.push(this.newCabina()); },
         addBretellaggioStep(sheet){ if(!sheet.bretellaggio) sheet.bretellaggio=[]; sheet.bretellaggio.push({nodo:'',direzione:'andata'}); },
+        initBrtratteSez(sheet){ 
+            if(!sheet.brtratte_sez||sheet.brtratte_sez.length<2){ 
+                sheet.brtratte_sez=[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}]; 
+            } else {
+                if(sheet.brtratte_sez.length===2) sheet.brtratte_sez.push({tipo:'interpop',righe:[]});
+                sheet.brtratte_sez[0].tipo='andata';
+                sheet.brtratte_sez[1].tipo='ritorno';
+                sheet.brtratte_sez[2].tipo='interpop';
+            }
+        },
+        initBrFibreUscita(sheet){ if(!sheet.br_fibre_uscita||!sheet.br_fibre_uscita.length) sheet.br_fibre_uscita=[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}]; },
 
         // ── FIBER STANDARDS ──
         getStandardById(id){ return this.fiberStandards.find(s=>s.id===id)||null; },
@@ -1721,8 +1829,8 @@ createApp({
             return [nome, codice, id].filter(Boolean).join(' ').trim() || 'Cabina Primaria';
         },
         cabStatoClass(cab){
-            const dm={COMPLETATA:'bg-emerald-950/40 border-emerald-700',NON_COMPLETATA:'bg-red-950/40 border-red-700',BYPASSATA:'bg-amber-950/40 border-amber-700'};
-            const lm={COMPLETATA:'bg-emerald-50 border-emerald-400',NON_COMPLETATA:'bg-red-50 border-red-400',BYPASSATA:'bg-amber-50 border-amber-400'};
+            const dm={ONLINE:'bg-emerald-950/40 border-emerald-700',PARZIALE:'bg-blue-950/40 border-blue-700',OFFLINE:'bg-red-950/40 border-red-700',BYPASSATA:'bg-amber-950/40 border-amber-600',NON_ATTIVA:'bg-gray-900/60 border-gray-600',NON_SOPRALLUOGATA:'bg-sky-950/40 border-sky-700',DISMESSA:'bg-zinc-900/60 border-zinc-600'};
+            const lm={ONLINE:'bg-emerald-50 border-emerald-400',PARZIALE:'bg-blue-50 border-blue-400',OFFLINE:'bg-red-50 border-red-400',BYPASSATA:'bg-amber-50 border-amber-400',NON_ATTIVA:'bg-gray-100 border-gray-400',NON_SOPRALLUOGATA:'bg-sky-50 border-sky-400',DISMESSA:'bg-zinc-100 border-zinc-400'};
             if(!cab.stato) return this.darkMode?'bg-[#121212] border-gray-800':'bg-white border-gray-200';
             return this.darkMode?(dm[cab.stato]||'bg-[#121212] border-gray-800'):(lm[cab.stato]||'bg-white border-gray-200');
         },
@@ -1874,7 +1982,8 @@ createApp({
                             }
                             return {modulo:c.modulo, fibre:c.fibre, destinazione:dest};
                         }),
-                        note: cab.note||''
+                        note: cab.note||'',
+                        online_stato: cab.online_stato||''
                     }))
                 };
                 this.rapp.localita=fs.anello_nome||fs.nome_primaria||fs.anello_primaria||'';
@@ -2017,7 +2126,7 @@ createApp({
                         else { const f=sortedCabs.find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
                         return `M${c.modulo} F${c.fibre} → ${dest}`;
                     }).join('\n');
-                    const stato=cab.stato==='COMPLETATA'?'OK':cab.stato==='BYPASSATA'?'BYPASS':'KO';
+                    const statoMap={'ONLINE':'ONLINE','PARZIALE':'PARZIALE','OFFLINE':'OFFLINE','BYPASSATA':'BYPASS','NON_ATTIVA':'N.ATTIVA','NON_SOPRALLUOGATA':'N.SOPR.','DISMESSA':'DISMESSA'}; const stato=statoMap[cab.stato]||cab.stato||'—';
                     const cabinaCell=`${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''}`+(connLines?'\n'+connLines:'');
                     return[i+1, cab.numero||'—', cabinaCell, stato, pfsFibre||'—', pfpFibre||'—', cab.note||''];
                 });
@@ -2040,7 +2149,7 @@ createApp({
                 if(!body.length){ this.showToast('Nessun PFS da esportare'); return; }
                 doc.autoTable({head:[['PFS','NOME','ATT.SEC.','N°SPL.SEC.','SERIALE']],body,startY:y,theme:'grid',headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},styles:{fontSize:7,cellPadding:2,valign:'middle'}});
             }
-            const fname=`FiberReport_${type}_${(sheet.date||'report').split('-').reverse().join('-')}.pdf`;
+            const fname=`FiberReport_${type}_${clean(sheet.nome_primaria||sheet.team||'report')}_${(sheet.date||'').split('-').reverse().join('-')}.pdf`;
             doc.save(fname);
             this.showToast('✅ PDF tabella scaricato!');
         },
@@ -2231,385 +2340,547 @@ createApp({
         },
 
         // ══════════════════════════════════════════════
-        // ── PDF ORDINE ANELLO ──
-        // ══════════════════════════════════════════════
-        // ══════════════════════════════════════════════
-        // ── NETWORK DIAGRAM ICON HELPERS ──
-        // ══════════════════════════════════════════════
-        _iconCabina(doc, cx, cy, sz, col){
-            const hw=sz*0.42, hh=sz*0.58;
-            doc.setFillColor(...col);
-            doc.roundedRect(cx-hw, cy-hh, hw*2, hh*2, 1.5, 1.5, 'F');
-            doc.setFillColor(10,14,20);
-            doc.roundedRect(cx-hw+2, cy-hh+3, hw*2-4, hh*2-6, 1, 1, 'F');
-            const slotH=2.2, slotGap=1.2;
-            for(let i=0;i<3;i++){
-                const sy=cy-hh+5+i*(slotH+slotGap);
-                doc.setFillColor(30,38,55); doc.roundedRect(cx-hw+3.5, sy, hw*2-7, slotH, 0.5, 0.5, 'F');
-                doc.setFillColor(...col); doc.circle(cx+hw-5.5, sy+slotH/2, 0.8, 'F');
-            }
-            doc.setFillColor(0,255,120); doc.circle(cx-hw+4, cy+hh-3, 1, 'F');
-        },
-        _iconSwitch(doc, cx, cy, sz, col){
-            doc.setFillColor(...col);
-            doc.circle(cx, cy, sz*0.52, 'F');
-            doc.setFillColor(10,14,20);
-            doc.circle(cx, cy, sz*0.45, 'F');
-            const pw=2.2, ph=1.6, gap=1;
-            const cols=4, rows=2;
-            const gw=(pw+gap)*cols-gap, gh=(ph+gap)*rows-gap;
-            for(let r=0;r<rows;r++){
-                for(let c=0;c<cols;c++){
-                    const px=cx-gw/2+c*(pw+gap);
-                    const py=cy-gh/2+r*(ph+gap);
-                    doc.setFillColor(...col); doc.roundedRect(px,py,pw,ph,0.3,0.3,'F');
-                }
-            }
-        },
-        _iconPOP(doc, cx, cy, sz, col){
-            doc.setFillColor(...col);
-            doc.circle(cx, cy, sz*0.45, 'F');
-            doc.circle(cx-sz*0.32, cy+sz*0.1, sz*0.3, 'F');
-            doc.circle(cx+sz*0.32, cy+sz*0.1, sz*0.3, 'F');
-            doc.rect(cx-sz*0.55, cy, sz*1.1, sz*0.35, 'F');
-            doc.setFillColor(10,14,20);
-            doc.circle(cx, cy, sz*0.3, 'F');
-            const bw=0.8, bh=[2.5,4,5.5,7];
-            const bstart=cx-3.2;
-            bh.forEach((h,i)=>{
-                const bx=bstart+i*(bw+1);
-                doc.setFillColor(...col); doc.roundedRect(bx,cy-h/2,bw,h,0.3,0.3,'F');
-            });
-        },
-        _drawArrow(doc, x1, y1, x2, y2, col, lw=0.7){
-            doc.setDrawColor(...col); doc.setLineWidth(lw);
-            doc.line(x1,y1,x2,y2);
-            const dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy)||1;
-            const ux=dx/len, uy=dy/len;
-            const s=3.5;
-            doc.setFillColor(...col);
-            doc.triangle(x2,y2, x2-ux*s-uy*s*0.6, y2-uy*s+ux*s*0.6, x2-ux*s+uy*s*0.6, y2-uy*s-ux*s*0.6, 'F');
-        },
-        _connLabel(doc, x1, y1, x2, y2, txt, col){
-            if(!txt) return;
-            const mx=(x1+x2)/2, my=(y1+y2)/2;
-            doc.setFont('helvetica','bold'); doc.setFontSize(5);
-            const tw=doc.getTextWidth(txt)+3;
-            doc.setFillColor(8,12,22);
-            doc.roundedRect(mx-tw/2, my-2.5, tw, 5, 1, 1, 'F');
-            doc.setTextColor(...col);
-            doc.text(txt, mx, my+1.3, {align:'center'});
-        },
-
-        // ══════════════════════════════════════════════
-        // ── PDF ORDINE ANELLO – NETWORK DIAGRAM ──
+        // ── PDF ORDINE ANELLO – SEQUENZA NUMERICA ──
         // ══════════════════════════════════════════════
         exportOrdineAnelloPDF(){
             if(!window.jspdf){ this.showToast('Errore: jsPDF non disponibile'); return; }
             const s = this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'landscape' });
-            const W=297, H=210, PX=12;
+            const W=297, H=210, MX=14, MY=12;
             const clean = t => this._pdfCleanText(t);
-            const BG=[252,253,255], PURPLE=[130,60,255], PURPLE_D=[80,30,180];
-            const GREEN=[0,220,120], AMBER=[255,175,0], GRAY_N=[100,115,140];
-            const CYAN=[0,200,240];
 
-            const priNome  = clean(s.nome_primaria || s.anello_primaria || 'Cabina Primaria');
-            const priCod   = clean(s.anello_primaria || '');
-            const idAnello = clean(s.id_anello || '');
-            const anelloNome = clean(s.anello_nome || '');
-            const sorted   = [...(s.cabine_secondarie||[])].sort((a,b)=>(Number(a.numero)||9999)-(Number(b.numero)||9999));
-            const dateStr  = this.formatDateIT(s.date) || '';
-            const team     = clean(this.smartFormat(s.team||''));
-            const total=sorted.length, comp=sorted.filter(c=>c.stato==='COMPLETATA').length, byp=sorted.filter(c=>c.stato==='BYPASSATA').length;
+            const PURPLE = [110, 40, 210];
+            const GREEN  = [0, 160, 80];
+            const AMBER  = [210, 140, 0];
+            const RED    = [190, 35, 35];
+            const INK    = [20, 25, 45];
+            const LGRAY  = [210, 215, 228];
+            const BGRAY  = [245, 246, 250];
 
-            // BG + grid
-            doc.setFillColor(...BG); doc.rect(0,0,W,H,'F');
-            doc.setFillColor(220,225,235);
-            for(let gx=10;gx<W;gx+=10) for(let gy=10;gy<H;gy+=10) doc.circle(gx,gy,0.15,'F');
+            const priNome = clean(s.nome_primaria || s.anello_primaria || 'Cabina Primaria');
+            const priCod  = clean(s.anello_primaria || '');
+            const idAnello= clean(s.id_anello || '');
+            const statoA  = clean(s.stato_anello || '');
+            const dateStr = this.formatDateIT(s.date) || '';
+            const team    = clean(this.smartFormat(s.team||''));
+            const sorted  = [...(s.cabine_secondarie||[])].sort((a,b)=>(Number(a.numero)||9999)-(Number(b.numero)||9999));
+            const N = sorted.length;
 
-            // Header
-            doc.setFillColor(245,247,252); doc.rect(0,0,W,20,'F');
+            // ── SFONDO ──
+            doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F');
+
+            // ── HEADER ──
+            doc.setFillColor(...BGRAY); doc.rect(0,0,W,16,'F');
             doc.setFillColor(...PURPLE); doc.rect(0,0,W,2,'F');
-            doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(20,25,40);
-            doc.text('FIBER', PX, 13);
-            doc.setTextColor(...PURPLE); doc.text('REPORT', PX+19, 13);
-            doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(130,140,160); doc.text('PRO', PX+52, 13);
-            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...CYAN);
-            doc.text('SCHEMA ORDINE ANELLO OTTICO', W-PX, 9, {align:'right'});
-            doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(80,90,120);
-            const hMeta=[idAnello?'ID: '+idAnello:'', anelloNome, dateStr, team].filter(Boolean).join('   |   ');
-            doc.text(hMeta, W-PX, 16, {align:'right'});
+            doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...INK);
+            doc.text('FIBER', MX, 11);
+            doc.setTextColor(...PURPLE); doc.text('REPORT', MX+16, 11);
+            doc.setFont('helvetica','normal'); doc.setFontSize(5); doc.setTextColor(160,165,185);
+            doc.text('PRO', MX+47, 11);
+            // Titolo documento
+            doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...PURPLE);
+            doc.text('SCHEMA ORDINE ANELLO', W-MX, 7.5, {align:'right'});
+            // Meta
+            const meta = [idAnello?'ID: '+idAnello:'', dateStr, team].filter(Boolean).join('   ·   ');
+            doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(110,118,145);
+            doc.text(meta, W-MX, 13.5, {align:'right'});
 
-            // Legend
-            const legY=24;
-            [{col:PURPLE,label:'Cab. Primaria'},{col:GREEN,label:'Completata'},{col:AMBER,label:'Bypassata'},{col:GRAY_N,label:'KO'}].forEach((li,i)=>{
-                const lx=PX+i*42;
-                doc.setFillColor(...li.col); doc.roundedRect(lx,legY,5,3,0.8,0.8,'F');
-                doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(60,70,100);
-                doc.text(li.label, lx+7, legY+2.5);
-            });
-            [{label:'CABINE',val:String(total),col:CYAN},{label:'OK',val:String(comp),col:GREEN},{label:'BYPASS',val:String(byp),col:AMBER}].forEach((ch,i)=>{
-                const cx2=W-PX-(2-i)*28;
-                doc.setFillColor(238,242,255); doc.roundedRect(cx2-13,legY-1,26,8,2,2,'F');
-                doc.setDrawColor(...ch.col); doc.setLineWidth(0.4); doc.roundedRect(cx2-13,legY-1,26,8,2,2,'S');
-                doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...ch.col);
-                doc.text(ch.val,cx2,legY+5,{align:'center'});
-                doc.setFont('helvetica','normal'); doc.setFontSize(4.5); doc.setTextColor(70,80,120);
-                doc.text(ch.label,cx2,legY+1,{align:'center'});
-            });
+            // Stato anello (se presente)
+            if(statoA){
+                const sc = statoA==='Chiuso'?GREEN : statoA.indexOf('Cabine')>-1?AMBER : RED;
+                const sw = doc.getTextWidth('Stato: '+statoA)+7;
+                doc.setFillColor(...sc); doc.roundedRect(MX+52, 4, sw, 7, 1.5, 1.5, 'F');
+                doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(255,255,255);
+                doc.text('Stato: '+statoA, MX+55.5, 8.8);
+            }
 
-            // SW info bar
-            let infoY=36;
-            if(s.sw1_porta||s.sw2_porta){
-                doc.setFillColor(240,244,255); doc.roundedRect(PX,infoY,W-PX*2,8,2,2,'F');
-                doc.setDrawColor(190,200,230); doc.setLineWidth(0.3); doc.roundedRect(PX,infoY,W-PX*2,8,2,2,'S');
-                doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...CYAN);
-                let swInfo='';
-                if(s.sw1_porta) swInfo+=`SW1 > Porta ${clean(s.sw1_porta)}  PP Andata: ${clean(s.pp_andata)||'-'}     `;
-                if(s.sw2_porta) swInfo+=`SW2 > Porta ${clean(s.sw2_porta)}  PP Ritorno: ${clean(s.pp_ritorno)||'-'}`;
-                doc.text(swInfo, PX+4, infoY+5.2);
-                infoY+=12;
-            } else { infoY=36; }
-
-            // DIAGRAM AREA
-            const DIAG_Y=infoY+4, DIAG_H=H-DIAG_Y-30, ICON_SZ=10, NODE_W=28, NODE_H=9;
-            const allNodes=[
-                {type:'primaria',label:priNome,sub:priCod||'',stato:'PRIMARIA'},
-                ...sorted.map((c,i)=>({type:'cabina',label:clean(c.nome)||'C'+(i+1),sub:clean(c.codice)||'',stato:c.stato||'',numero:c.numero||i+2,
-                    pfs:[c.pfs_f1,c.pfs_f2,c.pfs_f3,c.pfs_f4].filter(Boolean),
-                    pfp:[c.pfp_f1,c.pfp_f2,c.pfp_f3,c.pfp_f4].filter(Boolean),
-                    connessioni:c.connessioni||[],_raw:c})),
-                {type:'ritorno',label:priNome,sub:'Ritorno',stato:'PRIMARIA'}
-            ];
-            const N=allNodes.length;
-            const COLS_TOP=Math.ceil(N/2), COLS_BOT=Math.floor(N/2);
-            const availW=W-PX*2, colW=availW/Math.max(COLS_TOP,1);
-            const ROW1_Y=DIAG_Y+ICON_SZ+4, ROW2_Y=DIAG_Y+DIAG_H-ICON_SZ-4;
-            allNodes.forEach((n,i)=>{
-                if(i<COLS_TOP){ n._x=PX+(i+0.5)*colW; n._y=ROW1_Y; n._row=0; }
-                else { const bi=N-1-i; n._x=PX+(bi+0.5)*colW; n._y=ROW2_Y; n._row=1; }
-            });
-
-            // Connections
-            allNodes.forEach((n,i)=>{
-                if(i>=N-1) return;
-                const nx=allNodes[i+1];
-                const isOK=nx.stato==='COMPLETATA', isBYP=nx.stato==='BYPASSATA', isPRI=nx.stato==='PRIMARIA';
-                const connCol=isPRI?PURPLE:isOK?GREEN:isBYP?AMBER:GRAY_N;
-                if(n._row===0&&nx._row===0){
-                    this._drawArrow(doc,n._x+ICON_SZ*0.55,n._y,nx._x-ICON_SZ*0.55,nx._y,connCol,0.6);
-                    if(nx._raw){const pf=[nx._raw.pfs_f1,nx._raw.pfs_f2,nx._raw.pfs_f3,nx._raw.pfs_f4].filter(Boolean);if(pf.length)this._connLabel(doc,n._x+ICON_SZ*0.55,n._y-1,nx._x-ICON_SZ*0.55,nx._y-1,'F '+pf.join(','),connCol);}
-                } else if(n._row===0&&nx._row===1){
-                    const cornerX=W-PX+2;
-                    doc.setDrawColor(...PURPLE); doc.setLineWidth(0.6);
-                    doc.line(n._x,n._y,cornerX,n._y); doc.line(cornerX,n._y,cornerX,nx._y); doc.line(cornerX,nx._y,nx._x,nx._y);
-                    doc.setFillColor(...PURPLE); doc.triangle(nx._x,nx._y,nx._x+ICON_SZ*0.5,nx._y-2,nx._x+ICON_SZ*0.5,nx._y+2,'F');
-                    doc.setFillColor(240,244,255); doc.roundedRect(cornerX-8,(n._y+nx._y)/2-3,16,6,1.5,1.5,'F');
-                    doc.setFont('helvetica','bold'); doc.setFontSize(5); doc.setTextColor(...PURPLE);
-                    doc.text('ANELLO',cornerX,(n._y+nx._y)/2+1.3,{align:'center'});
-                } else {
-                    this._drawArrow(doc,n._x-ICON_SZ*0.55,n._y,nx._x+ICON_SZ*0.55,nx._y,connCol,0.6);
-                    if(nx._raw){const pf=[nx._raw.pfp_f1,nx._raw.pfp_f2,nx._raw.pfp_f3,nx._raw.pfp_f4].filter(Boolean);if(pf.length)this._connLabel(doc,n._x-ICON_SZ*0.55,n._y+1,nx._x+ICON_SZ*0.55,nx._y+1,'F '+pf.join(','),connCol);}
+            // ── HELPERS ──
+            // Disegna icona cabina rack (cx,cy = centro, sz = dimensione base)
+            const drawRack = (cx, cy, sz, borderCol, fillCol, isFirst) => {
+                const rw = sz * 1.3, rh = sz * 1.7;
+                // Ombra
+                doc.setFillColor(210,213,225);
+                doc.roundedRect(cx-rw/2+0.8, cy-rh/2+0.8, rw, rh, 1.2, 1.2, 'F');
+                // Corpo
+                doc.setFillColor(...fillCol);
+                doc.roundedRect(cx-rw/2, cy-rh/2, rw, rh, 1.2, 1.2, 'F');
+                doc.setDrawColor(...borderCol); doc.setLineWidth(isFirst?0.9:0.7);
+                doc.roundedRect(cx-rw/2, cy-rh/2, rw, rh, 1.2, 1.2, 'S');
+                // Stripe colore in cima
+                doc.setFillColor(...borderCol);
+                doc.roundedRect(cx-rw/2, cy-rh/2, rw, rh*0.22, 1.2, 0, 'F');
+                doc.rect(cx-rw/2, cy-rh/2+rh*0.12, rw, rh*0.1, 'F');
+                // Slot interni
+                const nSlots = isFirst ? 3 : 2;
+                for(let i=0;i<nSlots;i++){
+                    const sy = cy - rh/2 + rh*0.28 + i*(rh*0.19);
+                    doc.setFillColor(200,205,220);
+                    doc.roundedRect(cx-rw/2+1, sy, rw-2, rh*0.13, 0.3, 0.3, 'F');
+                    doc.setFillColor(...borderCol);
+                    doc.circle(cx+rw/2-1.8, sy+rh*0.065, 0.5, 'F');
                 }
-            });
+                // LED
+                doc.setFillColor(0,220,90);
+                doc.circle(cx-rw/2+1.8, cy+rh/2-1.8, isFirst?1.0:0.8, 'F');
+            };
 
-            // Nodes
-            allNodes.forEach((n,i)=>{
-                const cx=n._x, cy=n._y;
-                const isOK=n.stato==='COMPLETATA', isBYP=n.stato==='BYPASSATA';
-                const isPRI=n.stato==='PRIMARIA'||n.type==='primaria'||n.type==='ritorno';
-                const nodeCol=isPRI?PURPLE:isOK?GREEN:isBYP?AMBER:GRAY_N;
-                isPRI?this._iconCabina(doc,cx,cy,ICON_SZ,PURPLE_D):this._iconCabina(doc,cx,cy,ICON_SZ,nodeCol);
-                doc.setDrawColor(...nodeCol); doc.setLineWidth(0.5); doc.circle(cx,cy,ICON_SZ*0.65,'S');
-                const lY=cy+ICON_SZ*0.7;
-                doc.setFillColor(245,247,255); doc.roundedRect(cx-NODE_W/2,lY,NODE_W,NODE_H,1.5,1.5,'F');
-                doc.setDrawColor(...nodeCol); doc.setLineWidth(0.3); doc.roundedRect(cx-NODE_W/2,lY,NODE_W,NODE_H,1.5,1.5,'S');
-                doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(20,28,50);
-                doc.text((n.label.length>14?n.label.substring(0,13)+'.':n.label),cx,lY+3.5,{align:'center'});
-                const sub=n.sub||(n.numero?'#'+n.numero:'');
-                if(sub){doc.setFont('helvetica','normal');doc.setFontSize(4.5);doc.setTextColor(...nodeCol);doc.text(sub,cx,lY+7,{align:'center'});}
-                if(!isPRI){
-                    const bTxt=isOK?'OK':isBYP?'BYP':'KO';
-                    const bCol=isOK?GREEN:isBYP?AMBER:GRAY_N;
-                    doc.setFillColor(...bCol); doc.circle(cx+ICON_SZ*0.55,cy-ICON_SZ*0.55,3,'F');
-                    doc.setFont('helvetica','bold'); doc.setFontSize(3.8); doc.setTextColor(0,0,0);
-                    doc.text(bTxt,cx+ICON_SZ*0.55,cy-ICON_SZ*0.55+1.2,{align:'center'});
+            // Freccia orizzontale semplice
+            const arrow = (x1, y, x2, col, lw) => {
+                doc.setDrawColor(...col); doc.setLineWidth(lw||0.8);
+                doc.line(x1, y, x2, y);
+                const as=2.8;
+                const adir = x2>x1 ? 1 : -1;
+                doc.setFillColor(...col);
+                doc.triangle(x2,y, x2-adir*as,y-as*0.55, x2-adir*as,y+as*0.55, 'F');
+            };
+
+            // Freccia verticale semplice
+            const arrowV = (x, y1, y2, col, lw) => {
+                doc.setDrawColor(...col); doc.setLineWidth(lw||0.8);
+                doc.line(x, y1, x, y2);
+                const vs=2.8, vdir=y2>y1?1:-1;
+                doc.setFillColor(...col);
+                doc.triangle(x,y2, x-vs*0.55,y2-vdir*vs, x+vs*0.55,y2-vdir*vs, 'F');
+            };
+
+            // ── LAYOUT ──
+            // Area diagramma
+            const DX = MX, DY = 20;
+            const DW = W - MX*2, DH = H - DY - 16;
+
+            if(N === 0){
+                doc.setFillColor(...BGRAY); doc.roundedRect(DX,DY,DW,DH,3,3,'F');
+                doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(160,165,185);
+                doc.text('Nessuna cabina secondaria inserita', W/2, DY+DH/2, {align:'center'});
+            } else {
+                // Icona size
+                const SZ_PRI = 9;   // sz cabina primaria
+                const SZ_SEC = 7;   // sz cabine secondarie
+                const RW_PRI = SZ_PRI*1.3, RH_PRI = SZ_PRI*1.7;
+                const RW_SEC = SZ_SEC*1.3, RH_SEC = SZ_SEC*1.7;
+
+                // Quante cabine per riga (max 8 per riga per non affollare)
+                const MAX_PER_ROW = Math.min(8, Math.ceil(N/2)+1);
+                const nRows = Math.ceil(N / MAX_PER_ROW);
+
+                // Calcola posizioni: griglia righe x colonne
+                // La primaria occupa la prima posizione in assoluto (riga 0, col 0)
+                // Le cabine secondarie seguono in ordine numerico
+
+                // Spazio per riga e colonna
+                const CELL_W = DW / MAX_PER_ROW;
+                const CELL_H = nRows > 1 ? DH / (nRows + 0.5) : DH * 0.7;
+
+                // La primaria è in alto al centro se N <= MAX_PER_ROW, altrimenti a sinistra
+                const PRI_COL = N <= MAX_PER_ROW ? Math.floor(MAX_PER_ROW / 2) : 0;
+                const PRI_ROW = 0;
+                const PRI_X = DX + (PRI_COL + 0.5) * CELL_W;
+                const PRI_Y = DY + RH_PRI/2 + 8;
+
+                // Assegna posizioni alle cabine secondarie
+                // Escludi la colonna/posizione della primaria e distribuisci il resto
+                // Più semplice: metti tutte le secondarie in sequenza occupando le celle,
+                // saltando quella della primaria
+                const allPositions = [];
+                for(let r=0; r<nRows+1; r++){
+                    for(let c=0; c<MAX_PER_ROW; c++){
+                        if(r===PRI_ROW && c===PRI_COL) continue; // salto primaria
+                        allPositions.push({r, c});
+                    }
                 }
-            });
 
-            // Direction labels
-            if(COLS_TOP>1){const tmx=PX+(COLS_TOP/2)*colW;doc.setFillColor(16,8,40);doc.roundedRect(tmx-10,ROW1_Y-ICON_SZ-8,20,6,2,2,'F');doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...PURPLE);doc.text('ANDATA',tmx,ROW1_Y-ICON_SZ-4,{align:'center'});}
-            if(COLS_BOT>1){const bmx=PX+(COLS_BOT/2)*colW;doc.setFillColor(16,8,40);doc.roundedRect(bmx-12,ROW2_Y+ICON_SZ+4,24,6,2,2,'F');doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...PURPLE);doc.text('RITORNO',bmx,ROW2_Y+ICON_SZ+9,{align:'center'});}
+                // Assegna una posizione per ogni cabina secondaria in ordine
+                const cabPositions = sorted.map((cab, i) => {
+                    const pos = allPositions[i] || {r:0,c:0};
+                    return {
+                        cab,
+                        x: DX + (pos.c + 0.5) * CELL_W,
+                        y: DY + pos.r * CELL_H + RH_SEC/2 + 8 + (pos.r > 0 ? 12 : 0),
+                        col: cab.stato==='ONLINE'?GREEN : cab.stato==='PARZIALE'?[30,120,210] : cab.stato==='BYPASSATA'?AMBER : RED,
+                        fill: cab.stato==='ONLINE'?[225,248,235] : cab.stato==='PARZIALE'?[220,235,255] : cab.stato==='BYPASSATA'?[255,244,215] : [255,225,225],
+                    };
+                });
 
-            // Bottom legend table
-            const tableY=H-25;
-            doc.setFillColor(245,247,253); doc.roundedRect(PX,tableY,W-PX*2,14,2,2,'F');
-            doc.setDrawColor(200,210,230); doc.setLineWidth(0.3); doc.roundedRect(PX,tableY,W-PX*2,14,2,2,'S');
-            const colW2=(W-PX*2-4)/4;
-            [{title:'CABINA PRIMARIA',sub:priNome+(priCod?' ('+priCod+')':''),col:PURPLE},
-             {title:'TOTALE CABINE',sub:total+' nodi',col:CYAN},
-             {title:'COMPLETATE',sub:comp+' / '+total+'  ('+( total>0?Math.round(comp/total*100):0)+'%)',col:GREEN},
-             {title:'BYPASSATE',sub:String(byp),col:AMBER}].forEach((it,i)=>{
-                const tx=PX+2+i*colW2;
-                if(i>0){doc.setDrawColor(25,32,55);doc.setLineWidth(0.2);doc.line(tx,tableY+2,tx,tableY+12);}
-                doc.setFillColor(...it.col); doc.roundedRect(tx+2,tableY+2,3,3,0.5,0.5,'F');
+                // ══════════════════════════════════════════════
+                // LOGICA ANELLO:
+                // - Verde (andata):  Primaria → Prima cab → cascade → Ultima cab
+                // - Viola (ritorno): Ultima cab → cascade inversa → Prima cab → Primaria
+                // Le due frecce camminano parallele (offset ±2mm verticalmente)
+                // ══════════════════════════════════════════════
+
+                // Trova prima e ultima cabina marcate dall'utente
+                // Fallback: prima=indice 0, ultima=indice N-1
+                const GREEN_ARROW  = [0, 160, 80];
+                const PURPLE_ARROW = [110, 40, 210];
+                const OFFSET_A = -2.2;  // freccia andata: sopra la linea neutra
+                const OFFSET_R =  2.2;  // freccia ritorno: sotto la linea neutra
+
+                let idxPrima = cabPositions.findIndex(cp => cp.cab.is_prima);
+                let idxUltima= cabPositions.findIndex(cp => cp.cab.is_ultima);
+                if(idxPrima  < 0) idxPrima  = 0;
+                if(idxUltima < 0) idxUltima = cabPositions.length - 1;
+
+                // Helper: disegna connettore orizzontale/L tra due posizioni con offset Y
+                const drawSegment = (ax, ay, bx, by, col, offY, rightRailX, leftRailX) => {
+                    const y1 = ay + offY, y2 = by + offY;
+                    doc.setDrawColor(...col); doc.setLineWidth(0.9);
+                    if(Math.abs(ay - by) < 4){
+                        // Stessa riga: orizzontale
+                        const gd = bx > ax ? 1 : -1;
+                        doc.line(ax + gd*RW_SEC/2, y1, bx - gd*RW_SEC/2, y1);
+                        // Arrowhead
+                        const ex2 = bx - gd*RW_SEC/2;
+                        const sa = 2.8;
+                        doc.setFillColor(...col);
+                        doc.triangle(ex2, y1, ex2-gd*sa, y1-sa*0.55, ex2-gd*sa, y1+sa*0.55, 'F');
+                    } else {
+                        // Cambio riga: percorso a U
+                        const railX = bx > ax ? rightRailX : leftRailX;
+                        doc.line(ax + RW_SEC/2 * (bx>ax?1:-1), y1, railX, y1);
+                        doc.line(railX, y1, railX, y2 - RH_SEC/2 - 4);
+                        doc.line(railX, y2 - RH_SEC/2 - 4, bx, y2 - RH_SEC/2 - 4);
+                        const sa2 = 2.8;
+                        doc.setFillColor(...col);
+                        doc.triangle(bx, y2-RH_SEC/2, bx-sa2*0.55, y2-RH_SEC/2-sa2, bx+sa2*0.55, y2-RH_SEC/2-sa2, 'F');
+                    }
+                };
+
+                const RIGHT_RAIL = DX + DW - 4;
+                const LEFT_RAIL  = DX + 3;
+
+                // ── ANDATA (Verde): Primaria → Prima → ... → Ultima ──
+                {
+                    const c0 = cabPositions[idxPrima];
+                    // Primaria → Prima cabina
+                    doc.setDrawColor(...GREEN_ARROW); doc.setLineWidth(0.9);
+                    if(Math.abs(PRI_Y - c0.y) < 4){
+                        const ex = c0.x - RW_SEC/2;
+                        doc.line(PRI_X + RW_PRI/2, PRI_Y + OFFSET_A, ex, PRI_Y + OFFSET_A);
+                        doc.setFillColor(...GREEN_ARROW);
+                        doc.triangle(ex, PRI_Y+OFFSET_A, ex-2.8, PRI_Y+OFFSET_A-1.5, ex-2.8, PRI_Y+OFFSET_A+1.5, 'F');
+                    } else {
+                        const exitY0 = PRI_Y + RH_PRI/2;
+                        doc.line(PRI_X + RW_PRI/2 - 2, exitY0, PRI_X + RW_PRI/2 - 2, exitY0 + 5);
+                        doc.line(PRI_X + RW_PRI/2 - 2, exitY0 + 5, c0.x, exitY0 + 5);
+                        doc.setFillColor(...GREEN_ARROW);
+                        const ey0 = c0.y - RH_SEC/2;
+                        doc.line(c0.x, exitY0+5, c0.x, ey0);
+                        doc.triangle(c0.x, ey0, c0.x-1.5, ey0-2.8, c0.x+1.5, ey0-2.8, 'F');
+                    }
+
+                    // Prima → ... → Ultima (in ordine numerico)
+                    for(let i = idxPrima; i < idxUltima; i++){
+                        const a = cabPositions[i], b = cabPositions[i+1];
+                        drawSegment(a.x, a.y, b.x, b.y, GREEN_ARROW, OFFSET_A, RIGHT_RAIL - 3, LEFT_RAIL + 3);
+                    }
+                }
+
+                // ── RITORNO (Viola): Ultima → ... → Prima → Primaria ──
+                {
+                    // Ultima → ... → Prima (ordine inverso)
+                    for(let i = idxUltima; i > idxPrima; i--){
+                        const a = cabPositions[i], b = cabPositions[i-1];
+                        drawSegment(a.x, a.y, b.x, b.y, PURPLE_ARROW, OFFSET_R, RIGHT_RAIL + 3, LEFT_RAIL - 3);
+                    }
+
+                    // Prima → Primaria
+                    const cFirst = cabPositions[idxPrima];
+                    doc.setDrawColor(...PURPLE_ARROW); doc.setLineWidth(0.9);
+                    doc.setLineDashPattern([2, 1.5], 0);
+                    if(Math.abs(cFirst.y - PRI_Y) < 4){
+                        const ex2 = PRI_X + RW_PRI/2;
+                        doc.line(cFirst.x - RW_SEC/2, PRI_Y + OFFSET_R, ex2, PRI_Y + OFFSET_R);
+                        doc.setLineDashPattern([], 0);
+                        doc.setFillColor(...PURPLE_ARROW);
+                        doc.triangle(ex2, PRI_Y+OFFSET_R, ex2-2.8, PRI_Y+OFFSET_R-1.5, ex2-2.8, PRI_Y+OFFSET_R+1.5, 'F');
+                    } else {
+                        const ry = PRI_Y + OFFSET_R;
+                        doc.line(cFirst.x - RW_SEC/2, cFirst.y + OFFSET_R, LEFT_RAIL - 3, cFirst.y + OFFSET_R);
+                        doc.line(LEFT_RAIL - 3, cFirst.y + OFFSET_R, LEFT_RAIL - 3, ry);
+                        doc.line(LEFT_RAIL - 3, ry, PRI_X - RW_PRI/2, ry);
+                        doc.setLineDashPattern([], 0);
+                        doc.setFillColor(...PURPLE_ARROW);
+                        const px2 = PRI_X - RW_PRI/2;
+                        doc.triangle(px2, ry, px2-2.8, ry-1.5, px2-2.8, ry+1.5, 'F');
+                        // Label stato anello sul tratto verticale sinistro
+                        const clTxt = statoA==='Chiuso'?'ANELLO CHIUSO':statoA==='Aperto'?'ANELLO APERTO':'RITORNO';
+                        const lmY = (cFirst.y + PRI_Y) / 2;
+                        const ltw = doc.getTextWidth(clTxt) + 6;
+                        doc.setFillColor(255,255,255); doc.setDrawColor(...PURPLE_ARROW); doc.setLineWidth(0.35);
+                        doc.roundedRect(LEFT_RAIL-3-ltw/2-ltw/2, lmY-3.5, ltw, 7, 1.5, 1.5, 'F');
+                        doc.roundedRect(LEFT_RAIL-3-ltw/2-ltw/2, lmY-3.5, ltw, 7, 1.5, 1.5, 'S');
+                        doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(...PURPLE_ARROW);
+                        doc.text(clTxt, LEFT_RAIL-3, lmY+1.5, {align:'center'});
+                    }
+                }
+
+                // ── DISEGNA ICONE (sopra le connessioni) ──
+
+                // Cabina Primaria
+                drawRack(PRI_X, PRI_Y, SZ_PRI, PURPLE, [242,238,255], true);
+                // Label primaria
+                const priLabel = priNome + (priCod ? ' ('+priCod+')' : '');
+                doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(...PURPLE);
+                doc.text(priLabel, PRI_X, PRI_Y + RH_PRI/2 + 5, {align:'center'});
+                doc.setFont('helvetica','normal'); doc.setFontSize(5); doc.setTextColor(120,125,155);
+                doc.text('Cabina Primaria', PRI_X, PRI_Y + RH_PRI/2 + 9.5, {align:'center'});
+
+                // Cabine secondarie
+                cabPositions.forEach((cp, i) => {
+                    const cab = cp.cab;
+                    drawRack(cp.x, cp.y, SZ_SEC, cp.col, cp.fill, false);
+
+                    // Badge numero anello (cerchietto in alto a sinistra)
+                    doc.setFillColor(255,255,255); doc.setDrawColor(...cp.col); doc.setLineWidth(0.35);
+                    doc.circle(cp.x - RW_SEC/2 - 1.5, cp.y - RH_SEC/2 - 1.5, 3.2, 'F');
+                    doc.circle(cp.x - RW_SEC/2 - 1.5, cp.y - RH_SEC/2 - 1.5, 3.2, 'S');
+                    doc.setFont('helvetica','bold'); doc.setFontSize(4.5); doc.setTextColor(...cp.col);
+                    doc.text(String(cab.numero||i+1), cp.x - RW_SEC/2 - 1.5, cp.y - RH_SEC/2 - 0.2, {align:'center'});
+
+                    // Badge stato (in alto a destra)
+                    const bTxt = cab.stato==='COMPLETATA'?'OK' : cab.stato==='BYPASSATA'?'BYP' : 'KO';
+                    doc.setFillColor(...cp.col); doc.circle(cp.x + RW_SEC/2 + 1.5, cp.y - RH_SEC/2 - 1.5, 3.2, 'F');
+                    doc.setFont('helvetica','bold'); doc.setFontSize(4); doc.setTextColor(255,255,255);
+                    doc.text(bTxt, cp.x + RW_SEC/2 + 1.5, cp.y - RH_SEC/2 - 0.2, {align:'center'});
+
+                    // Nome cabina sotto l'icona
+                    const nm = clean(cab.nome) || 'C'+(i+1);
+                    const cd = clean(cab.codice);
+                    const lb = cd ? nm+' ('+cd+')' : nm;
+                    const lbShort = lb.length > 16 ? lb.substring(0,15)+'.' : lb;
+                    doc.setFont('helvetica','bold'); doc.setFontSize(5.2); doc.setTextColor(...INK);
+                    doc.text(lbShort, cp.x, cp.y + RH_SEC/2 + 4.5, {align:'center'});
+
+                    // Badge PRIMA / ULTIMA
+                    if(cab.is_prima){
+                        const pt = 'PRIMA'; const ptw = doc.getTextWidth(pt)+5;
+                        doc.setFillColor(0,160,80); doc.roundedRect(cp.x-ptw/2, cp.y-RH_SEC/2-9, ptw, 6, 1.2, 1.2, 'F');
+                        doc.setFont('helvetica','bold'); doc.setFontSize(4.5); doc.setTextColor(255,255,255);
+                        doc.text(pt, cp.x, cp.y-RH_SEC/2-4.8, {align:'center'});
+                    }
+                    if(cab.is_ultima){
+                        const ut = 'ULTIMA'; const utw = doc.getTextWidth(ut)+5;
+                        doc.setFillColor(110,40,210); doc.roundedRect(cp.x-utw/2, cp.y-RH_SEC/2-9, utw, 6, 1.2, 1.2, 'F');
+                        doc.setFont('helvetica','bold'); doc.setFontSize(4.5); doc.setTextColor(255,255,255);
+                        doc.text(ut, cp.x, cp.y-RH_SEC/2-4.8, {align:'center'});
+                    }
+
+                    // Codice cabina (se presente)
+                    if(cd){
+                        doc.setFont('helvetica','normal'); doc.setFontSize(4.2); doc.setTextColor(110,118,145);
+                        doc.text(cd, cp.x, cp.y + RH_SEC/2 + 8.5, {align:'center'});
+                    }
+
+                    // Motivo bypass
+                    if(cab.stato==='BYPASSATA' && cab.motivo_bypass){
+                        const mo = clean(cab.motivo_bypass);
+                        doc.setFont('helvetica','normal'); doc.setFontSize(4); doc.setTextColor(...AMBER);
+                        doc.text(mo, cp.x, cp.y + RH_SEC/2 + (cd?12:8.5), {align:'center'});
+                    }
+                });
+            }
+
+            const comp = sorted.filter(c=>c.stato==='COMPLETATA').length;
+            const byp  = sorted.filter(c=>c.stato==='BYPASSATA').length;
+
+            // ── TABELLA RIEPILOGO ──
+            const tableY = H - 13;
+            doc.setFillColor(...BGRAY); doc.roundedRect(MX, tableY, W-MX*2, 11, 2, 2, 'F');
+            doc.setDrawColor(...LGRAY); doc.setLineWidth(0.3); doc.roundedRect(MX, tableY, W-MX*2, 11, 2, 2, 'S');
+            const cw = (W-MX*2-4)/4;
+            [
+                {title:'CABINA PRIMARIA', sub: priNome+(priCod?' ('+priCod+')':''), col:PURPLE},
+                {title:'STATO ANELLO',    sub: statoA||'Non specificato', col:statoA==='Chiuso'?GREEN:statoA==='Aperto'?RED:AMBER},
+                {title:'COMPLETATE',      sub: comp+' / '+N+' ('+(N>0?Math.round(comp/N*100):0)+'%)', col:GREEN},
+                {title:'BYPASSATE',       sub: byp+' cabine', col:AMBER},
+            ].forEach((it,i) => {
+                const tx = MX + 2 + i*cw;
+                if(i>0){ doc.setDrawColor(...LGRAY); doc.setLineWidth(0.2); doc.line(tx,tableY+2,tx,tableY+10); }
+                doc.setFillColor(...it.col); doc.roundedRect(tx+1.5, tableY+2, 3, 3, 0.5, 0.5, 'F');
                 doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(...it.col);
-                doc.text(it.title,tx+7,tableY+5.5);
-                doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(40,50,80);
-                doc.text(it.sub,tx+7,tableY+11);
+                doc.text(it.title, tx+6.5, tableY+5.5);
+                doc.setFont('helvetica','normal'); doc.setFontSize(5.8); doc.setTextColor(...INK);
+                doc.text(it.sub.length>28?it.sub.substring(0,27)+'.':it.sub, tx+6.5, tableY+9.8);
             });
 
-            this._pdfFooter(doc,PURPLE);
-            doc.save('OrdineAnello_'+(clean(s.anello_primaria)||'anello')+'_'+((s.date||'').replace(/-/g,''))+'.pdf');
+            this._pdfFooter(doc, PURPLE);
+            doc.save('OrdineAnello_'+(clean(s.nome_primaria||s.anello_primaria)||'anello')+'_'+((s.date||'').replace(/-/g,''))+'.pdf');
             this.showToast('PDF Ordine Anello esportato!');
         },
 
-        // ══════════════════════════════════════════════
-        // ── PDF BRETELLAGGIO POP – NETWORK DIAGRAM ──
-        // ══════════════════════════════════════════════
         exportBretellaggioPDF(){
             if(!window.jspdf){ this.showToast('Errore: jsPDF non disponibile'); return; }
             const s = this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'landscape' });
-            const W=297, H=210, PX=12;
+            const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+            const W=210, PX=14;
             const clean = t => this._pdfCleanText(t);
-            const BG=[252,253,255], CYAN=[0,200,240], INDIGO=[100,110,240], GREEN=[0,220,120], GRAY_N=[100,115,140];
 
-            const brett=s.bretellaggio||[];
-            const priNome=clean(s.nome_primaria||s.anello_primaria||'Primaria');
-            const priCod=clean(s.anello_primaria||'');
-            const dateStr=this.formatDateIT(s.date)||'';
-            const team=clean(this.smartFormat(s.team||''));
-            const andataC=brett.filter(b=>b.direzione!=='ritorno').length;
-            const ritornoC=brett.filter(b=>b.direzione==='ritorno').length;
+            const BLUE   = [30,90,200];
+            const GREEN  = [0,145,75];
+            const ORANGE = [200,110,0];
+            const INK    = [18,22,42];
+            const LGRAY  = [205,212,225];
 
-            // BG + grid
-            doc.setFillColor(...BG); doc.rect(0,0,W,H,'F');
-            doc.setFillColor(220,225,235);
-            for(let gx=10;gx<W;gx+=10) for(let gy=10;gy<H;gy+=10) doc.circle(gx,gy,0.15,'F');
+            const SEZ_CFG = {
+                andata:  {col:BLUE,   colL:[228,238,255], label:'ANDATA'},
+                ritorno: {col:GREEN,  colL:[215,245,228], label:'RITORNO'},
+                interpop:{col:ORANGE, colL:[255,238,210], label:'INTER-POP'},
+            };
 
-            // Header
-            doc.setFillColor(245,247,252); doc.rect(0,0,W,20,'F');
-            doc.setFillColor(...CYAN); doc.rect(0,0,W,2,'F');
-            doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(20,25,40);
-            doc.text('FIBER',PX,13); doc.setTextColor(...CYAN); doc.text('REPORT',PX+19,13);
-            doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(130,140,160); doc.text('PRO',PX+52,13);
-            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...CYAN);
-            doc.text('SCHEMA BRETELLAGGIO POP',W-PX,9,{align:'right'});
-            doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(80,90,120);
-            doc.text([dateStr,team,'Anello: '+(priCod||priNome)].filter(Boolean).join('   |   '),W-PX,16,{align:'right'});
+            const priNome = clean(s.nome_primaria || s.anello_primaria || 'Primaria');
+            const priCod  = clean(s.anello_primaria || '');
+            const dateStr = this.formatDateIT(s.date) || '';
+            const team    = clean(this.smartFormat(s.team||''));
+            const sezAll  = s.brtratte_sez || [];
+            const sw1P=clean(s.sw1_porta||''), sw1PP=clean(s.pp_andata||'');
+            const sw2P=clean(s.sw2_porta||''), sw2PP=clean(s.pp_ritorno||'');
 
-            // Info bar
-            let infoY=24;
-            doc.setFillColor(240,246,255); doc.roundedRect(PX,infoY,W-PX*2,9,2,2,'F');
-            doc.setDrawColor(...CYAN); doc.setLineWidth(0.5); doc.roundedRect(PX,infoY,W-PX*2,9,2,2,'S');
-            doc.setFillColor(...CYAN); doc.roundedRect(PX,infoY,3,9,1,1,'F'); doc.rect(PX+1.5,infoY,1.5,9,'F');
-            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...CYAN);
-            doc.text('CABINA PRIMARIA',PX+6,infoY+3.5);
-            doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(20,35,60);
-            doc.text(priCod?priNome+'  ('+priCod+')':priNome,PX+45,infoY+3.5);
-            doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(80,100,130);
-            doc.text(brett.length+' nodi  |  Andata: '+andataC+'  |  Ritorno: '+ritornoC,W-PX-4,infoY+3.5,{align:'right'});
-            doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(60,90,110);
-            doc.text('Data: '+dateStr+'   Squadra: '+team,PX+6,infoY+7.5);
-            infoY+=13;
+            // ── SFONDO ──
+            doc.setFillColor(252,253,255); doc.rect(0,0,W,297,'F');
 
-            if(brett.length===0){
-                doc.setFillColor(240,244,255); doc.roundedRect(PX,infoY+10,W-PX*2,20,3,3,'F');
-                doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(80,100,150);
-                doc.text('Nessun nodo inserito nel bretellaggio',W/2,infoY+22,{align:'center'});
-            } else {
-                const DIAG_Y=infoY+6, DIAG_H=H-DIAG_Y-32, ICON_SZ=10;
-                const allNodes=[
-                    {id:'START',label:priNome,sub:priCod||'START',type:'endpoint',dir:''},
-                    ...brett.map((b,i)=>({id:'N'+i,label:clean(b.nodo)||'Nodo '+(i+1),sub:'Nodo '+(i+1),type:b.direzione==='ritorno'?'ritorno':'andata',dir:b.direzione||'andata'})),
-                    {id:'END',label:priNome,sub:'END',type:'endpoint',dir:''}
-                ];
-                const N=allNodes.length;
-                const USE2=N>8;
-                const COLS=USE2?Math.ceil(N/2):N;
-                const availW=W-PX*2-4;
-                const colW=availW/COLS;
-                const ROW1_Y=USE2?DIAG_Y+DIAG_H*0.28:DIAG_Y+DIAG_H/2;
-                const ROW2_Y=DIAG_Y+DIAG_H*0.75;
-                allNodes.forEach((n,i)=>{
-                    if(!USE2||i<COLS){n._x=PX+2+(i+0.5)*colW;n._y=ROW1_Y;n._row=0;}
-                    else{n._x=PX+2+((i-COLS)+0.5)*colW;n._y=ROW2_Y;n._row=1;}
-                });
+            // ── HEADER ──
+            doc.setFillColor(242,245,252); doc.rect(0,0,W,20,'F');
+            doc.setFillColor(...BLUE); doc.rect(0,0,W,2.5,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...INK);
+            doc.text('FIBER',PX,13); doc.setTextColor(...BLUE); doc.text('REPORT',PX+18,13);
+            doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(150,158,178); doc.text('PRO',PX+50,13);
+            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...BLUE);
+            doc.text('BRETELLAGGIO POP',W-PX,10,{align:'right'});
+            doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(100,110,140);
+            doc.text([dateStr,team].filter(Boolean).join('   |   '),W-PX,17,{align:'right'});
 
-                // Connections
-                allNodes.forEach((n,i)=>{
-                    if(i>=N-1) return;
-                    const nx=allNodes[i+1];
-                    const isRit=nx.dir==='ritorno', isEP=nx.type==='endpoint';
-                    const connCol=isEP?CYAN:isRit?INDIGO:CYAN;
-                    if(n._row===0&&nx._row===0){
-                        this._drawArrow(doc,n._x+ICON_SZ*0.6,n._y,nx._x-ICON_SZ*0.6,nx._y,connCol,0.65);
-                        this._connLabel(doc,n._x+ICON_SZ*0.6,n._y-1.5,nx._x-ICON_SZ*0.6,nx._y-1.5,isRit?'RIT':'AND',connCol);
-                    } else if(n._row===0&&nx._row===1){
-                        const cX=W-PX+2;
-                        doc.setDrawColor(...CYAN); doc.setLineWidth(0.65);
-                        doc.line(n._x,n._y,cX,n._y); doc.line(cX,n._y,cX,nx._y); doc.line(cX,nx._y,nx._x+ICON_SZ*0.6,nx._y);
-                        doc.setFillColor(...CYAN); doc.triangle(nx._x+ICON_SZ*0.6,nx._y,nx._x+ICON_SZ*0.6+3,nx._y-2,nx._x+ICON_SZ*0.6+3,nx._y+2,'F');
-                    } else {
-                        this._drawArrow(doc,n._x-ICON_SZ*0.6,n._y,nx._x+ICON_SZ*0.6,nx._y,connCol,0.65);
-                        this._connLabel(doc,n._x-ICON_SZ*0.6,n._y-1.5,nx._x+ICON_SZ*0.6,nx._y-1.5,isRit?'RIT':'AND',connCol);
-                    }
-                });
+            let y = 26;
 
-                // Nodes
-                allNodes.forEach((n,i)=>{
-                    const cx=n._x,cy=n._y;
-                    const isEP=n.type==='endpoint', isRit=n.type==='ritorno';
-                    const nodeCol=isEP?CYAN:isRit?INDIGO:CYAN;
-                    isEP?this._iconPOP(doc,cx,cy,ICON_SZ,nodeCol):this._iconSwitch(doc,cx,cy,ICON_SZ,nodeCol);
-                    doc.setDrawColor(...nodeCol); doc.setLineWidth(0.4); doc.circle(cx,cy,ICON_SZ*0.65,'S');
-                    const lY=cy+ICON_SZ*0.7;
-                    doc.setFillColor(245,247,255); doc.roundedRect(cx-14,lY,28,10,1.5,1.5,'F');
-                    doc.setDrawColor(...nodeCol); doc.setLineWidth(0.3); doc.roundedRect(cx-14,lY,28,10,1.5,1.5,'S');
-                    doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(20,28,50);
-                    doc.text((n.label.length>13?n.label.substring(0,12)+'.':n.label),cx,lY+3.8,{align:'center'});
-                    doc.setFont('helvetica','normal'); doc.setFontSize(4.5); doc.setTextColor(...nodeCol);
-                    doc.text(n.sub,cx,lY+7.8,{align:'center'});
-                    if(!isEP&&n.dir){
-                        const dT=n.dir==='ritorno'?'RIT':'AND';
-                        const dC=n.dir==='ritorno'?INDIGO:GREEN;
-                        doc.setFillColor(...dC); doc.circle(cx+ICON_SZ*0.55,cy-ICON_SZ*0.55,2.8,'F');
-                        doc.setFont('helvetica','bold'); doc.setFontSize(3.5); doc.setTextColor(255,255,255);
-                        doc.text(dT,cx+ICON_SZ*0.55,cy-ICON_SZ*0.55+1.1,{align:'center'});
-                    }
-                });
-
-                // Node table
-                const tableY=H-28;
-                doc.setFillColor(245,247,253); doc.roundedRect(PX,tableY,W-PX*2,16,2,2,'F');
-                doc.setDrawColor(200,210,230); doc.setLineWidth(0.3); doc.roundedRect(PX,tableY,W-PX*2,16,2,2,'S');
-                doc.setFillColor(230,234,248); doc.roundedRect(PX,tableY,W-PX*2,5,2,0,'F');
-                doc.setFont('helvetica','bold'); doc.setFontSize(5); doc.setTextColor(...CYAN);
-                doc.text('RIEPILOGO NODI PERCORSO',PX+4,tableY+3.5);
-                const visN=brett.slice(0,Math.min(brett.length,12));
-                const colWT=(W-PX*2)/Math.max(visN.length,1);
-                visN.forEach((b,i)=>{
-                    const tx=PX+2+i*colWT;
-                    const isRit=b.direzione==='ritorno';
-                    const dCol=isRit?INDIGO:GREEN;
-                    doc.setFillColor(i%2===0?245:238,i%2===0?247:242,i%2===0?255:252);
-                    doc.roundedRect(tx,tableY+6,colWT-1,8,1,1,'F');
-                    doc.setFont('helvetica','bold'); doc.setFontSize(5); doc.setTextColor(25,35,65);
-                    doc.text((clean(b.nodo)||'N'+(i+1)).substring(0,12),tx+colWT/2,tableY+10.5,{align:'center'});
-                    doc.setFillColor(...dCol); doc.roundedRect(tx+1,tableY+12,colWT-3,1.5,0.5,0.5,'F');
-                });
+            // ── CABINA PRIMARIA ──
+            doc.setFillColor(228,238,255); doc.roundedRect(PX,y,W-PX*2,12,2,2,'F');
+            doc.setDrawColor(...BLUE); doc.setLineWidth(0.5); doc.roundedRect(PX,y,W-PX*2,12,2,2,'S');
+            doc.setFillColor(...BLUE); doc.roundedRect(PX,y,3,12,1,1,'F'); doc.rect(PX+1.5,y,1.5,12,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(...BLUE);
+            doc.text('CABINA PRIMARIA',PX+6,y+4.5);
+            doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...INK);
+            doc.text(priCod?priNome+' ('+priCod+')':priNome,PX+6,y+10);
+            if(sw1P||sw2P){
+                doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(80,100,160);
+                const swT=[sw1P?'SW1 P'+sw1P+(sw1PP?' PP:'+sw1PP:''):'',sw2P?'SW2 P'+sw2P+(sw2PP?' PP:'+sw2PP:''):''].filter(Boolean).join('   ');
+                doc.text(swT,W-PX-2,y+10,{align:'right'});
             }
+            y += 18;
 
-            this._pdfFooter(doc,CYAN);
-            doc.save('BretellaggioPOP_'+(clean(s.anello_primaria)||'anello')+'_'+((s.date||'').replace(/-/g,''))+'.pdf');
+            // ── SEZIONI con numerazione globale ──
+            sezAll.forEach(sezione => {
+                const righe = sezione.righe || [];
+                const cfg = SEZ_CFG[sezione.tipo] || SEZ_CFG.andata;
+
+                // Header sezione
+                doc.setFillColor(...cfg.col); doc.roundedRect(PX,y,W-PX*2,8,2,0,'F');
+                doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
+                doc.text(cfg.label,PX+6,y+5.5);
+                doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(255,255,255);
+                doc.text(righe.length+' righe',W-PX-4,y+5.5,{align:'right'});
+                y += 10;
+
+                if(righe.length === 0){
+                    doc.setFillColor(248,250,255); doc.roundedRect(PX,y,W-PX*2,10,0,2,'F');
+                    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(180,188,210);
+                    doc.text('Nessuna riga',W/2,y+7,{align:'center'});
+                    y += 12;
+                } else {
+                    righe.forEach((r, ri) => {
+                        if(y > 272){ doc.addPage(); y=16; }
+                        const isEven = ri%2===0;
+                        doc.setFillColor(...(isEven?[248,250,255]:[242,245,252]));
+                        doc.rect(PX,y,W-PX*2,13,'F');
+                        doc.setDrawColor(...LGRAY); doc.setLineWidth(0.15);
+                        doc.line(PX,y+13,PX+W-PX*2,y+13);
+
+                        const rowY = y+8.5;
+
+                        // Numero riga (fisso, assegnato alla creazione)
+                        const rNum = r.num || (ri+1);
+                        doc.setFillColor(...cfg.colL); doc.setDrawColor(...cfg.col); doc.setLineWidth(0.4);
+                        doc.circle(PX+5, rowY-1.5, 4, 'F'); doc.circle(PX+5, rowY-1.5, 4, 'S');
+                        doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...cfg.col);
+                        doc.text(String(rNum), PX+5, rowY+0.2, {align:'center'});
+
+                        let cx = PX+12;
+
+                        // Inter-POP: POP origine
+                        if(sezione.tipo==='interpop' && r.da_pop){
+                            const popW = doc.getTextWidth(clean(r.da_pop))+6;
+                            doc.setFillColor(...cfg.colL); doc.setDrawColor(...cfg.col); doc.setLineWidth(0.3);
+                            doc.roundedRect(cx,rowY-4.5,popW,6,1,1,'F'); doc.roundedRect(cx,rowY-4.5,popW,6,1,1,'S');
+                            doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...cfg.col);
+                            doc.text(clean(r.da_pop),cx+popW/2,rowY-0.5,{align:'center'});
+                            cx += popW+2;
+                        }
+
+                        // DA FIBRE (grande)
+                        doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...cfg.col);
+                        const daF = clean(r.da_fibre||'');
+                        doc.text(daF||'-',cx,rowY);
+                        cx += doc.getTextWidth(daF||'-')+2;
+
+                        // DA CASSETTO badge
+                        const daC = clean(r.da_cassetto||'');
+                        if(daC){
+                            const bw=doc.getTextWidth(daC)+6;
+                            doc.setFillColor(...cfg.colL); doc.setDrawColor(...cfg.col); doc.setLineWidth(0.35);
+                            doc.roundedRect(cx,rowY-4.5,bw,6,1.5,1.5,'F'); doc.roundedRect(cx,rowY-4.5,bw,6,1.5,1.5,'S');
+                            doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...cfg.col);
+                            doc.text(daC,cx+bw/2,rowY-0.5,{align:'center'});
+                            cx += bw+3;
+                        }
+
+                        // Freccia
+                        const arrX2 = cx+10;
+                        doc.setDrawColor(...cfg.col); doc.setLineWidth(1.2);
+                        doc.line(cx,rowY-1.5,arrX2-1,rowY-1.5);
+                        doc.setFillColor(...cfg.col);
+                        doc.triangle(arrX2,rowY-1.5,arrX2-4,rowY-3.8,arrX2-4,rowY+0.8,'F');
+                        cx = arrX2+3;
+
+                        // A FIBRE (grande)
+                        doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...cfg.col);
+                        const aF = clean(r.a_fibre||'');
+                        doc.text(aF||'-',cx,rowY);
+                        cx += doc.getTextWidth(aF||'-')+2;
+
+                        // A CASSETTO badge
+                        const aC = clean(r.a_cassetto||'');
+                        if(aC){
+                            const bw2=doc.getTextWidth(aC)+6;
+                            doc.setFillColor(...cfg.colL); doc.setDrawColor(...cfg.col); doc.setLineWidth(0.35);
+                            doc.roundedRect(cx,rowY-4.5,bw2,6,1.5,1.5,'F'); doc.roundedRect(cx,rowY-4.5,bw2,6,1.5,1.5,'S');
+                            doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...cfg.col);
+                            doc.text(aC,cx+bw2/2,rowY-0.5,{align:'center'});
+                            cx += bw2+2;
+                        }
+
+                        // Inter-POP: POP destinazione
+                        if(sezione.tipo==='interpop' && r.a_pop){
+                            cx += 2;
+                            const popW2=doc.getTextWidth(clean(r.a_pop))+6;
+                            doc.setFillColor(...cfg.colL); doc.setDrawColor(...cfg.col); doc.setLineWidth(0.3);
+                            doc.roundedRect(cx,rowY-4.5,popW2,6,1,1,'F'); doc.roundedRect(cx,rowY-4.5,popW2,6,1,1,'S');
+                            doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...cfg.col);
+                            doc.text(clean(r.a_pop),cx+popW2/2,rowY-0.5,{align:'center'});
+                        }
+
+                        y += 13;
+                    });
+                }
+                y += 5;
+            });
+
+            this._pdfFooter(doc, BLUE);
+            const fname='BretellaggioPOP_'+(clean(s.nome_primaria||s.anello_primaria)||'anello')+'_'+((s.date||'').replace(/-/g,''))+'.pdf';
+            doc.save(fname);
             this.showToast('PDF Bretellaggio esportato!');
         },
 
-                // ── WhatsApp ──
+                        // ── WhatsApp ──
         exportWhatsapp(){
             const s=this.currentSheet; if(!s) return;
             const date=this.formatDateIT(s.date);
@@ -2729,7 +3000,7 @@ createApp({
                         else { const f=sortedCabs.find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
                         return `M${c.modulo} F${c.fibre} → ${dest}`;
                     }).join('\n');
-                    const stato=cab.stato==='COMPLETATA'?'OK':cab.stato==='BYPASSATA'?'BYPASS':'KO';
+                    const statoMap={'ONLINE':'ONLINE','PARZIALE':'PARZIALE','OFFLINE':'OFFLINE','BYPASSATA':'BYPASS','NON_ATTIVA':'N.ATTIVA','NON_SOPRALLUOGATA':'N.SOPR.','DISMESSA':'DISMESSA'}; const stato=statoMap[cab.stato]||cab.stato||'—';
                     const cabinaCell=`${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''}`+(connLines?'\n'+connLines:'');
                     return[i+1, cab.numero||'—', cabinaCell, stato, pfsFibre||'—', pfpFibre||'—', cab.note||''];
                 });
@@ -2751,8 +3022,8 @@ createApp({
                 const body=(r.pfs_list||[]).map((p,i)=>[i+1,p.nome||'—',p.att?p.att+' dB':'—',p.n_sec||'—',p.seriale||'—']);
                 doc.autoTable({head:[['PFS','NOME','ATT.SEC.','N°SPL.SEC.','SERIALE']],body,startY:y,theme:'grid',headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},styles:{fontSize:7,cellPadding:2,valign:'middle'}});
             }
-            doc.save(`${type}_${s.name||'report'}.pdf`);
-            this.showToast('✅ PDF scaricato!');
+            doc.save(`${type}_${this._pdfCleanText(s.nome_primaria||s.team||s.name||'report')}_${(s.date||'').split('-').reverse().join('-')}.pdf`);
+            this.showToast('PDF scaricato!');
         },
 
         // ── Excel ──
