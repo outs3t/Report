@@ -106,7 +106,11 @@
             body { background:white; margin:0; }
             .rapportino-panel { position:static; transform:none; overflow:visible; background:white; }
             .screen-wrapper { padding:0; }
-            .a4-page { margin:0; box-shadow:none; width:210mm; height:296mm; overflow:hidden; }
+            .a4-page { margin:0; box-shadow:none; width:210mm; height:296mm; padding:6mm 9mm; box-sizing:border-box; display:flex; flex-direction:column; position:relative; overflow:hidden; }
+            .a4-page > div:first-child { flex:1; min-height:0; display:flex; flex-direction:column; }
+            .rapp-section-02 { flex:1; min-height:0; overflow:hidden; }
+            .rapp-footer { position:absolute !important; bottom:6mm; left:9mm; right:9mm; background:white; }
+            .rapp-inner { padding-bottom:38mm !important; }
         }
     </style>
 </head>
@@ -174,6 +178,12 @@
             <div class="flex flex-wrap gap-1">
                 <span v-for="f in ['POP','PFP','Splitter','Attenuaz.']" :key="f" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400">{{ f }}</span>
             </div>
+        </div>
+        <!-- MAGAZZINO -->
+        <div class="type-card" :class="darkMode?'bg-[#121212] border-emerald-500/30 hover:border-emerald-400 hover:bg-emerald-950/30':'bg-white border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50'" @click="selectType('magazzino')">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center mb-3 shadow-lg"><i class="ph ph-package text-2xl"></i></div>
+            <h3 class="font-black text-sm" :class="darkMode?'text-white':'text-gray-900'">Magazzino</h3>
+            <p class="text-xs mt-1" :class="darkMode?'text-gray-400':'text-gray-500'">Richiesta materiale</p>
         </div>
     </div>
 
@@ -947,10 +957,12 @@
                 <div class="pt-4 mt-4 border-t" :class="darkMode?'border-gray-800':'border-gray-100'">
                     <label class="text-[11px] uppercase font-black text-fiber-orange mb-3 block tracking-wider flex items-center gap-2"><i class="ph ph-wrench-fill"></i> Materiale</label>
                     <div class="space-y-2 mb-3">
-                        <div v-for="(item,mIdx) in row.materiale_list" :key="mIdx" class="flex items-center gap-3 p-1">
-                            <div @click="item.checked=!item.checked" class="checkbox-box flex-shrink-0" :class="{active:item.checked}"><i v-if="item.checked" class="ph ph-check text-white text-xs"></i></div>
-                            <input v-model="item.text" class="flex-grow bg-transparent border-none outline-none text-sm font-medium smart-caps" :class="[item.checked?'line-through opacity-50 text-gray-500':(darkMode?'text-white':'text-gray-900')]">
-                            <button @click="row.materiale_list.splice(mIdx,1)" class="text-gray-500 hover:text-red-500 p-1"><i class="ph ph-x"></i></button>
+                        <div v-for="(item,mIdx) in row.materiale_list" :key="mIdx" class="flex items-center gap-2 py-1.5 group">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black flex-shrink-0"
+                                  :class="darkMode?'bg-orange-900/50 text-orange-300':'bg-orange-100 text-orange-600'">{{ mIdx+1 }}</span>
+                            <input v-model="item.text" class="flex-grow bg-transparent border-b outline-none text-sm font-medium smart-caps"
+                                   :class="darkMode?'text-white border-gray-700':'text-black border-gray-200'" placeholder="Es. Giunto FOSC 400...">
+                            <button @click="row.materiale_list.splice(mIdx,1)" class="opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 p-1 flex-shrink-0 transition-opacity"><i class="ph ph-x text-xs"></i></button>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -980,6 +992,87 @@
         </template><!-- /sheetType!==cabine -->
         </template><!-- /currentSheet -->
     </main>
+
+
+        <!-- ══ MAGAZZINO: layout dedicato ══ -->
+        <div v-if="sheetType==='magazzino' && currentSheet" class="space-y-4 pb-24">
+            <div class="rounded-2xl p-5 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-emerald-800':'bg-white border-emerald-300'">
+                <!-- Header -->
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0"><i class="ph ph-package text-emerald-400 text-xl"></i></div>
+                    <div>
+                        <div class="font-black text-base uppercase tracking-widest" :class="darkMode?'text-emerald-400':'text-emerald-700'">Richiesta Materiale</div>
+                        <div class="text-xs font-mono opacity-50">Magazzino Semplice</div>
+                    </div>
+                </div>
+                <!-- Squadra + Assistente + Data -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-emerald-400':'text-emerald-700'">Squadra <span class="text-red-400">*</span></label>
+                        <input v-model="currentSheet.team" class="f-input smart-caps font-bold" :class="darkMode?'text-white border-emerald-900':'text-black border-emerald-300'" placeholder="Es. Squadra Vartolo">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-emerald-400':'text-emerald-700'">Data</label>
+                        <input v-model="currentSheet.date" type="date" class="f-input" :class="darkMode?'text-white border-emerald-900':'text-black border-emerald-300'">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Tramite Assistente <span class="text-[10px] font-normal opacity-50">(opzionale)</span></label>
+                    <input v-model="currentSheet.magazzino_assistente" class="f-input smart-caps" :class="darkMode?'text-white border-gray-700':'text-black border-gray-300'" placeholder="Es. Mario Rossi">
+                </div>
+
+                <!-- Lista materiale -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-[11px] uppercase font-black tracking-wider flex items-center gap-2" :class="darkMode?'text-emerald-400':'text-emerald-700'">
+                            <i class="ph ph-list-checks"></i> Lista Materiale
+                        </label>
+                        <span class="text-[10px] font-mono opacity-50">{{ (currentSheet.magazzino_items||[]).length }} voci</span>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div v-for="(item, idx) in (currentSheet.magazzino_items||[])" :key="idx"
+                             class="flex items-center gap-3 p-2 rounded-xl border group"
+                             :class="darkMode?'bg-gray-900/40 border-gray-800':'bg-gray-50 border-gray-200'">
+                            <!-- Numero -->
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black flex-shrink-0"
+                                  :class="darkMode?'bg-emerald-900 text-emerald-300':'bg-emerald-100 text-emerald-700'">{{ idx+1 }}</span>
+                            <!-- Descrizione -->
+                            <input v-model="item.desc" class="flex-1 bg-transparent outline-none text-sm font-medium smart-caps border-b"
+                                   :class="darkMode?'text-white border-gray-700':'text-black border-gray-300'"
+                                   placeholder="Es. Giunto FOSC 400, Manicotto, Cavo FO...">
+                            <!-- Quantità -->
+                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                                <span class="text-[10px] font-bold opacity-50">Q.</span>
+                                <input v-model="item.qty" type="number" min="1"
+                                       class="w-14 bg-transparent outline-none text-sm font-black text-center border-b"
+                                       :class="darkMode?'text-emerald-300 border-emerald-800':'text-emerald-700 border-emerald-300'"
+                                       placeholder="1">
+                                <span class="text-[10px] font-mono opacity-40">pz</span>
+                            </div>
+                            <!-- Note opzionale -->
+                            <input v-model="item.note" class="w-20 bg-transparent outline-none text-[10px] border-b opacity-60"
+                                   :class="darkMode?'text-gray-400 border-gray-800':'text-gray-500 border-gray-200'"
+                                   placeholder="Note...">
+                            <!-- Delete -->
+                            <button @click="currentSheet.magazzino_items.splice(idx,1)"
+                                    class="opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 flex-shrink-0 transition-opacity">
+                                <i class="ph ph-trash text-sm"></i>
+                            </button>
+                        </div>
+                        <div v-if="!currentSheet.magazzino_items||!currentSheet.magazzino_items.length"
+                             class="py-4 text-center text-xs font-mono italic" :class="darkMode?'text-gray-600':'text-gray-400'">
+                            Nessun materiale — aggiungi voci con il pulsante +
+                        </div>
+                    </div>
+                    <!-- Aggiungi voce -->
+                    <button @click="if(!currentSheet.magazzino_items)currentSheet.magazzino_items=[]; currentSheet.magazzino_items.push({desc:'',qty:1,note:''})"
+                            class="w-full py-2.5 rounded-xl border-2 border-dashed text-sm font-bold transition-all hover:scale-[1.01]"
+                            :class="darkMode?'border-emerald-800 text-emerald-500 hover:bg-emerald-900/20':'border-emerald-300 text-emerald-600 hover:bg-emerald-50'">
+                        <i class="ph ph-plus-circle mr-1"></i> Aggiungi Materiale
+                    </button>
+                </div>
+            </div>
+        </div>
 
     <!-- BOTTOM BAR – mobile native -->
     <div class="bottom-bar" :class="darkMode?'bg-[#111]/96 border-t border-gray-800':'bg-white/96 border-t border-gray-200'" style="backdrop-filter:blur(20px);">
@@ -1037,8 +1130,7 @@
 
     <div class="screen-wrapper">
         <div class="a4-page" id="pdf-content">
-            <!-- inner flex col to fill height -->
-            <div style="display:flex;flex-direction:column;height:100%;gap:0;">
+            <div style="display:flex;flex-direction:column;flex:1;min-height:0;gap:0;" class="rapp-inner">
 
                 <!-- Header -->
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;">
@@ -1098,8 +1190,7 @@
                     </div>
                 </div>
 
-                <!-- 02 Lavorazioni ADATTIVO per tipo -->
-                <div style="flex:1;min-height:0;overflow:hidden;">
+                <div class="rapp-section-02" style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #d1d5db;margin-bottom:3px;padding-bottom:2px;">
                         <span style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#111827;">
                             02. {{ rapp.tipo==='guasti'?'Dettaglio Guasti':rapp.tipo==='creation'?'Dettaglio Lavorazioni':rapp.tipo==='cabine'?'Riepilogo Anello':'Dettaglio Bretellaggio' }}
@@ -1110,13 +1201,30 @@
                         </div>
                     </div>
 
+                    <!-- Badge stati guasti: compatti, solo nell'anteprima -->
+                    <div v-if="rapp.tipo==='guasti' && rapp.works && rapp.works.length" class="no-print"
+                         style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px;">
+                        <template v-for="(cfg,stato) in {COMPLETATO:{bg:'#d1fae5',border:'#6ee7b7',col:'#065f46',emoji:'✅',label:'Completato'},DA_SBLOCCARE:{bg:'#dcfce7',border:'#86efac',col:'#166634',emoji:'🔓',label:'Da sbloc.'},OCCORRE_MATERIALE:{bg:'#ffedd5',border:'#fdba74',col:'#9a3412',emoji:'📦',label:'Materiale'},NEGATO_ACCESSO:{bg:'#fee2e2',border:'#fca5a5',col:'#991b1b',emoji:'🚫',label:'Negato'},NON_REALIZZATO:{bg:'#fee2e2',border:'#fca5a5',col:'#7f1d1d',emoji:'❌',label:'Non real.'}}" :key="stato">
+                            <span v-if="rapp.works.filter(w=>w.stato===stato).length"
+                                  :style="'display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;border:1px solid '+cfg.border+';background:'+cfg.bg+';font-size:7px;font-weight:800;color:'+cfg.col">
+                                {{ cfg.emoji }} {{ rapp.works.filter(w=>w.stato===stato).length }} {{ cfg.label }}
+                            </span>
+                        </template>
+                        <span v-if="rapp.works.filter(w=>!w.stato).length"
+                              style="display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;border:1px solid #d1d5db;background:#f9fafb;font-size:7px;font-weight:800;color:#6b7280;">
+                            ⏳ {{ rapp.works.filter(w=>!w.stato).length }} In corso
+                        </span>
+                    </div>
+
                     <!-- GUASTI / CREATION: tabella works -->
                     <div v-if="rapp.tipo==='guasti'||rapp.tipo==='creation'" style="overflow:hidden;max-height:100%;">
                         <table class="tech-table">
                             <thead><tr>
                                 <th style="width:16px;">N.</th>
-                                <th style="width:30%;">INDIRIZZO</th>
+                                <th style="width:28%;">INDIRIZZO</th>
                                 <th>{{ rapp.tipo==='guasti'?'PROBLEMA / INTERVENTO':'NODO / EL.OTTICO / UI / GIUNZIONI' }}</th>
+                                <th v-if="rapp.tipo==='guasti'" style="width:46px;">STATO</th>
+                                <th v-if="rapp.tipo==='guasti'" style="width:52px;">MATERIALE</th>
                                 <th style="width:22px;text-align:center;">Q.</th>
                                 <th style="width:12px;" class="no-print"></th>
                             </tr></thead>
@@ -1125,6 +1233,21 @@
                                     <td style="font-weight:700;color:#9ca3af;font-family:'JetBrains Mono',monospace;">{{ i+1 }}</td>
                                     <td style="padding-right:5px;"><textarea v-model="work.address" rows="1" class="r-input font-bold uppercase" placeholder="VIA..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
                                     <td style="padding-right:5px;"><textarea v-model="work.desc" rows="1" class="r-input" style="color:#374151;" placeholder="Dettagli..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
+                                    <td v-if="rapp.tipo==='guasti'" style="vertical-align:middle;text-align:center;padding:2px;">
+                                        <span v-if="work.stato"
+                                              style="display:inline-block;font-size:6.5px;font-weight:800;padding:2px 3px;border-radius:4px;white-space:nowrap;text-transform:uppercase;line-height:1.3;"
+                                              :style="work.stato==='COMPLETATO'?'background:#d1fae5;color:#065f46;border:1px solid #6ee7b7':work.stato==='DA_SBLOCCARE'?'background:#dcfce7;color:#166534;border:1px solid #86efac':work.stato==='OCCORRE_MATERIALE'?'background:#ffedd5;color:#9a3412;border:1px solid #fdba74':work.stato==='NEGATO_ACCESSO'||work.stato==='NON_REALIZZATO'?'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5':'background:#fef9c3;color:#854d0e;border:1px solid #fde047'">
+                                            {{ statoLabel(work.stato) }}
+                                        </span>
+                                        <span v-else style="color:#d1d5db;font-size:9px;">—</span>
+                                    </td>
+                                    <td v-if="rapp.tipo==='guasti'" style="font-size:7px;color:#374151;vertical-align:top;">
+                                        <div v-for="m in (work.materiale||[])" :key="typeof m==='object'?m.text:m" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.6;">
+                                            <span style="color:#f97316;font-weight:700;">·</span>
+                                            {{ typeof m==='object'?m.text:m }}
+                                            <span v-if="typeof m==='object'&&m.qty>1" style="color:#f97316;font-weight:800;">×{{ m.qty }}</span>
+                                        </div>
+                                    </td>
                                     <td style="text-align:center;"><input type="number" v-model="work.qty" class="r-input text-center font-bold mono"></td>
                                     <td style="text-align:center;" class="no-print"><button @click="rapp.works.splice(i,1)" style="color:#f87171;">×</button></td>
                                 </tr>
@@ -1261,7 +1384,7 @@
                 </div>
 
                 <!-- Footer -->
-                <div style="border-top:2px solid #111827;padding-top:7px;margin-top:auto;">
+                <div class="rapp-footer" style="border-top:2px solid #111827;padding-top:7px;margin-top:auto;flex-shrink:0;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                         <div style="display:flex;gap:5px;">
                             <div class="tech-box" style="width:86px;"><span class="tech-label">MEZZO</span><input v-model="rapp.mezzo" class="r-input" placeholder="Modello"></div>
@@ -1647,14 +1770,16 @@ createApp({
         selectType(type){
             this.sheetType=type;
             if(!this.allSheets[type]) this.allSheets[type]=[];
-            if(this.allSheets[type].length===0){
+            if(type==='magazzino'){
+                if(this.allSheets[type].length===0){ const s=this.makeSheet(1); this.allSheets[type].push(s); }
+            } else if(this.allSheets[type].length===0){
                 const s=this.makeSheet(1); s.rows.push(this.newRow()); this.allSheets[type].push(s);
-            } else if(this.allSheets[type][0].rows.length===0){
+            } else if(this.allSheets[type][0].rows&&this.allSheets[type][0].rows.length===0){
                 this.allSheets[type][0].rows.push(this.newRow());
             }
             this.currentSheetIdx=0; this.view='editor'; if(type==='cabine'&&this.currentSheet) this.initBrtratteSez(this.currentSheet);
         },
-        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0}; },
+        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],magazzino_items:[],magazzino_assistente:'',anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0}; },
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
         }; },
@@ -1799,7 +1924,7 @@ createApp({
         removeSheet(i){ if(confirm('Eliminare foglio?')){ this.allSheets[this.sheetType].splice(i,1); if(this.currentSheetIdx>=this.allSheets[this.sheetType].length) this.currentSheetIdx=Math.max(0,this.allSheets[this.sheetType].length-1); }},
         addRow(){ if(this.currentSheet) this.currentSheet.rows.push(this.newRow()); },
         removeRow(i){ if(confirm('Eliminare riga?')) this.currentSheet.rows.splice(i,1); },
-        addMaterial(row,text=null){ const v=text||row.tempMaterial; if(v){row.materiale_list.push({text:v,checked:false});row.tempMaterial='';} },
+        addMaterial(row,text=null){ const v=text||row.tempMaterial; if(v){row.materiale_list.push({text:v});row.tempMaterial='';} },
 
         // ── ROW STYLING ──
         getRowClass(row){
@@ -1943,10 +2068,11 @@ createApp({
                         if(r.ui_servite)           dp.push(`UI: ${r.ui_servite}`);
                         if(r.num_giunzioni)        dp.push(`Giun: ${r.num_giunzioni}`);
                     }
-                    if(r.note)  dp.push(this.smartFormat(r.note));
-                    if(r.stato) dp.push(r.stato.replace(/_/g,' '));
-                    if(r.materiale_list?.length) dp.push(`Mat: ${r.materiale_list.map(m=>this.smartFormat(m.text)).join(', ')}`);
-                    if(addr||dp.length) this.rapp.works.push({address:addr||'–',desc:dp.join(' | '),qty:'1'});
+                    if(r.note) dp.push(this.smartFormat(r.note));
+                    // stato e materiale come campi separati (non dentro desc)
+                    const workStato = type==='guasti' ? (r.stato||'') : '';
+                    const workMat   = type==='guasti' ? (r.materiale_list||[]).map(m=>typeof m==='object'?{text:m.text||'',qty:m.qty||1}:m).filter(m=>typeof m==='object'?m.text:m) : [];
+                    if(addr||dp.length) this.rapp.works.push({address:addr||'–', desc:dp.join(' | '), qty:'1', stato:workStato, materiale:workMat});
                 });
                 this.rapp.localita=Array.from(cities).join(', ');
 
@@ -2881,7 +3007,122 @@ createApp({
         },
 
                         // ── WhatsApp ──
-        exportWhatsapp(){
+        exportMagazzinoPDF(){
+            if(!window.jspdf){ this.showToast('Errore: jsPDF non disponibile'); return; }
+            const s = this.currentSheet; if(!s) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+            const W=210, PX=14;
+            const clean = t => this._pdfCleanText(t);
+            const EMLD = [0,160,100], INK=[18,22,42], LGRAY=[205,212,225];
+
+            const team  = clean(this.smartFormat(s.team||''));
+            const asst  = clean(s.magazzino_assistente||'');
+            const date  = this.formatDateIT(s.date)||'';
+            const items = s.magazzino_items||[];
+
+            // Sfondo
+            doc.setFillColor(252,253,255); doc.rect(0,0,W,297,'F');
+            // Header
+            doc.setFillColor(241,250,245); doc.rect(0,0,W,20,'F');
+            doc.setFillColor(...EMLD); doc.rect(0,0,W,2.5,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...INK);
+            doc.text('FIBER',PX,13); doc.setTextColor(...EMLD); doc.text('REPORT',PX+18,13);
+            doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(150,158,178); doc.text('PRO',PX+50,13);
+            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...EMLD);
+            doc.text('RICHIESTA MATERIALE',W-PX,10,{align:'right'});
+            doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(100,110,140);
+            doc.text(date,W-PX,17,{align:'right'});
+
+            let y=26;
+            // Info squadra
+            doc.setFillColor(225,248,238); doc.roundedRect(PX,y,W-PX*2,asst?18:12,2,2,'F');
+            doc.setDrawColor(...EMLD); doc.setLineWidth(0.5); doc.roundedRect(PX,y,W-PX*2,asst?18:12,2,2,'S');
+            doc.setFillColor(...EMLD); doc.roundedRect(PX,y,3,asst?18:12,1,1,'F'); doc.rect(PX+1.5,y,1.5,asst?18:12,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...EMLD);
+            doc.text('SQUADRA',PX+6,y+4.5);
+            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...INK);
+            doc.text(team||'—',PX+6,y+11);
+            if(asst){
+                doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(80,120,100);
+                doc.text('Tramite: '+asst,PX+6,y+16.5);
+            }
+            y += (asst?18:12)+10;
+
+            // Header lista
+            doc.setFillColor(...EMLD); doc.roundedRect(PX,y,W-PX*2,8,2,0,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
+            doc.text('LISTA MATERIALE ('+items.length+' voci)',PX+6,y+5.5);
+            y+=10;
+
+            if(items.length===0){
+                doc.setFillColor(240,250,245); doc.roundedRect(PX,y,W-PX*2,14,2,2,'F');
+                doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(160,180,170);
+                doc.text('Nessun materiale inserito',W/2,y+9,{align:'center'});
+                y+=18;
+            } else {
+                // Tabella
+                const COL_N=10, COL_Q=22, COL_NOTE=35, COL_DESC=W-PX*2-COL_N-COL_Q-COL_NOTE;
+                // Intestazione
+                doc.setFillColor(235,248,242); doc.roundedRect(PX,y,W-PX*2,7,0,0,'F');
+                doc.setDrawColor(...LGRAY); doc.setLineWidth(0.2); doc.line(PX,y+7,PX+W-PX*2,y+7);
+                doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(80,130,100);
+                doc.text('N.',PX+COL_N/2,y+4.8,{align:'center'});
+                doc.text('MATERIALE / DESCRIZIONE',PX+COL_N+4,y+4.8);
+                doc.text('Q.TÀ',PX+COL_N+COL_DESC+COL_Q/2,y+4.8,{align:'center'});
+                doc.text('NOTE',PX+COL_N+COL_DESC+COL_Q+4,y+4.8);
+                y+=9;
+
+                items.forEach((item,i)=>{
+                    if(y>272){ doc.addPage(); y=16; }
+                    const rh=11;
+                    doc.setFillColor(i%2===0?248:242,i%2===0?252:248,i%2===0?250:246);
+                    doc.rect(PX,y,W-PX*2,rh,'F');
+                    doc.setDrawColor(...LGRAY); doc.setLineWidth(0.15);
+                    doc.line(PX,y+rh,PX+W-PX*2,y+rh);
+                    const ry=y+rh/2+2;
+                    // N
+                    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...EMLD);
+                    doc.text(String(i+1),PX+COL_N/2,ry,{align:'center'});
+                    // Desc
+                    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...INK);
+                    const descTxt = clean(item.desc||'—').substring(0,45);
+                    doc.text(descTxt,PX+COL_N+3,ry);
+                    // Qty
+                    doc.setFont('helvetica','black'); doc.setFontSize(8); doc.setTextColor(...EMLD);
+                    doc.text(String(item.qty||1),PX+COL_N+COL_DESC+COL_Q/2,ry,{align:'center'});
+                    // Note
+                    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(120,140,130);
+                    doc.text(clean(item.note||'').substring(0,18),PX+COL_N+COL_DESC+COL_Q+4,ry);
+                    y+=rh;
+                });
+            }
+            this._pdfFooter(doc,EMLD);
+            doc.save('Magazzino_'+clean(team||'richiesta')+'_'+(s.date||'').replace(/-/g,'')+'.pdf');
+            this.showToast('PDF Magazzino esportato!');
+        },
+
+                exportMagazzinoWhatsapp(){
+            const s=this.currentSheet; if(!s) return;
+            const team=this.smartFormat(s.team||'');
+            const asst=s.magazzino_assistente||'';
+            const date=this.formatDateIT(s.date)||'';
+            const items=s.magazzino_items||[];
+            let msg=`*📦 RICHIESTA MATERIALE*\n`;
+            msg+=`👷 Squadra: ${team}\n`;
+            if(asst) msg+=`🧑‍💼 Tramite: ${asst}\n`;
+            msg+=`📅 ${date}\n\n`;
+            msg+=`*Lista Materiale (${items.length} voci):*\n`;
+            items.forEach((item,i)=>{
+                msg+=`${i+1}. ${this.smartFormat(item.desc||'—')} — *${item.qty||1} pz*`;
+                if(item.note) msg+=` (${item.note})`;
+                msg+=`\n`;
+            });
+            const url='https://wa.me/?text='+encodeURIComponent(msg);
+            window.open(url,'_blank');
+        },
+
+                exportWhatsapp(){
             const s=this.currentSheet; if(!s) return;
             const date=this.formatDateIT(s.date);
             const team=this.smartFormat(s.team||'');
@@ -2967,7 +3208,7 @@ createApp({
             const{jsPDF}=window.jspdf; const doc=new jsPDF();
             const s=this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
             const type=this.sheetType;
-            const accentRGB=type==='guasti'?[255,128,0]:type==='creation'?[6,182,212]:type==='bretellaggio'?[234,179,8]:[168,85,247];
+            const accentRGB=type==='guasti'?[255,128,0]:type==='creation'?[6,182,212]:type==='bretellaggio'?[234,179,8]:type==='magazzino'?[5,150,105]:[168,85,247];
             doc.setFillColor(...accentRGB); doc.rect(0,0,210,18,'F');
             doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
             doc.text(`FIBER REPORT · ${type.toUpperCase()}`,8,12);
@@ -3011,6 +3252,31 @@ createApp({
                     styles:{fontSize:6.5, cellPadding:2, valign:'top', overflow:'linebreak'},
                     columnStyles:{0:{cellWidth:8},1:{cellWidth:10},2:{cellWidth:64},3:{cellWidth:16},4:{cellWidth:22},5:{cellWidth:22},6:{cellWidth:'auto'}}
                 });
+            } else if(type==='magazzino'){
+                const items = s.magazzino_items||[];
+                const assistente = this._pdfCleanText(this.smartFormat(s.magazzino_assistente||''));
+                const teamMag = this._pdfCleanText(this.smartFormat(s.team||''));
+                const dateMag = this.formatDateIT(s.date)||'';
+                doc.setFillColor(...accentRGB); doc.roundedRect(8,20,194,10,2,2,'F');
+                doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
+                doc.text([`Squadra: ${teamMag}`, assistente?`Assistente: ${assistente}`:'', `Data: ${dateMag}`].filter(Boolean).join('   |   '), 12, 27);
+                if(!items.length){
+                    doc.setFontSize(9); doc.setTextColor(150,150,150); doc.text('Nessun materiale inserito', 105, 60, {align:'center'});
+                } else {
+                    const bodyMag = items.map((item,i) => [i+1, this._pdfCleanText(item.desc||'—'), (item.qty||1)+' pz', this._pdfCleanText(item.note||'')]);
+                    doc.autoTable({
+                        head:[['N.','MATERIALE / DESCRIZIONE','Q.TÀ','NOTE']],
+                        body:bodyMag, startY:33, theme:'grid',
+                        headStyles:{fillColor:accentRGB,textColor:255,fontSize:7.5,fontStyle:'bold'},
+                        styles:{fontSize:7.5,cellPadding:2.5,valign:'middle'},
+                        columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:20,halign:'center'},3:{cellWidth:38}},
+                        alternateRowStyles:{fillColor:[240,253,244]},
+                    });
+                    const fy = doc.lastAutoTable.finalY+5;
+                    doc.setFillColor(...accentRGB); doc.roundedRect(8,fy,194,7,2,2,'F');
+                    doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','bold');
+                    doc.text(`Totale: ${items.length} voci  |  ${items.reduce((a,i)=>a+(Number(i.qty)||1),0)} pezzi totali`, 12, fy+5);
+                }
             } else if(type==='bretellaggio'){
                 const r=s.rows?.[0]||{};
                 let y=26;
@@ -3021,6 +3287,27 @@ createApp({
                 doc.text(`Spl.Primario → Att: ${r.spl_pri_att||'—'} dB  N°: ${r.spl_pri_n||'—'}  SN: ${r.spl_pri_seriale||'—'}`,8,y); y+=8;
                 const body=(r.pfs_list||[]).map((p,i)=>[i+1,p.nome||'—',p.att?p.att+' dB':'—',p.n_sec||'—',p.seriale||'—']);
                 doc.autoTable({head:[['PFS','NOME','ATT.SEC.','N°SPL.SEC.','SERIALE']],body,startY:y,theme:'grid',headStyles:{fillColor:accentRGB,textColor:255,fontSize:7},styles:{fontSize:7,cellPadding:2,valign:'middle'}});
+            }
+            if(type==='magazzino') return this.exportMagazzinoPDF();
+            if(type==='magazzino'){
+                const items=(s.magazzino_items||[]).filter(i=>i.desc);
+                doc.setFillColor(220,252,231); doc.rect(0,0,210,18,'F');
+                doc.setTextColor(21,128,61); doc.setFontSize(12); doc.setFont('helvetica','bold');
+                doc.text('📦 RICHIESTA MATERIALE',8,12);
+                doc.setFontSize(8); doc.setTextColor(22,101,52);
+                doc.text(`Squadra: ${this.smartFormat(s.team||'—')}   Data: ${this.formatDateIT(s.date)||'—'}${s.magazzino_assistente?' | Assistente: '+s.magazzino_assistente:''}`,8,22);
+                // Header tabella
+                doc.autoTable({
+                    head:[['N.','DESCRIZIONE MATERIALE','QTÀ','NOTE']],
+                    body:items.map((it,i)=>[i+1, it.desc||'—', (it.qty||1)+' pz', it.note||'']),
+                    startY:28, theme:'grid',
+                    headStyles:{fillColor:[21,128,61],textColor:255,fontSize:8,fontStyle:'bold'},
+                    styles:{fontSize:8,cellPadding:2.5,valign:'middle'},
+                    columnStyles:{0:{cellWidth:12,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:18,halign:'center'},3:{cellWidth:30}},
+                    didParseCell:(d)=>{ if(d.row.index%2===0&&d.section==='body') d.cell.styles.fillColor=[240,253,244]; }
+                });
+                doc.save(`Magazzino_${this._pdfCleanText(s.team||'richiesta')}_${(s.date||'').split('-').reverse().join('-')}.pdf`);
+                this.showToast('PDF Magazzino scaricato!'); return;
             }
             doc.save(`${type}_${this._pdfCleanText(s.nome_primaria||s.team||s.name||'report')}_${(s.date||'').split('-').reverse().join('-')}.pdf`);
             this.showToast('PDF scaricato!');
@@ -3076,6 +3363,31 @@ createApp({
                     };
                 });
                 sheetName='Cabine';
+            } else if(type==='magazzino'){
+                const items = s.magazzino_items||[];
+                const assistente = this._pdfCleanText(this.smartFormat(s.magazzino_assistente||''));
+                const teamMag = this._pdfCleanText(this.smartFormat(s.team||''));
+                const dateMag = this.formatDateIT(s.date)||'';
+                doc.setFillColor(...accentRGB); doc.roundedRect(8,20,194,10,2,2,'F');
+                doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
+                doc.text([`Squadra: ${teamMag}`, assistente?`Assistente: ${assistente}`:'', `Data: ${dateMag}`].filter(Boolean).join('   |   '), 12, 27);
+                if(!items.length){
+                    doc.setFontSize(9); doc.setTextColor(150,150,150); doc.text('Nessun materiale inserito', 105, 60, {align:'center'});
+                } else {
+                    const bodyMag = items.map((item,i) => [i+1, this._pdfCleanText(item.desc||'—'), (item.qty||1)+' pz', this._pdfCleanText(item.note||'')]);
+                    doc.autoTable({
+                        head:[['N.','MATERIALE / DESCRIZIONE','Q.TÀ','NOTE']],
+                        body:bodyMag, startY:33, theme:'grid',
+                        headStyles:{fillColor:accentRGB,textColor:255,fontSize:7.5,fontStyle:'bold'},
+                        styles:{fontSize:7.5,cellPadding:2.5,valign:'middle'},
+                        columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:20,halign:'center'},3:{cellWidth:38}},
+                        alternateRowStyles:{fillColor:[240,253,244]},
+                    });
+                    const fy = doc.lastAutoTable.finalY+5;
+                    doc.setFillColor(...accentRGB); doc.roundedRect(8,fy,194,7,2,2,'F');
+                    doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','bold');
+                    doc.text(`Totale: ${items.length} voci  |  ${items.reduce((a,i)=>a+(Number(i.qty)||1),0)} pezzi totali`, 12, fy+5);
+                }
             } else if(type==='bretellaggio'){
                 const r=s.rows?.[0]||{};
                 const pfsRows=(r.pfs_list||[]).map((p,i)=>({...base,'PFS N°':i+1,'PFS Nome':p.nome||'','Att.Sec.(dB)':p.att||'','N°Spl.Sec.':p.n_sec||'','Seriale Spl.Sec.':p.seriale||'',POP:r.pop||'',Splitter:r.splitter_num||'',PFP:r.pfp_appartenenza||'','Att.OTDR(dB)':r.att_otdr||'','Istruzioni Telaio':r.istruzioni_telaio||'','Spl.Pri.Att.(dB)':r.spl_pri_att||'','N°Spl.Pri.':r.spl_pri_n||'','Seriale Spl.Pri.':r.spl_pri_seriale||''}));
