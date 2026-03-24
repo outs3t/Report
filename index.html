@@ -185,6 +185,12 @@
             <h3 class="font-black text-sm" :class="darkMode?'text-white':'text-gray-900'">Magazzino</h3>
             <p class="text-xs mt-1" :class="darkMode?'text-gray-400':'text-gray-500'">Richiesta materiale</p>
         </div>
+        <!-- INSTRADAMENTO FIBRE -->
+        <div class="type-card" :class="darkMode?'bg-[#121212] border-violet-500/30 hover:border-violet-400 hover:bg-violet-950/30':'bg-white border-violet-200 hover:border-violet-400 hover:bg-violet-50'" @click="selectType('srb')">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 text-white flex items-center justify-center mb-3 shadow-lg"><i class="ph ph-broadcast text-2xl"></i></div>
+            <h3 class="font-black text-sm" :class="darkMode?'text-white':'text-gray-900'">Instradamento Fibre</h3>
+            <p class="text-xs mt-1" :class="darkMode?'text-gray-400':'text-gray-500'">Instradamento Pop, SRB, PCN, Mini PCN</p>
+        </div>
     </div>
 
     <div class="flex gap-4 mt-10 items-center">
@@ -261,6 +267,21 @@
                     <label class="field-label" :class="darkMode?'text-cyan-400':'text-cyan-700'">N° Matricola</label>
                     <input v-model="currentSheet.matricola" class="bg-transparent font-mono font-bold text-base outline-none w-full border-b" :class="darkMode?'text-[#ff8000] border-gray-700':'text-orange-600 border-gray-300'" placeholder="000000">
                 </div>
+                <!-- ORE LAVORATE -->
+                <div class="grid grid-cols-3 gap-3 pt-1 border-t" :class="darkMode?'border-gray-800':'border-gray-200'">
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-amber-400':'text-amber-700'">Ore Ordinarie</label>
+                        <input v-model="currentSheet.h_ord" type="number" min="0" step="0.5" class="w-full bg-transparent font-mono font-bold text-sm outline-none border-b" :class="darkMode?'text-amber-300 border-amber-900':'text-amber-700 border-amber-300'" placeholder="8">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-amber-400':'text-amber-700'">Straordinarie</label>
+                        <input v-model="currentSheet.h_str" type="number" min="0" step="0.5" class="w-full bg-transparent font-mono font-bold text-sm outline-none border-b" :class="darkMode?'text-amber-300 border-amber-900':'text-amber-700 border-amber-300'" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-amber-400':'text-amber-700'">Ore Viaggio</label>
+                        <input v-model="currentSheet.h_vg" type="number" min="0" step="0.5" class="w-full bg-transparent font-mono font-bold text-sm outline-none border-b" :class="darkMode?'text-amber-300 border-amber-900':'text-amber-700 border-amber-300'" placeholder="0">
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -278,6 +299,12 @@
                 <div class="flex items-center gap-2 mb-3">
                     <div class="w-8 h-8 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0"><i class="ph ph-circle-dashed text-purple-400 text-lg"></i></div>
                     <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-purple-400':'text-purple-700'">Cabina Primaria &amp; Anello</span>
+                    <button @click="currentSheet.nome_primaria='';currentSheet.anello_primaria='';currentSheet.id_anello='';currentSheet.anello_nome='';showToast('✓ Dati primaria azzerati')"
+                            class="ml-auto text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all hover:scale-105 active:scale-95"
+                            :class="darkMode?'border-red-800 text-red-400 hover:bg-red-900/20':'border-red-300 text-red-500 hover:bg-red-50'"
+                            title="Azzera nome/codice primaria">
+                        <i class="ph ph-eraser text-xs mr-1"></i>Azzera
+                    </button>
                 </div>
                 <!-- Riga 1: codice + nome primaria -->
                 <div class="grid grid-cols-2 gap-3 mb-3">
@@ -741,11 +768,7 @@
                 </div>
             </div>
 
-            <!-- CALCOLATORE COLORE FIBRA (configurable) -->
-            <div class="rounded-2xl border-2 p-5" :class="darkMode?'bg-[#121212] border-yellow-900':'bg-white border-yellow-200'">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                        <i class="ph ph-palette text-yellow-400 text-lg"></i>
+
                         <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-yellow-400':'text-yellow-700'">Calcolatore Colore Fibra</span>
                     </div>
                     <button @click="openFiberManager" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all hover:scale-105" :class="darkMode?'border-yellow-800 text-yellow-400 hover:bg-yellow-900/30':'border-yellow-400 text-yellow-700 hover:bg-yellow-50'">
@@ -873,7 +896,7 @@
         </div><!-- /bretellaggio -->
 
         <!-- ══ GUASTI + CREATION: summary chips + card grid ══ -->
-        <template v-if="sheetType!=='cabine' && sheetType!=='bretellaggio'">
+        <template v-if="sheetType!=='cabine' && sheetType!=='bretellaggio' && sheetType!=='magazzino' && sheetType!=='srb'">
         <div v-if="currentSheet.rows.length>0" class="mb-5 flex flex-wrap gap-3 text-[11px] font-bold">
             <div v-for="(count,stato) in statsSummary" :key="stato" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" :class="statoChipClass(stato)">
                 <span>{{ statoEmoji(stato) }}</span><span>{{ statoLabel(stato) }}: {{ count }}</span>
@@ -1005,17 +1028,7 @@
                         <div class="text-xs font-mono opacity-50">Magazzino Semplice</div>
                     </div>
                 </div>
-                <!-- Squadra + Assistente + Data -->
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="field-label" :class="darkMode?'text-emerald-400':'text-emerald-700'">Squadra <span class="text-red-400">*</span></label>
-                        <input v-model="currentSheet.team" class="f-input smart-caps font-bold" :class="darkMode?'text-white border-emerald-900':'text-black border-emerald-300'" placeholder="Es. Squadra Vartolo">
-                    </div>
-                    <div>
-                        <label class="field-label" :class="darkMode?'text-emerald-400':'text-emerald-700'">Data</label>
-                        <input v-model="currentSheet.date" type="date" class="f-input" :class="darkMode?'text-white border-emerald-900':'text-black border-emerald-300'">
-                    </div>
-                </div>
+                <!-- Assistente + Ore -->
                 <div class="mb-4">
                     <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Tramite Assistente <span class="text-[10px] font-normal opacity-50">(opzionale)</span></label>
                     <input v-model="currentSheet.magazzino_assistente" class="f-input smart-caps" :class="darkMode?'text-white border-gray-700':'text-black border-gray-300'" placeholder="Es. Mario Rossi">
@@ -1070,11 +1083,132 @@
                             :class="darkMode?'border-emerald-800 text-emerald-500 hover:bg-emerald-900/20':'border-emerald-300 text-emerald-600 hover:bg-emerald-50'">
                         <i class="ph ph-plus-circle mr-1"></i> Aggiungi Materiale
                     </button>
+                    <!-- WA + PDF buttons -->
+                    <div class="flex gap-3 mt-4">
+                        <button @click="exportMagazzinoWhatsapp"
+                                class="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 bg-gradient-to-r from-green-500 to-green-700 text-white shadow-lg">
+                            <i class="ph ph-whatsapp-logo text-lg"></i> Invia WhatsApp
+                        </button>
+                        <button @click="exportMagazzinoPDF"
+                                class="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
+                                :class="darkMode?'bg-emerald-900/40 text-emerald-300 border-2 border-emerald-700':'bg-emerald-50 text-emerald-700 border-2 border-emerald-300'">
+                            <i class="ph ph-file-pdf text-lg"></i> Esporta PDF
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-    <!-- BOTTOM BAR – mobile native -->
+        <!-- ══ INSTRADAMENTO FIBRE: layout dedicato ══ -->
+        <div v-if="sheetType==='srb' && currentSheet" class="space-y-4 pb-24">
+            <!-- Ore lavorate -->
+            <div class="rounded-2xl p-4 border-2" :class="darkMode?'bg-[#121212] border-violet-900':'bg-white border-violet-200'">
+                <div class="text-[10px] font-black uppercase tracking-wider mb-3" :class="darkMode?'text-violet-400':'text-violet-700'">⏱ Ore Lavoro</div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Ore Ordinarie</label>
+                        <input v-model="currentSheet.h_ord" type="number" min="0" step="0.5" class="f-input font-mono font-black" :class="darkMode?'text-white border-gray-700':'text-black border-gray-300'" placeholder="8">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Straordinarie</label>
+                        <input v-model="currentSheet.h_str" type="number" min="0" step="0.5" class="f-input font-mono font-black" :class="darkMode?'text-white border-gray-700':'text-black border-gray-300'" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Ore Viaggio</label>
+                        <input v-model="currentSheet.h_vg" type="number" min="0" step="0.5" class="f-input font-mono font-black" :class="darkMode?'text-white border-gray-700':'text-black border-gray-300'" placeholder="0">
+                    </div>
+                </div>
+            </div>
+            <div class="rounded-2xl p-5 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-violet-800':'bg-white border-violet-300'">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-9 h-9 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0"><i class="ph ph-broadcast text-violet-400 text-xl"></i></div>
+                    <div>
+                        <div class="font-black text-base uppercase tracking-widest" :class="darkMode?'text-violet-400':'text-violet-700'">Instradamento Fibre</div>
+                        <div class="text-xs font-mono opacity-50">Percorso fibra da Nodo a Destinazione</div>
+                    </div>
+                    <button @click="exportSrbPDF" class="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all hover:scale-105 active:scale-95"
+                            :class="darkMode?'border-violet-700 text-violet-300 bg-violet-900/20':'border-violet-300 text-violet-700 bg-violet-50'">
+                        <i class="ph ph-file-pdf text-sm"></i> Esporta PDF
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-violet-400':'text-violet-700'">Nome Destinazione <span class="text-red-400">*</span></label>
+                        <input v-model="currentSheet.srb_antenna" class="f-input font-bold font-mono" :class="darkMode?'text-white border-violet-900':'text-black border-violet-300'" placeholder="Es. Antenna Posillipo">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-violet-400':'text-violet-700'">Tipo Destinazione</label>
+                        <select v-model="currentSheet.srb_tipo_arrivo" class="f-input cursor-pointer font-bold outline-none" :class="darkMode?'text-white border-violet-900 bg-transparent':'text-black border-violet-300 bg-transparent'">
+                            <option value="POP">POP</option>
+                            <option value="SRB">SRB</option>
+                            <option value="PCN">PCN</option>
+                            <option value="MINI_PCN">MINI PCN</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-violet-400':'text-violet-700'">Nodo di Partenza</label>
+                        <input v-model="currentSheet.srb_pop_start" class="f-input font-bold font-mono" :class="darkMode?'text-white border-violet-900':'text-black border-violet-300'" placeholder="Es. NA_01">
+                    </div>
+                    <div>
+                        <label class="field-label" :class="darkMode?'text-violet-400':'text-violet-700'">Tipo Partenza</label>
+                        <select v-model="currentSheet.srb_tipo_partenza" class="f-input cursor-pointer font-bold outline-none" :class="darkMode?'text-white border-violet-900 bg-transparent':'text-black border-violet-300 bg-transparent'">
+                            <option value="POP">POP</option>
+                            <option value="SRB">SRB</option>
+                            <option value="PCN">PCN</option>
+                            <option value="MINI_PCN">MINI PCN</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="text-[10px] font-black uppercase tracking-wider mb-3" :class="darkMode?'text-violet-400':'text-violet-700'">Tratte fibra (Nodo → Nodo → Destinazione)</div>
+                <div class="space-y-3 mb-4">
+                    <div v-if="!currentSheet.srb_tratte||!currentSheet.srb_tratte.length" class="py-4 text-center text-xs font-mono italic" :class="darkMode?'text-gray-600':'text-gray-400'">
+                        Nessuna tratta — aggiungi con il pulsante +
+                    </div>
+                    <div v-for="(tr, ti) in (currentSheet.srb_tratte||[])" :key="tr.id"
+                         class="rounded-xl border-2 group overflow-hidden"
+                         :class="tr.is_arrivo?(darkMode?'border-violet-700 bg-violet-950/20':'border-violet-300 bg-violet-50'):(darkMode?'border-gray-800 bg-gray-900/30':'border-gray-200 bg-gray-50')">
+                        <div class="flex items-center gap-2 px-3 py-2" :class="tr.is_arrivo?(darkMode?'bg-violet-900/30':'bg-violet-100/60'):(darkMode?'bg-gray-900/40':'bg-gray-100/60')">
+                            <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
+                                  :class="tr.is_arrivo?(darkMode?'bg-violet-600 text-white':'bg-violet-600 text-white'):(darkMode?'bg-gray-700 text-gray-200':'bg-gray-300 text-gray-700')">{{ ti+1 }}</span>
+                            <label class="flex items-center gap-2 cursor-pointer ml-2">
+                                <input type="checkbox" v-model="tr.is_arrivo" class="accent-violet-500 w-3.5 h-3.5">
+                                <span class="text-xs font-bold" :class="tr.is_arrivo?(darkMode?'text-violet-300':'text-violet-700'):(darkMode?'text-gray-400':'text-gray-500')">
+                                    {{ tr.is_arrivo ? '📡 Arrivo ' + (currentSheet.srb_tipo_arrivo||'POP') + ': ' + (currentSheet.srb_antenna||'Destinazione') : 'Tratta intermedia' }}
+                                </span>
+                            </label>
+                            <button @click="currentSheet.srb_tratte.splice(ti,1)" class="ml-auto opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 transition-opacity flex-shrink-0"><i class="ph ph-trash text-sm"></i></button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 px-3 py-3">
+                            <div class="space-y-2 pb-2 border-b sm:border-b-0 sm:border-r" :class="darkMode?'border-gray-800':'border-gray-200'">
+                                <div class="text-[9px] font-black uppercase tracking-wider" :class="darkMode?'text-blue-400':'text-blue-600'">DA</div>
+                                <div class="flex items-center gap-2"><span class="text-[9px] text-gray-500 w-12 flex-shrink-0">POP</span><input v-model="tr.da_pop" class="flex-1 bg-transparent text-xs font-black font-mono outline-none border-b" :class="darkMode?'border-blue-900 text-white':'border-blue-200 text-black'" placeholder="NA_01"></div>
+                                <div class="flex items-start gap-2">
+                                    <span class="text-[9px] text-gray-500 w-12 flex-shrink-0 pt-1">Fibre</span>
+                                    <textarea v-model="tr.da_fibre" rows="2" class="flex-1 bg-transparent text-xs font-black font-mono outline-none border-b resize-none leading-tight" :class="darkMode?'border-blue-900 text-blue-300':'border-blue-200 text-blue-700'" placeholder="77 78 79 ... 90" style="min-height:32px;"></textarea>
+                                </div>
+                                <div class="flex items-center gap-2"><span class="text-[9px] text-gray-500 w-12 flex-shrink-0">Metri</span><input v-model="tr.metri" type="number" class="w-24 bg-transparent text-xs font-bold font-mono outline-none border-b" :class="darkMode?'border-gray-700 text-gray-300':'border-gray-300 text-gray-700'" placeholder="383"><span class="text-[9px] text-gray-500">m</span></div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="text-[9px] font-black uppercase tracking-wider" :class="tr.is_arrivo?(darkMode?'text-violet-400':'text-violet-600'):(darkMode?'text-green-400':'text-green-600')">{{ tr.is_arrivo ? (currentSheet.srb_tipo_arrivo||'POP') : 'A' }}</div>
+                                <div class="flex items-center gap-2"><span class="text-[9px] text-gray-500 w-12 flex-shrink-0">{{ tr.is_arrivo ? 'Nome' : (currentSheet.srb_tipo_partenza||'POP') }}</span><input v-model="tr.a_pop" class="flex-1 bg-transparent text-xs font-black font-mono outline-none border-b" :class="tr.is_arrivo?(darkMode?'border-violet-700 text-violet-300':'border-violet-300 text-violet-700'):(darkMode?'border-green-900 text-white':'border-green-200 text-black')" :placeholder="tr.is_arrivo?(currentSheet.srb_antenna||'Destinazione'):'NA_03'"></div>
+                                <div class="flex items-start gap-2">
+                                    <span class="text-[9px] text-gray-500 w-12 flex-shrink-0 pt-1">Fibre</span>
+                                    <textarea v-model="tr.a_fibre" rows="2" class="flex-1 bg-transparent text-xs font-black font-mono outline-none border-b resize-none leading-tight" :class="tr.is_arrivo?(darkMode?'border-violet-700 text-violet-300':'border-violet-300 text-violet-700'):(darkMode?'border-green-900 text-green-300':'border-green-200 text-green-700')" placeholder="1 2 3 ... 14" style="min-height:32px;"></textarea>
+                                </div>
+                                <div class="flex items-center gap-2"><span class="text-[9px] text-gray-500 w-12 flex-shrink-0">Note</span><input v-model="tr.note" class="flex-1 bg-transparent text-[10px] outline-none border-b" :class="darkMode?'border-gray-700 text-gray-400':'border-gray-200 text-gray-500'" placeholder="Opzionale"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button @click="if(!currentSheet.srb_tratte)currentSheet.srb_tratte=[]; currentSheet.srb_tratte.push({id:Date.now(),da_pop:'',da_fibre:'',a_pop:'',a_fibre:'',metri:'',note:'',is_arrivo:false})"
+                        class="w-full py-2.5 rounded-xl border-2 border-dashed text-sm font-bold transition-all hover:scale-[1.01]"
+                        :class="darkMode?'border-violet-800 text-violet-500 hover:bg-violet-900/20':'border-violet-300 text-violet-600 hover:bg-violet-50'">
+                    <i class="ph ph-plus-circle mr-1"></i> Aggiungi Tratta
+                </button>
+            </div>
+        </div>
+
+        <!-- BOTTOM BAR – mobile native -->
     <div class="bottom-bar" :class="darkMode?'bg-[#111]/96 border-t border-gray-800':'bg-white/96 border-t border-gray-200'" style="backdrop-filter:blur(20px);">
         <div class="flex items-center justify-around px-1 py-2 max-w-sm mx-auto">
             <button @click="exportWhatsapp" class="flex flex-col items-center gap-0.5 min-w-[56px] py-1">
@@ -1193,7 +1327,7 @@
                 <div class="rapp-section-02" style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #d1d5db;margin-bottom:3px;padding-bottom:2px;">
                         <span style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#111827;">
-                            02. {{ rapp.tipo==='guasti'?'Dettaglio Guasti':rapp.tipo==='creation'?'Dettaglio Lavorazioni':rapp.tipo==='cabine'?'Riepilogo Anello':'Dettaglio Bretellaggio' }}
+                            02. {{ rapp.tipo==='guasti'?'Dettaglio Guasti':rapp.tipo==='creation'?'Dettaglio Lavorazioni':rapp.tipo==='cabine'?'Riepilogo Anello':rapp.tipo==='srb'?'Schema Bretellaggio SRB/POP':'Dettaglio Bretellaggio' }}
                         </span>
                         <div class="no-print" style="display:flex;gap:8px;">
                             <button @click="showImportModal=true" style="font-size:8px;color:#2563eb;font-weight:700;">AGGIORNA</button>
@@ -1319,6 +1453,53 @@
                         </table>
                     </div>
 
+                    <!-- INSTRADAMENTO: tabella tratte -->
+                    <div v-if="rapp.tipo==='srb'" style="overflow:hidden;max-height:100%;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:5px;">
+                            <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#7c3aed;text-transform:uppercase;">{{ rapp.srbData.tipo_arrivo||'POP' }} Destinazione</span>
+                                <div style="font-size:11px;font-weight:900;color:#111827;font-family:'JetBrains Mono',monospace;">{{ rapp.srbData.antenna||'—' }}</div>
+                            </div>
+                            <div style="background:#ede9fe;border:1px solid #c4b5fd;border-radius:3px;padding:3px 6px;">
+                                <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#7c3aed;text-transform:uppercase;">{{ rapp.srbData.tipo_partenza||'POP' }} di Partenza</span>
+                                <div style="font-size:11px;font-weight:900;color:#111827;font-family:'JetBrains Mono',monospace;">{{ rapp.srbData.pop_start||'—' }}</div>
+                            </div>
+                        </div>
+                        <table class="tech-table">
+                            <thead><tr>
+                                <th style="width:18px;">N.</th>
+                                <th style="width:32px;">TIPO</th>
+                                <th>DA NODO</th>
+                                <th>FIBRE DA</th>
+                                <th>A NODO / DEST.</th>
+                                <th>FIBRE A</th>
+                                <th style="width:38px;">METRI</th>
+                                <th>NOTE</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr v-for="(tr,i) in rapp.srbData.tratte" :key="i"
+                                    :style="tr.is_arrivo?'background:#f5f3ff;':''">>
+                                    <td style="font-weight:700;color:#9ca3af;font-family:'JetBrains Mono',monospace;">{{ i+1 }}</td>
+                                    <td>
+                                        <span style="font-size:7px;font-weight:800;padding:1px 4px;border-radius:3px;"
+                                              :style="tr.is_arrivo?'background:#ede9fe;color:#7c3aed;':'background:#dcfce7;color:#166534;'">
+                                            {{ tr.is_arrivo?'📡 ARRIVO':'INTERM.' }}
+                                        </span>
+                                    </td>
+                                    <td style="font-weight:700;font-family:'JetBrains Mono',monospace;">{{ tr.da_pop||'—' }}</td>
+                                    <td style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#1d4ed8;">{{ tr.da_fibre||'—' }}</td>
+                                    <td style="font-weight:700;font-family:'JetBrains Mono',monospace;" :style="tr.is_arrivo?'color:#7c3aed;':''">{{ tr.a_pop||'—' }}</td>
+                                    <td style="font-family:'JetBrains Mono',monospace;font-size:8px;" :style="tr.is_arrivo?'color:#7c3aed;':'color:#15803d;'">{{ tr.a_fibre||'—' }}</td>
+                                    <td style="font-family:'JetBrains Mono',monospace;text-align:right;">{{ tr.metri||'—' }}<span v-if="tr.metri" style="font-size:7px;color:#6b7280;"> m</span></td>
+                                    <td style="font-size:8px;color:#6b7280;">{{ tr.note||'' }}</td>
+                                </tr>
+                                <tr v-if="!rapp.srbData.tratte||!rapp.srbData.tratte.length">
+                                    <td colspan="8" style="text-align:center;color:#9ca3af;font-size:9px;padding:8px;">Nessuna tratta — importa dati Instradamento</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
                     <!-- BRETELLAGGIO: POP + splitter + PFS -->
                     <div v-if="rapp.tipo==='bretellaggio'" style="overflow:hidden;max-height:100%;">
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:5px;">
@@ -1432,14 +1613,14 @@
         </div>
         <p class="text-gray-400 text-xs mb-5">Scegli da quale foglio importare. I dati attuali verranno sostituiti.</p>
         <div class="space-y-3">
-            <button v-for="type in ['guasti','creation','cabine','bretellaggio']" :key="type" @click="doImport(type)"
+            <button v-for="type in ['guasti','creation','cabine','bretellaggio','srb']" :key="type" @click="doImport(type)"
                     class="w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all group"
-                    :class="type==='guasti'?'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 hover:border-orange-400':type==='creation'?'border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-400':type==='bretellaggio'?'border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 hover:border-yellow-400':'border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-400'">
-                <i class="text-xl" :class="type==='guasti'?'ph ph-wrench text-orange-400':type==='creation'?'ph ph-cable-car text-cyan-400':type==='bretellaggio'?'ph ph-git-branch text-yellow-400':'ph ph-circle-dashed text-purple-400'"></i>
+                    :class="type==='guasti'?'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 hover:border-orange-400':type==='creation'?'border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-400':type==='bretellaggio'?'border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 hover:border-yellow-400':type==='srb'?'border-violet-500/40 bg-violet-500/10 hover:bg-violet-500/20 hover:border-violet-400':'border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-400'">
+                <i class="text-xl" :class="type==='guasti'?'ph ph-wrench text-orange-400':type==='creation'?'ph ph-cable-car text-cyan-400':type==='bretellaggio'?'ph ph-git-branch text-yellow-400':type==='srb'?'ph ph-broadcast text-violet-400':'ph ph-circle-dashed text-purple-400'"></i>
                 <div class="text-left flex-1">
                     <div class="text-white font-black capitalize">{{ type }}</div>
-                    <div class="text-[10px] font-mono" :class="type==='guasti'?'text-orange-400/60':type==='creation'?'text-cyan-400/60':'text-purple-400/60'">
-                        {{ sheetsByType[type] ? sheetsByType[type].rows.length+' schede' : 'nessun dato' }}
+                    <div class="text-[10px] font-mono" :class="type==='guasti'?'text-orange-400/60':type==='creation'?'text-cyan-400/60':type==='srb'?'text-violet-400/60':'text-purple-400/60'">
+                        {{ type==='srb' ? (allSheets.srb&&allSheets.srb.length ? allSheets.srb[0].srb_tratte?.length+' tratte' : 'nessun dato') : (sheetsByType[type] ? sheetsByType[type].rows.length+' schede' : 'nessun dato') }}
                     </div>
                 </div>
                 <i class="ph ph-arrow-right text-gray-500 group-hover:text-white transition-colors"></i>
@@ -1653,7 +1834,7 @@ createApp({
             toastMsg: '',
             sheetType: null,
             tipiElementoOttico: ['PFP','PFS','PDA','PDI','PTA','PD','PAC/PAL','POP/PCN'],
-            allSheets: { guasti:[], creation:[], cabine:[], bretellaggio:[] },
+            allSheets: { guasti:[], creation:[], cabine:[], bretellaggio:[], magazzino:[], srb:[] },
             currentSheetIdx: 0,
             recognition: null,
             dictationMemory: JSON.parse(localStorage.getItem('fiber_memory')) || { 'tubo r k':'Tubo Rame', 'fibra uno':'Fibra 1Gb' },
@@ -1672,7 +1853,8 @@ createApp({
                 mezzo:'',targa:'',km:'',showFuel:false,fuelLitres:'',fuelEuro:'',signatureName:'',
                 // Dati specifici per tipo
                 cabineData:{ anello_primaria:'', anello_nome:'', stato_anello:'', sw1_porta:'', pp_andata:'', sw2_porta:'', pp_ritorno:'', cabine:[] },
-                brData:{ pop:'', splitter_num:'', pfp_appartenenza:'', att_otdr:'', istruzioni_telaio:'', spl_pri_att:'', spl_pri_n:'', spl_pri_seriale:'', pfs_list:[] }
+                brData:{ pop:'', splitter_num:'', pfp_appartenenza:'', att_otdr:'', istruzioni_telaio:'', spl_pri_att:'', spl_pri_n:'', spl_pri_seriale:'', pfs_list:[] },
+                srbData:{ antenna:'', pop_start:'', tratte:[] }
             }
         };
     },
@@ -1686,14 +1868,14 @@ createApp({
             return s[Math.min(this.currentSheetIdx, s.length-1)] || null;
         },
         statsSummary() {
-            if (!this.currentSheet) return {};
+            if (!this.currentSheet || !this.currentSheet.rows) return {};
             const c={};
             this.currentSheet.rows.forEach(r => { if(r.stato) c[r.stato]=(c[r.stato]||0)+1; });
             return c;
         },
         sheetsByType() {
             const res={};
-            for(const t of ['guasti','creation','cabine','bretellaggio']){
+            for(const t of ['guasti','creation','cabine','bretellaggio','magazzino','srb']){
                 const sheets=this.allSheets[t]||[];
                 if(sheets.length>0){
                     res[t]={ rows:sheets.flatMap(s=>s.rows||[]), team:sheets[0].team, date:sheets[0].date, matricola:sheets[0].matricola };
@@ -1768,6 +1950,11 @@ createApp({
 
         // ── WELCOME ──
         selectType(type){
+            if(type==='srb'){
+                if(!this.allSheets.srb) this.allSheets.srb=[];
+                if(!this.allSheets.srb.length) this.allSheets.srb.push(this.makeSrbSheet(1));
+                this.sheetType='srb'; this.currentSheetIdx=0; this.view='editor'; return;
+            }
             this.sheetType=type;
             if(!this.allSheets[type]) this.allSheets[type]=[];
             if(type==='magazzino'){
@@ -1779,7 +1966,8 @@ createApp({
             }
             this.currentSheetIdx=0; this.view='editor'; if(type==='cabine'&&this.currentSheet) this.initBrtratteSez(this.currentSheet);
         },
-        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',rows:[],magazzino_items:[],magazzino_assistente:'',anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0}; },
+        makeSrbSheet(n){ return{id:Date.now()+Math.random(),name:'Instradamento '+n,date:new Date().toISOString().split('T')[0],team:'',srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[],h_ord:'',h_str:'',h_vg:''}; },
+        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',h_ord:'',h_str:'',h_vg:'',rows:[],magazzino_items:[],magazzino_assistente:'',anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0,srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[]}; },
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
         }; },
@@ -2034,10 +2222,20 @@ createApp({
         doImport(type){
             const sheets=this.allSheets[type]||[];
             if(!sheets.length){ this.showToast('Nessun dato per questo tipo'); return; }
-            const fs=sheets[0];
+            // Usa il foglio corrente se il tipo coincide, altrimenti il primo
+            const fs = (type===this.sheetType && this.currentSheet) ? this.currentSheet : sheets[0];
+            const clean = t => this._pdfCleanText(t||'');
             this.rapp.tipo=type;
             this.rapp.displayDate=this.formatDateIT(fs.date);
             if(fs.matricola) this.rapp.matricolaSquadra=fs.matricola;
+            // Ore lavorate dal foglio
+            if(fs.h_ord||fs.h_str||fs.h_vg){
+                this.rapp.workers.forEach(w=>{
+                    if(fs.h_ord) w.h_ord=Number(fs.h_ord)||8;
+                    if(fs.h_str) w.h_str=fs.h_str;
+                    if(fs.h_vg)  w.h_vg=fs.h_vg;
+                });
+            }
             // Squadra
             if(fs.team){
                 const names=fs.team.split(/\s*[-\/,]\s*/).filter(Boolean);
@@ -2129,9 +2327,25 @@ createApp({
                     pfs_list:         (r.pfs_list||[]).map(p=>({nome:p.nome||'',att:p.att||'',n_sec:p.n_sec||'',seriale:p.seriale||''}))
                 };
                 this.rapp.localita=r.pop||'';
+            } else if(type==='srb'){
+                const fs2 = fs;
+                this.rapp.srbData = {
+                    antenna:       clean(fs2.srb_antenna||''),
+                    pop_start:     clean(fs2.srb_pop_start||''),
+                    tipo_arrivo:   fs2.srb_tipo_arrivo||'POP',
+                    tipo_partenza: fs2.srb_tipo_partenza||'POP',
+                    tratte: (fs2.srb_tratte||[]).map(tr=>({
+                        da_pop:   clean(tr.da_pop||''),
+                        da_fibre: clean(tr.da_fibre||''),
+                        a_pop:    clean(tr.a_pop||''),
+                        a_fibre:  clean(tr.a_fibre||''),
+                        metri:    tr.metri||'',
+                        note:     clean(tr.note||''),
+                        is_arrivo:!!tr.is_arrivo
+                    }))
+                };
+                this.rapp.localita = clean(fs2.srb_antenna||'');
             }
-
-            this.showImportModal=false;
             this.showToast(`✓ Dati importati da ${type}`);
         },
 
@@ -2209,7 +2423,7 @@ createApp({
             const type=this.rapp.tipo;
             const sheets=this.allSheets[type];
             if(!sheets?.length){ this.showToast('Nessun dato da esportare'); return; }
-            const sheet=sheets[0];
+            const sheet = (type===this.sheetType && this.currentSheet) ? this.currentSheet : sheets[0];
             const dateIT=this.formatDateIT(sheet.date);
             const accentRGB=type==='guasti'?[249,115,22]:type==='creation'?[6,182,212]:type==='bretellaggio'?[234,179,8]:[124,58,237];
             // Header bar
@@ -2835,6 +3049,204 @@ createApp({
             this.showToast('PDF Ordine Anello esportato!');
         },
 
+        exportSrbPDF(){
+            if(!window.jspdf){ this.showToast('Errore: jsPDF non disponibile'); return; }
+            const s = this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'landscape' });
+            const W=297, H=210, MX=14;
+            const clean = t => this._pdfCleanText(t);
+
+            const VIOLET = [120, 40, 220];
+            const BLUE   = [30,  90, 210];
+            const GREEN  = [0,  148,  80];
+            const INK    = [18,  22,  42];
+            const LGRAY  = [200, 195, 225];
+
+            const antenna  = clean(s.srb_antenna  || 'Destinazione');
+            const popStart = clean(s.srb_pop_start || '');
+            const tipoArrivo  = s.srb_tipo_arrivo  || 'POP';
+            const tipoPartenza = s.srb_tipo_partenza || 'POP';
+            const tratte   = s.srb_tratte || [];
+            const dateStr  = this.formatDateIT(s.date) || '';
+            const team     = clean(this.smartFormat(s.team || ''));
+
+            // ── SFONDO ──
+            doc.setFillColor(250,250,255); doc.rect(0,0,W,H,'F');
+            doc.setFillColor(215,210,240);
+            for(let gx=8;gx<W;gx+=8) for(let gy=8;gy<H;gy+=8) doc.circle(gx,gy,0.1,'F');
+
+            // ── HEADER ──
+            doc.setFillColor(244,242,255); doc.rect(0,0,W,20,'F');
+            doc.setFillColor(...VIOLET); doc.rect(0,0,W,2.5,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...INK);
+            doc.text('FIBER',MX,13); doc.setTextColor(...VIOLET); doc.text('REPORT',MX+18,13);
+            doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(150,140,185);
+            doc.text('PRO',MX+51,13);
+            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...VIOLET);
+            doc.text('INSTRADAMENTO FIBRE',W-MX,10,{align:'right'});
+            doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(100,95,140);
+            doc.text([dateStr,team].filter(Boolean).join('   |   '),W-MX,17,{align:'right'});
+
+            // ── DIMENSIONI FISSE DEI NODI ──
+            const NW = 22, NH = 15;
+            // Area diagramma (tra header e tabella riepilogo in fondo)
+            const DIAG_TOP = 22, DIAG_BOT = H - 32;
+            const cy = (DIAG_TOP + DIAG_BOT) / 2;   // linea orizzontale centrale
+
+            // ── FUNZIONE: disegna un nodo ──
+            // cx = centro X del nodo
+            const drawNode = (cx, label, col, tag) => {
+                const nx = cx - NW/2, ny = cy - NH/2;
+                doc.setFillColor(250,250,254);
+                doc.roundedRect(nx,ny,NW,NH,1.5,1.5,'F');
+                doc.setDrawColor(...col); doc.setLineWidth(0.7);
+                doc.roundedRect(nx,ny,NW,NH,1.5,1.5,'S');
+                // mini header bar
+                doc.setFillColor(Math.min(col[0]+185,255),Math.min(col[1]+185,255),Math.min(col[2]+185,255));
+                doc.roundedRect(nx,ny,NW,3.8,1.5,0,'F');
+                doc.setFont('helvetica','bold'); doc.setFontSize(3.5); doc.setTextColor(...col);
+                doc.text(tag, cx, ny+3.2, {align:'center'});
+                // nome nodo (max 10 char)
+                doc.setFont('helvetica','bold'); doc.setFontSize(5); doc.setTextColor(...INK);
+                const lb = label.length > 10 ? label.substring(0,9)+'.' : label;
+                doc.text(lb, cx, cy+2.8, {align:'center'});
+            };
+
+            // ── FUNZIONE: disegna freccia con fibre SOPRA e metri SOTTO ──
+            // x1 = bordo dx nodo sorgente, x2 = bordo sx nodo destinazione
+            const drawArrow = (x1, x2, fibre, metri) => {
+                // linea principale
+                doc.setDrawColor(...BLUE); doc.setLineWidth(0.6);
+                doc.line(x1, cy, x2, cy);
+                // punta freccia
+                const sz = 2.2;
+                doc.setFillColor(...BLUE);
+                doc.triangle(x2,cy, x2-sz,cy-sz*0.5, x2-sz,cy+sz*0.5,'F');
+                const mx = (x1+x2)/2;
+                // label fibre SOPRA (courier per allineamento fisso)
+                if(fibre && fibre.trim()){
+                    doc.setFont('courier','bold'); doc.setFontSize(4.2); doc.setTextColor(...BLUE);
+                    const txt = 'F:'+fibre;
+                    const fw  = doc.getTextWidth(txt)+3;
+                    doc.setFillColor(255,255,255); doc.setDrawColor(...BLUE); doc.setLineWidth(0.12);
+                    doc.roundedRect(mx-fw/2, cy-8.8, fw, 5, 0.8,0.8,'F');
+                    doc.roundedRect(mx-fw/2, cy-8.8, fw, 5, 0.8,0.8,'S');
+                    doc.text(txt, mx, cy-5, {align:'center'});
+                }
+                // label metri SOTTO
+                if(metri && String(metri).trim() && String(metri).trim()!=='0'){
+                    doc.setFont('helvetica','normal'); doc.setFontSize(3.8); doc.setTextColor(100,90,140);
+                    const mt = String(metri)+'m';
+                    const mw = doc.getTextWidth(mt)+3;
+                    doc.setFillColor(246,244,255); doc.setDrawColor(...LGRAY); doc.setLineWidth(0.1);
+                    doc.roundedRect(mx-mw/2, cy+2.8, mw, 3.2, 0.7,0.7,'F');
+                    doc.text(mt, mx, cy+5.4, {align:'center'});
+                }
+            };
+
+            // ── CALCOLO POSIZIONI X ──
+            // Nodi totali = 1 (start) + N_inter (intermedi) + 1 (antenna finale)
+            // N_inter = numero tratte NON finali
+            const N = tratte.length;
+            const N_inter = N > 0 ? N - 1 : 0;  // ogni tratta non-last aggiunge un nodo intermedio
+            const N_nodes = 1 + N_inter + 1;      // start + intermedi + antenna
+
+            // Larghezza minima di ogni freccia = almeno quanto il testo fibre + padding
+            doc.setFont('courier','bold'); doc.setFontSize(4.2);
+            const minArr = tratte.map(tr => {
+                const f = clean(tr.da_fibre||'');
+                const fw = f ? doc.getTextWidth('F:'+f)+6 : 20;
+                return Math.max(fw, 20);
+            });
+
+            // Scala tutto se necessario per stare nel foglio
+            const AVAIL      = W - MX*2;
+            const nodesSpace = N_nodes * NW;
+            const arrowSpace = minArr.reduce((a,b)=>a+b,0);
+            const rawTotal   = nodesSpace + arrowSpace;
+            const sc         = rawTotal > AVAIL ? AVAIL / rawTotal : 1.0;
+            const sNW  = NW * sc;
+            const sArr = minArr.map(w => w*sc);
+
+            // Costruisce array nodeCX[i] = centro X del nodo i
+            // nodo 0 = start, nodo 1..N_inter = intermedi, nodo N_inter+1 = antenna
+            const nodeCX = [];
+            let xc = MX + sNW/2;
+            nodeCX.push(xc);
+            for(let i=0; i<N; i++){
+                xc += sNW/2;   // bordo dx nodo i
+                xc += sArr[i]; // spazio freccia i
+                xc += sNW/2;   // centro nodo i+1
+                nodeCX.push(xc);
+            }
+
+            if(N === 0){
+                doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(160,150,200);
+                doc.text('Nessuna tratta inserita', W/2, cy, {align:'center'});
+            } else {
+                // ── DISEGNA NODO DI PARTENZA ──
+                drawNode(nodeCX[0], popStart||tipoPartenza, BLUE, tipoPartenza);
+
+                // ── DISEGNA TRATTE ──
+                tratte.forEach((tr, i) => {
+                    const isLast = tr.is_arrivo || i === N-1;
+                    const x1 = nodeCX[i]   + sNW/2;   // bordo dx nodo precedente
+                    const x2 = nodeCX[i+1] - sNW/2;   // bordo sx nodo successivo
+
+                    // Freccia principale con fibre e metri
+                    drawArrow(x1, x2, clean(tr.da_fibre||''), clean(tr.metri||''));
+
+                    if(!isLast){
+                        // Nodo POP intermedio
+                        drawNode(nodeCX[i+1], clean(tr.a_pop||tipoPartenza), GREEN, tipoPartenza);
+                    } else {
+                        // Nodo finale (arrivo)
+                        drawNode(nodeCX[i+1], antenna, VIOLET, tipoArrivo);
+                        // Label fibre di arrivo sotto il nodo antenna (campo a_fibre)
+                        if(tr.a_fibre && clean(tr.a_fibre).trim()){
+                            const antCX = nodeCX[i+1];
+                            const antY  = cy + NH/2;
+                            doc.setFont('courier','bold'); doc.setFontSize(4.2); doc.setTextColor(...VIOLET);
+                            const txt = 'F:'+clean(tr.a_fibre);
+                            const fw  = doc.getTextWidth(txt)+3;
+                            doc.setFillColor(244,238,255); doc.setDrawColor(...VIOLET); doc.setLineWidth(0.12);
+                            doc.roundedRect(antCX-fw/2, antY+1.5, fw, 4.5, 0.8,0.8,'F');
+                            doc.roundedRect(antCX-fw/2, antY+1.5, fw, 4.5, 0.8,0.8,'S');
+                            doc.text(txt, antCX, antY+5, {align:'center'});
+                        }
+                    }
+                });
+            }
+
+            // ── TABELLA RIEPILOGO ──
+            const tableY = H-28;
+            doc.setFillColor(246,244,255); doc.roundedRect(MX,tableY,W-MX*2,16,2,2,'F');
+            doc.setDrawColor(...LGRAY); doc.setLineWidth(0.25); doc.roundedRect(MX,tableY,W-MX*2,16,2,2,'S');
+            doc.setFillColor(220,210,255); doc.roundedRect(MX,tableY,W-MX*2,5.5,2,0,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(...VIOLET);
+            doc.text('RIEPILOGO TRATTE',MX+4,tableY+4);
+            const colW = (W-MX*2) / Math.max(N,1);
+            tratte.forEach((tr,i) => {
+                const tx   = MX+1+i*colW;
+                const isL  = tr.is_arrivo || i===N-1;
+                doc.setFillColor(i%2===0?246:240, i%2===0?244:238, i%2===0?255:252);
+                doc.roundedRect(tx, tableY+6.5, colW-1, 8, 1,1,'F');
+                const col2 = isL ? VIOLET : BLUE;
+                doc.setFont('helvetica','bold'); doc.setFontSize(5); doc.setTextColor(...col2);
+                const lbl = (clean(tr.da_pop)||'—')+' \u2192 '+(isL ? antenna : clean(tr.a_pop)||'—');
+                doc.text(lbl.substring(0,24), tx+colW/2, tableY+11, {align:'center'});
+                if(tr.metri){
+                    doc.setFont('helvetica','normal'); doc.setFontSize(4.5); doc.setTextColor(100,95,140);
+                    doc.text(clean(tr.metri)+'m', tx+colW/2, tableY+14, {align:'center'});
+                }
+            });
+
+            this._pdfFooter(doc, VIOLET);
+            doc.save('InstFibre_'+(clean(s.srb_antenna)||'destinazione')+'_'+((s.date||'').replace(/-/g,''))+'.pdf');
+            this.showToast('PDF Instradamento Fibre esportato!');
+        },
+
         exportBretellaggioPDF(){
             if(!window.jspdf){ this.showToast('Errore: jsPDF non disponibile'); return; }
             const s = this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
@@ -3107,26 +3519,58 @@ createApp({
             const team=this.smartFormat(s.team||'');
             const asst=s.magazzino_assistente||'';
             const date=this.formatDateIT(s.date)||'';
-            const items=s.magazzino_items||[];
+            const items=(s.magazzino_items||[]).filter(i=>i.desc);
             let msg=`*📦 RICHIESTA MATERIALE*\n`;
             msg+=`👷 Squadra: ${team}\n`;
             if(asst) msg+=`🧑‍💼 Tramite: ${asst}\n`;
-            msg+=`📅 ${date}\n\n`;
-            msg+=`*Lista Materiale (${items.length} voci):*\n`;
-            items.forEach((item,i)=>{
-                msg+=`${i+1}. ${this.smartFormat(item.desc||'—')} — *${item.qty||1} pz*`;
-                if(item.note) msg+=` (${item.note})`;
+            msg+=`📅 ${date}\n`;
+            if(s.h_ord||s.h_str||s.h_vg){
+                msg+=`⏱ Ore: `;
+                if(s.h_ord) msg+=`Ord. ${s.h_ord}h `;
+                if(s.h_str) msg+=`Str. ${s.h_str}h `;
+                if(s.h_vg)  msg+=`Viaggio ${s.h_vg}h`;
                 msg+=`\n`;
-            });
-            const url='https://wa.me/?text='+encodeURIComponent(msg);
-            window.open(url,'_blank');
+            }
+            msg+=`\n*Lista Materiale (${items.length} voci):*\n`;
+            if(!items.length){
+                msg+=`— Nessun materiale inserito —\n`;
+            } else {
+                items.forEach((item,i)=>{
+                    msg+=`${i+1}. ${this.smartFormat(item.desc)} — *${item.qty||1} pz*`;
+                    if(item.note) msg+=` _(${item.note})_`;
+                    msg+=`\n`;
+                });
+                const totPz = items.reduce((a,i)=>a+(Number(i.qty)||1),0);
+                msg+=`\n_Totale: ${items.length} voci · ${totPz} pz_`;
+            }
+            // Prova prima clipboard, poi fallback wa.me
+            if(navigator.clipboard && navigator.clipboard.writeText){
+                navigator.clipboard.writeText(msg).then(()=>{
+                    this.showToast('✓ Copiato! Incolla su WhatsApp');
+                    setTimeout(()=>{ window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank'); }, 600);
+                }).catch(()=>{
+                    window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+                });
+            } else {
+                window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+            }
         },
 
                 exportWhatsapp(){
+            if(this.sheetType==='magazzino'){ this.exportMagazzinoWhatsapp(); return; }
             const s=this.currentSheet; if(!s) return;
             const date=this.formatDateIT(s.date);
             const team=this.smartFormat(s.team||'');
-            let msg=`*FIBER REPORT · ${(this.sheetType||'').toUpperCase()}*\n📅 ${date} | 👷 ${team}\n\n`;
+            let msg=`*FIBER REPORT · ${(this.sheetType||'').toUpperCase()}*\n📅 ${date} | 👷 ${team}\n`;
+            // Ore lavorate
+            if(s.h_ord||s.h_str||s.h_vg){
+                msg+=`⏱ Ore: `;
+                if(s.h_ord) msg+=`Ord. ${s.h_ord}h `;
+                if(s.h_str) msg+=`Str. ${s.h_str}h `;
+                if(s.h_vg)  msg+=`Viaggio ${s.h_vg}h`;
+                msg+=`\n`;
+            }
+            msg+=`\n`;
 
             if(this.sheetType==='guasti'||this.sheetType==='creation'){
                 s.rows.forEach((r,i)=>{
@@ -3198,12 +3642,36 @@ createApp({
                     if(p.n_sec)   msg+=`  N° Spl Sec: ${p.n_sec}\n`;
                     if(p.seriale) msg+=`  SN: ${p.seriale}\n`;
                 });
+            } else if(this.sheetType==='srb'){
+                const tipoArr = s.srb_tipo_partenza||'POP';
+                const tipoArrivo = s.srb_tipo_arrivo||'POP';
+                msg+=`📡 *INSTRADAMENTO FIBRE*\n`;
+                msg+=`🔵 ${tipoArr}: ${s.srb_pop_start||'—'} → 🔴 ${tipoArrivo}: ${s.srb_antenna||'—'}\n\n`;
+                (s.srb_tratte||[]).forEach((tr,i)=>{
+                    const isLast=tr.is_arrivo||(i===(s.srb_tratte.length-1));
+                    msg+=`*Tratta ${i+1}*${isLast?' 🏁':''}\n`;
+                    msg+=`  DA: ${tr.da_pop||'—'}  →  A: ${tr.a_pop||'—'}\n`;
+                    if(tr.da_fibre) msg+=`  Fibre DA: ${tr.da_fibre}\n`;
+                    if(tr.a_fibre)  msg+=`  Fibre A:  ${tr.a_fibre}\n`;
+                    if(tr.metri)    msg+=`  Lunghezza: ${tr.metri}m\n`;
+                    if(tr.note)     msg+=`  Note: ${tr.note}\n`;
+                    msg+='─────\n';
+                });
             }
-            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+            // Clipboard + WA
+            if(navigator.clipboard && navigator.clipboard.writeText){
+                navigator.clipboard.writeText(msg).then(()=>{
+                    this.showToast('✓ Copiato! Apertura WhatsApp...');
+                    setTimeout(()=>window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank'),500);
+                }).catch(()=>window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank'));
+            } else {
+                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+            }
         },
 
         // ── PDF editor (rapido, tutte le schede) ──
         exportPDF(){
+            if(this.sheetType==='srb'){ this.exportSrbPDF(); return; }
             if(!window.jspdf){ this.showToast('❌ jsPDF non disponibile'); return; }
             const{jsPDF}=window.jspdf; const doc=new jsPDF();
             const s=this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
