@@ -317,8 +317,8 @@
                         <input v-model="currentSheet.nome_primaria" class="f-input smart-caps" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. Montedonzelli">
                     </div>
                 </div>
-                <!-- Riga 2: stato anello + id anello -->
-                <div class="grid grid-cols-2 gap-3 mb-3">
+                <!-- Riga 2: stato anello + id anello + nome anello -->
+                <div class="grid grid-cols-3 gap-3 mb-3">
                     <div>
                         <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Stato Anello</label>
                         <select v-model="currentSheet.stato_anello" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-purple-800 bg-transparent':'text-black border-purple-300 bg-transparent'">
@@ -332,6 +332,13 @@
                     <div>
                         <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">ID Anello</label>
                         <input v-model="currentSheet.id_anello" class="f-input font-mono font-bold" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. AN-042">
+                    </div>
+                    <div>
+                        <label class="field-label flex items-center justify-between" :class="darkMode?'text-purple-400':'text-purple-700'">
+                            Nome Anello
+                            <button v-if="currentSheet.anello_nome" @click="currentSheet.anello_nome=''" class="text-red-400 hover:text-red-300 ml-1" title="Cancella"><i class="ph ph-x text-[10px]"></i></button>
+                        </label>
+                        <input v-model="currentSheet.anello_nome" class="f-input smart-caps" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. Anello Centro">
                     </div>
                 </div>
                 <!-- Switch + Patch Panel -->
@@ -1895,6 +1902,8 @@ createApp({
         if(localStorage.getItem('fiber_theme')==='light') this.darkMode=false;
         const saved=localStorage.getItem('fiber_all_sheets');
         if(saved){ try{ this.allSheets=JSON.parse(saved); }catch(e){} }
+        // ── MIGRAZIONE: non toccare anello_nome (ora è campo visibile), ma assicura che esista in tutti i fogli
+        (this.allSheets.cabine||[]).forEach(sh=>{ if(sh.anello_nome===undefined) sh.anello_nome=''; });
         const savedType=localStorage.getItem('fiber_sheet_type');
         if(savedType && this.allSheets[savedType]?.length>0){ this.sheetType=savedType; this.view='editor'; }
         const savedTipi=localStorage.getItem('fiber_tipi_ottico');
