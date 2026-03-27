@@ -397,6 +397,11 @@
                         </div>
                     </div>
                 </div>
+                <!-- Note Primaria -->
+                <div class="mt-3 pt-3 border-t" :class="darkMode?'border-purple-900':'border-purple-200'">
+                    <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">📝 Note Cabina Primaria</label>
+                    <textarea v-model="currentSheet.note_primaria" class="f-textarea text-sm" :class="darkMode?'text-white border-purple-800 bg-transparent':'text-gray-900 border-purple-300'" placeholder="Note generali sulla cabina primaria o sull'anello..."></textarea>
+                </div>
             </div>
 
             <!-- CABINE SECONDARIE -->
@@ -2012,7 +2017,7 @@ createApp({
             this.currentSheetIdx=0; this.view='editor'; if(type==='cabine'&&this.currentSheet) this.initBrtratteSez(this.currentSheet);
         },
         makeSrbSheet(n){ return{id:Date.now()+Math.random(),name:'Instradamento '+n,date:new Date().toISOString().split('T')[0],team:'',localita_ref:'',assistente:'',mezzo:'',targa:'',srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[],h_ord:'',h_str:'',h_vg:''}; },
-        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',localita_ref:'',assistente:'',mezzo:'',targa:'',h_ord:'',h_str:'',h_vg:'',rows:[],magazzino_items:[],magazzino_assistente:'',anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0,srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[]}; },
+        makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',localita_ref:'',assistente:'',mezzo:'',targa:'',h_ord:'',h_str:'',h_vg:'',rows:[],magazzino_items:[],magazzino_assistente:'',anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',note_primaria:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0,srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[]}; },
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
         }; },
