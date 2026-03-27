@@ -127,7 +127,7 @@
         <div class="w-1.5 h-12 bg-gradient-to-b from-orange-400 to-red-600 rounded-full shadow-lg"></div>
         <div>
             <h1 class="text-3xl font-black tracking-tighter italic leading-none">
-                <span class="text-[#ff8000]">FIBER</span><span class="text-[#06b6d4]">REPORT</span>
+                <span class="text-[#ff8000]">Fiber</span><span class="text-[#06b6d4]">Report</span>
                 <span class="text-[11px] font-normal opacity-40 ml-2 not-italic">PRO</span>
             </h1>
             <p class="text-xs mt-1 font-mono" :class="darkMode?'text-gray-500':'text-gray-400'">Seleziona il tipo di intervento per iniziare</p>
@@ -218,7 +218,7 @@
             <div class="flex items-center gap-2 select-none cursor-pointer" @click="view='welcome'" title="Cambia tipo">
                 <div class="w-2 h-7 rounded-full shadow-lg" :class="sheetType==='guasti'?'bg-gradient-to-b from-orange-400 to-red-600':sheetType==='creation'?'bg-gradient-to-b from-cyan-400 to-blue-600':sheetType==='bretellaggio'?'bg-gradient-to-b from-yellow-400 to-orange-500':'bg-gradient-to-b from-purple-400 to-purple-700'"></div>
                 <div>
-                    <h1 class="text-xl font-black tracking-tighter italic leading-none"><span class="text-[#ff8000]">FIBER</span><span class="text-[#06b6d4]">REPORT</span></h1>
+                    <h1 class="text-xl font-black tracking-tighter italic leading-none"><span class="text-[#ff8000]">Fiber</span><span class="text-[#06b6d4]">Report</span></h1>
                     <div class="text-[9px] font-mono uppercase font-bold mt-0.5" :class="sheetType==='guasti'?'text-orange-400':sheetType==='creation'?'text-cyan-400':sheetType==='bretellaggio'?'text-yellow-400':'text-purple-400'">◀ {{ sheetType==='srb'?'Instradamento Fibre':sheetType }}</div>
                 </div>
             </div>
@@ -231,6 +231,14 @@
                     <label class="p-1.5 text-gray-400 hover:text-cyan-400 cursor-pointer"><i class="ph ph-upload-simple text-lg"></i><input type="file" @change="restoreData" class="hidden"></label>
                 </div>
                 <button @click="showMemory=true" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 border" :class="darkMode?'bg-gray-800 border-gray-700 text-cyan-400':'bg-white border-gray-200 text-cyan-600 shadow-sm'"><i class="ph ph-brain text-lg"></i></button>
+                <!-- Toggle info bar -->
+                <button @click="headerCollapsed=!headerCollapsed"
+                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 border relative"
+                        :class="headerCollapsed ? (darkMode?'bg-amber-500/20 border-amber-500 text-amber-400':'bg-amber-50 border-amber-400 text-amber-600') : (darkMode?'bg-gray-800 border-gray-700 text-gray-400':'bg-white border-gray-200 text-gray-500 shadow-sm')"
+                        :title="headerCollapsed ? 'Mostra dati rapportino' : 'Nascondi dati rapportino'">
+                    <i :class="headerCollapsed ? 'ph ph-eye' : 'ph ph-eye-slash'" class="text-lg"></i>
+                    <span v-if="headerCollapsed" class="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border-2" :class="darkMode?'border-[#0a0a0a]':'border-white'"></span>
+                </button>
                 <button @click="toggleTheme" class="w-12 h-8 rounded-full flex items-center transition-all px-1 border-2" :class="darkMode?'bg-gray-800 border-yellow-500 justify-end':'bg-indigo-100 border-indigo-500 justify-start'">
                     <div class="w-6 h-6 rounded-full flex items-center justify-center shadow-sm" :class="darkMode?'bg-yellow-400 text-black':'bg-indigo-500 text-white'"><i :class="darkMode?'ph-sun-fill':'ph-moon-stars-fill'" class="text-sm"></i></div>
                 </button>
@@ -251,7 +259,7 @@
         </div>
 
         <!-- Team / Matricola / Data – mobile stack -->
-        <div class="border-b" :class="darkMode?'bg-fiber-darkcard border-gray-800':'bg-white border-gray-200'">
+        <div class="border-b overflow-hidden transition-all duration-300" :class="darkMode?'bg-fiber-darkcard border-gray-800':'bg-white border-gray-200'" :style="headerCollapsed ? 'max-height:0; border-bottom-width:0;' : 'max-height:600px;'">
             <div v-if="currentSheet" class="p-3 space-y-3">
                 <div class="flex gap-3 items-end">
                     <div class="flex-1">
@@ -1859,6 +1867,7 @@ createApp({
             isListening: false,
             pdfGenerating: false,
             showMemory: false,
+            headerCollapsed: false,
             showImportModal: false,
             showGestisciElementiOttici: false,
             newTipoElemento: '',
