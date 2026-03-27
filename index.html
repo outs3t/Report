@@ -620,7 +620,7 @@
                                     <div class="space-y-2">
                                         <div v-for="(conn,connIdx) in cab.connessioni" :key="connIdx" class="flex items-center gap-2 rounded-lg p-2 border" :class="darkMode?'bg-gray-900/40 border-gray-700':'bg-gray-50 border-gray-200'">
                                             <select v-model="conn.modulo" class="text-xs font-bold outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-cyan-400 bg-transparent':'border-gray-300 text-cyan-600 bg-transparent'">
-                                                <option value="1">Mod.1</option><option value="2">Mod.2</option>
+                                                <option value="1">Mod.1</option><option value="2">Mod.2</option><option value="3">Mod.3</option><option value="4">Mod.4</option>
                                             </select>
                                             <select v-model="conn.fibre" class="text-xs font-mono font-bold outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-blue-400 bg-transparent':'border-gray-300 text-blue-600 bg-transparent'">
                                                 <option value="1-2">F 1-2</option><option value="3-4">F 3-4</option><option value="5-6">F 5-6</option><option value="7-8">F 7-8</option>
