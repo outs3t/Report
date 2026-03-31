@@ -109,7 +109,12 @@
             .a4-page { margin:0; box-shadow:none; width:210mm; height:296mm; padding:6mm 9mm; box-sizing:border-box; display:flex; flex-direction:column; position:relative; overflow:hidden; }
             .a4-page > div:first-child { flex:1; min-height:0; display:flex; flex-direction:column; }
             .rapp-section-02 { flex:1; min-height:0; overflow:hidden; }
+            .a4-page.a4-multipage { height:auto !important; overflow:visible !important; }
+            .a4-page.a4-multipage > div:first-child { flex:none !important; }
+            .a4-page.a4-multipage .rapp-section-02 { overflow:visible !important; flex:none !important; }
+            .a4-page.a4-multipage .rapp-cabine-inner { overflow:visible !important; max-height:none !important; }
             .rapp-footer { position:absolute !important; bottom:6mm; left:9mm; right:9mm; background:white; }
+            .a4-page.a4-multipage .rapp-footer { position:relative !important; bottom:auto !important; left:auto !important; right:auto !important; margin-top:8px; }
             .rapp-inner { padding-bottom:38mm !important; }
         }
     </style>
@@ -417,7 +422,7 @@
                     </button>
                 </div>
                 <div class="space-y-4">
-                    <div v-for="(cab, cIdx) in (currentSheet.cabine_secondarie||[])" :key="cab.id"
+                    <div v-for="(cab, cIdx) in sortedCabine" :key="cab.id"
                          class="rounded-2xl border-2 overflow-hidden transition-all"
                          :class="cabStatoClass(cab)">
                         <!-- Cabina header -->
@@ -426,7 +431,7 @@
                                 <!-- Numero anello (editabile inline) -->
                                 <div class="flex items-center gap-1 flex-shrink-0">
                                     <span class="text-[9px] font-mono font-bold" :class="darkMode?'text-purple-400':'text-purple-600'">#</span>
-                                    <input v-model="cab.numero" type="number" min="1"
+                                    <input v-model.lazy="cab.numero" type="number" min="1"
                                            class="w-10 bg-transparent font-black font-mono text-sm outline-none text-center border-b"
                                            :class="darkMode?'border-purple-700 text-purple-300':'border-purple-400 text-purple-700'"
                                            :placeholder="String(cIdx+1)"
@@ -436,11 +441,14 @@
                                 <span v-if="cab.codice" class="font-mono text-xs flex-shrink-0" :class="darkMode?'text-gray-400':'text-gray-500'">({{ cab.codice }})</span>
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
-                                <span v-if="cab.stato" class="text-[10px] font-bold uppercase px-2 py-1 rounded-full"
-                                      :class="cab.stato==='COMPLETATA'?'bg-emerald-500/20 text-emerald-400':cab.stato==='BYPASSATA'?'bg-amber-500/20 text-amber-400':'bg-red-500/20 text-red-400'">
-                                    {{ {'ONLINE':'🟢','PARZIALE':'🔵','OFFLINE':'🔴','BYPASSATA':'🟡','NON_ATTIVA':'⬜','NON_SOPRALLUOGATA':'🔍','DISMESSA':'🚫'}[cab.stato]||'⚪' }} {{ cab.stato.replace(/_/g,' ') }}
+                                <span v-if="cab.stato_operativo||cab.stato_installazione" class="flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-1 rounded-full"
+                                      :class="ledColorForCab(cab)==='green'?(darkMode?'bg-emerald-500/20 text-emerald-400':'bg-emerald-100 text-emerald-700'):ledColorForCab(cab)==='blue'?(darkMode?'bg-blue-500/20 text-blue-400':'bg-blue-100 text-blue-700'):ledColorForCab(cab)==='yellow'?(darkMode?'bg-amber-500/20 text-amber-400':'bg-amber-100 text-amber-700'):ledColorForCab(cab)==='red'?(darkMode?'bg-red-500/20 text-red-400':'bg-red-100 text-red-700'):(darkMode?'bg-gray-700 text-gray-400':'bg-gray-100 text-gray-500')">
+                                    <span>{{ ledColorForCab(cab)==='green'?'🟢':ledColorForCab(cab)==='blue'?'🔵':ledColorForCab(cab)==='yellow'?'🟡':ledColorForCab(cab)==='red'?'🔴':'⚪' }}</span>
+                                    <span v-if="cab.stato_operativo">{{ {online:'Online',offline:'Offline',parzialmente:'Parz.',bypassata:'Bypassata',remoto:'Remoto'}[cab.stato_operativo]||cab.stato_operativo }}</span>
+                                    <span v-if="cab.stato_operativo&&cab.stato_installazione" class="opacity-40">/</span>
+                                    <span v-if="cab.stato_installazione">{{ {normale:'Normale',manca_apparato:'Manca App.',non_sopralluogata:'Non Sopr.',da_rilegare:'Da Rilegare',in_attesa:'In Attesa',dismessa:'Dismessa'}[cab.stato_installazione]||cab.stato_installazione }}</span>
                                 </span>
-                                <button @click="currentSheet.cabine_secondarie.splice(cIdx,1)" class="text-gray-500 hover:text-red-500 transition-colors p-1 flex-shrink-0"><i class="ph ph-trash text-base"></i></button>
+                                <button @click="currentSheet.cabine_secondarie.splice(currentSheet.cabine_secondarie.findIndex(x=>x.id===cab.id),1)" class="text-gray-500 hover:text-red-500 transition-colors p-1 flex-shrink-0"><i class="ph ph-trash text-base"></i></button>
                             </div>
                         </div>
                         <!-- Cabina body -->
@@ -479,50 +487,30 @@
                                         <span class="text-xs font-bold" :class="cab.is_ultima?(darkMode?'text-purple-400':'text-purple-700'):(darkMode?'text-gray-400':'text-gray-500')">Ultima Cabina</span>
                                     </label>
                                 </div>
-                                <div>
-                                    <label class="field-label" :class="darkMode?'text-gray-300':'text-gray-600'">Stato Lavori</label>
-                                    <select v-model="cab.stato" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
-                                        <option value="" :class="darkMode?'text-gray-400 bg-[#1a1a1a]':''">-- Stato --</option>
-                                        <option value="ONLINE" :class="darkMode?'text-white bg-[#1a1a1a]':''">🟢 Online</option>
-                                        <option value="PARZIALE" :class="darkMode?'text-white bg-[#1a1a1a]':''">🔵 Parziale</option>
-                                        <option value="OFFLINE" :class="darkMode?'text-white bg-[#1a1a1a]':''">🔴 Offline</option>
-                                        <option value="BYPASSATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">🟡 Bypassata</option>
-                                        <option value="NON_ATTIVA" :class="darkMode?'text-white bg-[#1a1a1a]':''">⬜ Non Attiva</option>
-                                        <option value="NON_SOPRALLUOGATA" :class="darkMode?'text-white bg-[#1a1a1a]':''">🔍 Non Sopralluogata</option>
-                                        <option value="DISMESSA" :class="darkMode?'text-white bg-[#1a1a1a]':''">🚫 Dismessa</option>
-                                    </select>
-                                </div>
-                                <div v-if="cab.stato==='BYPASSATA'" class="rounded-xl p-3 border" :class="darkMode?'bg-amber-950/30 border-amber-700':'bg-amber-50 border-amber-300'">
-                                    <label class="field-label text-amber-500">⚡ Motivo Bypass</label>
-                                    <select v-model="cab.motivo_bypass" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-amber-800 text-amber-300 bg-transparent':'border-amber-400 text-amber-800 bg-transparent'">
-                                        <option value="">-- Seleziona motivo --</option>
-                                        <option value="Manca Apparato">Manca Apparato</option>
-                                        <option value="Manca Scavo">Manca Scavo</option>
-                                        <option value="Manca Cavo">Manca Cavo</option>
-                                        <option value="Manca Accesso">Manca Accesso</option>
-                                        <option value="Manca Pte">Manca Pte</option>
-                                    </select>
-                                </div>
-                                <!-- Online / Offline -->
-                                <div class="flex gap-3">
-                                    <label class="flex items-center gap-2 cursor-pointer flex-1 px-3 py-2 rounded-xl border transition-all"
-                                           :class="cab.online_stato==='ONLINE'?(darkMode?'bg-emerald-900/30 border-emerald-600':'bg-emerald-50 border-emerald-400'):(darkMode?'border-gray-700':'border-gray-200')"
-                                           @click="cab.online_stato = cab.online_stato==='ONLINE' ? '' : 'ONLINE'">
-                                        <div class="w-4 h-4 rounded-full flex-shrink-0 border-2 flex items-center justify-center"
-                                             :class="cab.online_stato==='ONLINE'?'border-emerald-500 bg-emerald-500':'border-gray-400'">
-                                            <i v-if="cab.online_stato==='ONLINE'" class="ph ph-check text-white text-[9px]"></i>
-                                        </div>
-                                        <span class="text-xs font-bold" :class="cab.online_stato==='ONLINE'?(darkMode?'text-emerald-400':'text-emerald-700'):(darkMode?'text-gray-400':'text-gray-500')">Online</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer flex-1 px-3 py-2 rounded-xl border transition-all"
-                                           :class="cab.online_stato==='OFFLINE'?(darkMode?'bg-red-900/30 border-red-600':'bg-red-50 border-red-400'):(darkMode?'border-gray-700':'border-gray-200')"
-                                           @click="cab.online_stato = cab.online_stato==='OFFLINE' ? '' : 'OFFLINE'">
-                                        <div class="w-4 h-4 rounded-full flex-shrink-0 border-2 flex items-center justify-center"
-                                             :class="cab.online_stato==='OFFLINE'?'border-red-500 bg-red-500':'border-gray-400'">
-                                            <i v-if="cab.online_stato==='OFFLINE'" class="ph ph-check text-white text-[9px]"></i>
-                                        </div>
-                                        <span class="text-xs font-bold" :class="cab.online_stato==='OFFLINE'?(darkMode?'text-red-400':'text-red-700'):(darkMode?'text-gray-400':'text-gray-500')">Offline</span>
-                                    </label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="field-label" :class="darkMode?'text-gray-300':'text-gray-600'">Stato Operativo</label>
+                                        <select v-model="cab.stato_operativo" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
+                                            <option value="">-- Operativo --</option>
+                                            <option value="online">🟢 Online</option>
+                                            <option value="parzialmente">🔵 Parz. Online</option>
+                                            <option value="offline">🔴 Offline</option>
+                                            <option value="bypassata">⚡ Bypassata</option>
+                                            <option value="remoto">🔎 Verif. Remoto</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="field-label" :class="darkMode?'text-gray-300':'text-gray-600'">Stato Installazione</label>
+                                        <select v-model="cab.stato_installazione" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
+                                            <option value="">-- Installazione --</option>
+                                            <option value="non_sopralluogata">🔍 Non Sopralluogata</option>
+                                            <option value="normale">✅ Normale</option>
+                                            <option value="manca_apparato">📦 Manca Apparato Attivo</option>
+                                            <option value="da_rilegare">🔗 Da Rilegare</option>
+                                            <option value="in_attesa">⏳ In Attesa Infrastruttura</option>
+                                            <option value="dismessa">🚫 Dismessa</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Note</label>
@@ -688,16 +676,17 @@
                              class="flex items-center gap-3 py-2 px-3 rounded-xl"
                              :class="darkMode?'bg-gray-900/40':'bg-gray-50'">
                             <span class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black font-mono flex-shrink-0"
-                                  :class="cab.stato==='COMPLETATA'?(darkMode?'bg-emerald-700 text-white':'bg-emerald-600 text-white'):cab.stato==='BYPASSATA'?(darkMode?'bg-amber-700 text-white':'bg-amber-500 text-white'):(darkMode?'bg-gray-700 text-white':'bg-gray-400 text-white')">
+                                  :class="ledColorForCab(cab)==='green'?(darkMode?'bg-emerald-700 text-white':'bg-emerald-600 text-white'):ledColorForCab(cab)==='yellow'?(darkMode?'bg-amber-700 text-white':'bg-amber-500 text-white'):ledColorForCab(cab)==='blue'?(darkMode?'bg-blue-700 text-white':'bg-blue-500 text-white'):ledColorForCab(cab)==='red'?(darkMode?'bg-red-700 text-white':'bg-red-500 text-white'):(darkMode?'bg-gray-700 text-white':'bg-gray-400 text-white')">
                                 {{ cab.numero||i+2 }}
                             </span>
-                            <i class="ph text-sm flex-shrink-0" :class="cab.stato==='COMPLETATA'?'ph-check-circle text-emerald-400':cab.stato==='BYPASSATA'?'ph-lightning text-amber-400':'ph-circle text-gray-500'"></i>
+                            <i class="ph text-sm flex-shrink-0" :class="ledColorForCab(cab)==='green'?'ph-check-circle text-emerald-400':ledColorForCab(cab)==='yellow'?'ph-lightning text-amber-400':ledColorForCab(cab)==='blue'?'ph-circle-half text-blue-400':ledColorForCab(cab)==='red'?'ph-x-circle text-red-400':'ph-circle text-gray-500'"></i>
                             <div class="flex-1 min-w-0">
                                 <span class="font-bold text-sm" :class="darkMode?'text-white':'text-gray-900'">
                                     {{ cab.nome||('Cabina '+(i+1)) }}
                                 </span>
                                 <span v-if="cab.codice" class="font-mono text-[10px] ml-1.5 opacity-60">({{ cab.codice }})</span>
-                                <span v-if="cab.stato==='BYPASSATA'" class="ml-2 text-[9px] font-mono text-amber-400">BYPASS</span>
+                                <span v-if="cab.stato_installazione==='manca_apparato'" class="ml-2 text-[9px] font-mono text-amber-400">MANCA APP</span>
+                                <span v-if="cab.stato_installazione==='da_rilegare'" class="ml-2 text-[9px] font-mono text-yellow-400">DA RILEGARE</span>
                             </div>
                         </div>
                         <!-- Ritorno primaria fine -->
@@ -1297,7 +1286,7 @@
     </div>
 
     <div class="screen-wrapper">
-        <div class="a4-page" id="pdf-content">
+        <div class="a4-page" :class="rapp.tipo==='cabine'?'a4-multipage':''" id="pdf-content">
             <div style="display:flex;flex-direction:column;flex:1;min-height:0;gap:0;" class="rapp-inner">
 
                 <!-- Header -->
@@ -1425,7 +1414,7 @@
                     </div>
 
                     <!-- CABINE: anello + tabella cabine secondarie -->
-                    <div v-if="rapp.tipo==='cabine'" style="overflow:hidden;max-height:100%;">
+                    <div v-if="rapp.tipo==='cabine'" class="rapp-cabine-inner" style="overflow:visible;">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;">
                             <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:3px;padding:3px 6px;">
                                 <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#7c3aed;text-transform:uppercase;">Cabina Primaria</span>
@@ -1466,13 +1455,12 @@
                                     </td>
                                     <td>
                                         <span style="font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;"
-                                              :style="cab.stato==='ONLINE'?'background:#d1fae5;color:#065f46':cab.stato==='PARZIALE'?'background:#dbeafe;color:#1e40af':cab.stato==='BYPASSATA'?'background:#fef3c7;color:#92400e':cab.stato==='DISMESSA'?'background:#f4f4f5;color:#52525b':cab.stato==='NON_ATTIVA'?'background:#f3f4f6;color:#374151':'background:#fee2e2;color:#991b1b'">
-                                            {{ {'ONLINE':'🟢 ONLINE','PARZIALE':'🔵 PARZ.','OFFLINE':'🔴 OFFLINE','BYPASSATA':'🟡 BYPASS','NON_ATTIVA':'⬜ N.ATTIVA','NON_SOPRALLUOGATA':'🔍 N.SOPR.','DISMESSA':'🚫 DISMESSA'}[cab.stato]||'⚪ '+cab.stato }}
+                                              :style="cab.stato_operativo==='online'?'background:#d1fae5;color:#065f46':cab.stato_operativo==='parzialmente'?'background:#dbeafe;color:#1e40af':cab.stato_operativo==='remoto'?'background:#ede9fe;color:#5b21b6':cab.stato_operativo==='bypassata'?'background:#fef3c7;color:#92400e':cab.stato_operativo==='offline'?'background:#fee2e2;color:#991b1b':'background:#f3f4f6;color:#374151'">
+                                            {{ {online:'🟢 Online',parzialmente:'🔵 Parz.',offline:'🔴 Offline',bypassata:'⚡ Bypass',remoto:'🔎 Remoto'}[cab.stato_operativo]||'⚪ —' }}
                                         </span>
-                                        <div v-if="cab.stato==='BYPASSATA'&&cab.motivo" style="font-size:7px;color:#b45309;margin-top:1px;">{{ cab.motivo.replace(/_/g,' ') }}</div>
-                                        <div v-if="cab.online_stato" style="font-size:7px;font-weight:700;margin-top:1px;"
-                                             :style="cab.online_stato==='ONLINE'?'color:#15803d':'color:#dc2626'">
-                                            {{ cab.online_stato==='ONLINE'?'● Online':'● Offline' }}
+                                        <div v-if="cab.stato_installazione" style="font-size:7px;font-weight:700;margin-top:2px;"
+                                             :style="cab.stato_installazione==='normale'?'color:#15803d':cab.stato_installazione==='manca_apparato'?'color:#b45309':cab.stato_installazione==='dismessa'?'color:#52525b':'color:#0369a1'">
+                                            {{ {normale:'✅ Normale',manca_apparato:'📦 Manca App.',non_sopralluogata:'🔍 Non Sopr.',da_rilegare:'🔗 Da Rilegare',in_attesa:'⏳ In Attesa',dismessa:'🚫 Dismessa'}[cab.stato_installazione] }}
                                         </div>
                                     </td>
                                     <td style="font-size:8px;font-family:'JetBrains Mono',monospace;color:#374151;">
@@ -1650,6 +1638,33 @@
 
 
 <!-- ══ MODAL IMPORT ══ -->
+<!-- ── WA PICKER MODAL ── -->
+<div v-if="showWaPicker" class="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showWaPicker=false">
+    <div class="rounded-2xl border shadow-2xl p-5 w-80 max-w-full flex flex-col gap-4" :class="darkMode?'bg-[#1a1a1a] border-gray-700 text-white':'bg-white border-gray-200 text-gray-900'">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="ph ph-whatsapp-logo text-green-500 text-xl"></i>
+                <span class="font-black text-sm tracking-wide">Scegli WhatsApp</span>
+            </div>
+            <button @click="showWaPicker=false" class="text-gray-500 hover:text-red-400 p-1"><i class="ph ph-x"></i></button>
+        </div>
+        <p class="text-xs" :class="darkMode?'text-gray-400':'text-gray-500'">Il testo è già stato copiato negli appunti. Scegli con quale app aprire o incolla manualmente.</p>
+        <div class="flex flex-col gap-2">
+            <button @click="waOpenPrimary()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm border transition-all active:scale-95"
+                    :class="darkMode?'bg-green-900/30 border-green-700 text-green-400 hover:bg-green-900/50':'bg-green-50 border-green-400 text-green-700 hover:bg-green-100'">
+                <i class="ph ph-whatsapp-logo text-lg"></i>
+                WhatsApp 1 <span class="font-normal text-xs ml-1">(principale)</span>
+            </button>
+            <button @click="waOpenSecondary()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm border transition-all active:scale-95"
+                    :class="darkMode?'bg-green-950/20 border-green-800 text-green-500 hover:bg-green-900/20':'bg-green-50/50 border-green-300 text-green-600 hover:bg-green-50'">
+                <i class="ph ph-copy text-lg"></i>
+                WhatsApp 2 <span class="font-normal text-xs ml-1">(incolla tu)</span>
+            </button>
+        </div>
+        <p class="text-[10px]" :class="darkMode?'text-gray-600':'text-gray-400'">Il testo è già copiato — apri manualmente il secondo WhatsApp e incolla.</p>
+    </div>
+</div>
+
 <div v-if="showImportModal" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-sm rounded-3xl p-6 shadow-2xl bg-[#18181b] border border-gray-700">
         <div class="flex justify-between items-center mb-5">
@@ -1875,6 +1890,8 @@ createApp({
             headerCollapsed: false,
             showImportModal: false,
             showGestisciElementiOttici: false,
+            showWaPicker: false,
+            waPickerMsg: '',
             newTipoElemento: '',
             toastVisible: false,
             toastMsg: '',
@@ -1944,7 +1961,7 @@ createApp({
         const saved=localStorage.getItem('fiber_all_sheets');
         if(saved){ try{ this.allSheets=JSON.parse(saved); }catch(e){} }
         // ── MIGRAZIONE: non toccare anello_nome (ora è campo visibile), ma assicura che esista in tutti i fogli
-        (this.allSheets.cabine||[]).forEach(sh=>{ if(sh.anello_nome===undefined) sh.anello_nome=''; });
+        (this.allSheets.cabine||[]).forEach(sh=>{ if(sh.anello_nome===undefined) sh.anello_nome=''; this.migrateCabineStato(sh); });
         const savedType=localStorage.getItem('fiber_sheet_type');
         if(savedType && this.allSheets[savedType]?.length>0){ this.sheetType=savedType; this.view='editor'; }
         const savedTipi=localStorage.getItem('fiber_tipi_ottico');
@@ -2021,7 +2038,7 @@ createApp({
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
         }; },
-        newCabina(){ return{id:Date.now()+Math.random(),numero:'',nome:'',codice:'',connessioni:[],pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato:'',motivo_bypass:'',note:'',is_prima:false,is_ultima:false,online_stato:''}; },
+        newCabina(){ return{id:Date.now()+Math.random(),numero:'',nome:'',codice:'',connessioni:[],pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato_operativo:'',stato_installazione:'',note:'',is_prima:false,is_ultima:false}; },
         addCabina(){ if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie=[]; this.currentSheet.cabine_secondarie.push(this.newCabina()); },
         addBretellaggioStep(sheet){ if(!sheet.bretellaggio) sheet.bretellaggio=[]; sheet.bretellaggio.push({nodo:'',direzione:'andata'}); },
         initBrtratteSez(sheet){ 
@@ -2188,6 +2205,48 @@ createApp({
             if(this.darkMode) return{DA_SBLOCCARE:'border-green-700 bg-green-950/40 text-green-400',OCCORRE_ASSISTENTE:'border-yellow-700 bg-yellow-950/40 text-yellow-400',NEGATO_ACCESSO:'border-red-700 bg-red-950/40 text-red-400',NON_REALIZZATO:'border-red-800 bg-red-950/60 text-red-300',OCCORRE_MATERIALE:'border-orange-700 bg-orange-950/40 text-orange-400',COMPLETATO:'border-emerald-700 bg-emerald-950/40 text-emerald-400'}[s]||'border-gray-700 text-gray-400';
             return{DA_SBLOCCARE:'border-green-400 bg-green-50 text-green-700',OCCORRE_ASSISTENTE:'border-yellow-400 bg-yellow-50 text-yellow-700',NEGATO_ACCESSO:'border-red-400 bg-red-50 text-red-700',NON_REALIZZATO:'border-red-600 bg-red-100 text-red-800',OCCORRE_MATERIALE:'border-orange-400 bg-orange-50 text-orange-700',COMPLETATO:'border-emerald-400 bg-emerald-50 text-emerald-700'}[s]||'border-gray-300 text-gray-600';
         },
+        // ── WA PICKER HELPERS ──
+        async triggerWa(msg){
+            this.waPickerMsg = msg;
+            // Copia negli appunti con supporto UTF-8 per emoji su PC
+            try {
+                const blob = new Blob([msg], {type:'text/plain;charset=utf-8'});
+                await navigator.clipboard.write([new ClipboardItem({'text/plain': blob})]);
+            } catch(e){
+                try { await navigator.clipboard.writeText(msg); } catch(e2){}
+            }
+            this.showWaPicker = true;
+        },
+        waOpenPrimary(){
+            this.showWaPicker = false;
+            window.open('https://wa.me/?text='+encodeURIComponent(this.waPickerMsg),'_blank');
+        },
+        waOpenSecondary(){
+            this.showWaPicker = false;
+            this.showToast('✓ Testo copiato — incolla su WhatsApp 2');
+        },
+        // ── MIGRAZIONE VECCHI STATI CABINA ──
+        migrateCabineStato(sheet){
+            const oldOpMap={ONLINE:'online',PARZIALE:'parzialmente',OFFLINE:'offline',BYPASSATA:'bypassata',NON_ATTIVA:'offline',NON_SOPRALLUOGATA:'',DISMESSA:'offline'};
+            const oldInstMap={ONLINE:'normale',PARZIALE:'normale',OFFLINE:'normale',BYPASSATA:'manca_apparato',NON_ATTIVA:'in_attesa',NON_SOPRALLUOGATA:'',DISMESSA:'dismessa'};
+            (sheet.cabine_secondarie||[]).forEach(cab=>{
+                if(cab.stato && !cab.stato_operativo && !cab.stato_installazione){
+                    cab.stato_operativo = oldOpMap[cab.stato]||'';
+                    cab.stato_installazione = oldInstMap[cab.stato]||'';
+                    delete cab.stato;
+                }
+                if(cab.online_stato) delete cab.online_stato;
+            });
+        },
+        // ── LED COLOR per cabina ──
+        ledColorForCab(cab){
+            const op=cab.stato_operativo||''; const inst=cab.stato_installazione||'';
+            if(inst==='manca_apparato'||inst==='dismessa'||op==='offline'||op==='bypassata') return 'red';
+            if(inst==='da_rilegare'||inst==='in_attesa') return 'yellow';
+            if(op==='parzialmente') return 'blue';
+            if(op==='online'||op==='remoto') return 'green';
+            return '';
+        },
         cabLabel(cab, idx){
             // Restituisce "N. Nome (Codice)" oppure fallback
             const n = cab.numero || (idx+1);
@@ -2203,10 +2262,16 @@ createApp({
             return [nome, codice, id].filter(Boolean).join(' ').trim() || 'Cabina Primaria';
         },
         cabStatoClass(cab){
-            const dm={ONLINE:'bg-emerald-950/40 border-emerald-700',PARZIALE:'bg-blue-950/40 border-blue-700',OFFLINE:'bg-red-950/40 border-red-700',BYPASSATA:'bg-amber-950/40 border-amber-600',NON_ATTIVA:'bg-gray-900/60 border-gray-600',NON_SOPRALLUOGATA:'bg-sky-950/40 border-sky-700',DISMESSA:'bg-zinc-900/60 border-zinc-600'};
-            const lm={ONLINE:'bg-emerald-50 border-emerald-400',PARZIALE:'bg-blue-50 border-blue-400',OFFLINE:'bg-red-50 border-red-400',BYPASSATA:'bg-amber-50 border-amber-400',NON_ATTIVA:'bg-gray-100 border-gray-400',NON_SOPRALLUOGATA:'bg-sky-50 border-sky-400',DISMESSA:'bg-zinc-100 border-zinc-400'};
-            if(!cab.stato) return this.darkMode?'bg-[#121212] border-gray-800':'bg-white border-gray-200';
-            return this.darkMode?(dm[cab.stato]||'bg-[#121212] border-gray-800'):(lm[cab.stato]||'bg-white border-gray-200');
+            const op=cab.stato_operativo||''; const inst=cab.stato_installazione||'';
+            let color='';
+            if(inst==='manca_apparato'||inst==='dismessa'||op==='offline'||op==='bypassata') color='red';
+            else if(inst==='da_rilegare'||inst==='in_attesa') color='yellow';
+            else if(op==='parzialmente') color='blue';
+            else if(op==='online'||op==='remoto') color='green';
+            const dm={red:'bg-red-950/40 border-red-700',yellow:'bg-amber-950/40 border-amber-600',blue:'bg-blue-950/40 border-blue-700',green:'bg-emerald-950/40 border-emerald-700'};
+            const lm={red:'bg-red-50 border-red-400',yellow:'bg-amber-50 border-amber-400',blue:'bg-blue-50 border-blue-400',green:'bg-emerald-50 border-emerald-400'};
+            if(!color) return this.darkMode?'bg-[#121212] border-gray-800':'bg-white border-gray-200';
+            return this.darkMode?(dm[color]):(lm[color]);
         },
 
         // ── MEMORIA ──
@@ -2366,8 +2431,8 @@ createApp({
                         numero:  cab.numero||'',
                         nome:    cab.nome||'',
                         codice:  cab.codice||'',
-                        stato:   cab.stato||'',
-                        motivo:  cab.motivo_bypass||'',
+                        stato_operativo:  cab.stato_operativo||'',
+                        stato_installazione: cab.stato_installazione||'',
                         pfs_f1:  cab.pfs_f1||'', pfs_f2: cab.pfs_f2||'',
                         pfs_f3:  cab.pfs_f3||'', pfs_f4: cab.pfs_f4||'',
                         pfp_f1:  cab.pfp_f1||'', pfp_f2: cab.pfp_f2||'',
@@ -2382,8 +2447,7 @@ createApp({
                             }
                             return {modulo:c.modulo, fibre:c.fibre, destinazione:dest};
                         }),
-                        note: cab.note||'',
-                        online_stato: cab.online_stato||''
+                        note: cab.note||''
                     }))
                 };
                 this.rapp.localita=fs.anello_nome||fs.nome_primaria||fs.anello_primaria||'';
@@ -2563,7 +2627,7 @@ createApp({
                         else { const f=sortedCabs.find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
                         return `M${c.modulo} F${c.fibre} → ${dest}`;
                     }).join('\n');
-                    const statoMap={'ONLINE':'ONLINE','PARZIALE':'PARZIALE','OFFLINE':'OFFLINE','BYPASSATA':'BYPASS','NON_ATTIVA':'N.ATTIVA','NON_SOPRALLUOGATA':'N.SOPR.','DISMESSA':'DISMESSA'}; const stato=statoMap[cab.stato]||cab.stato||'—';
+                    const opLbl={online:"Online",parzialmente:"Parz.",offline:"Offline",bypassata:"Bypassata",remoto:"Remoto"}; const instLbl={normale:"Normale",manca_apparato:"Manca App.",non_sopralluogata:"Non Sopr.",da_rilegare:"Da Rilegare",in_attesa:"In Attesa",dismessa:"Dismessa"}; const stato=[opLbl[cab.stato_operativo]||"", instLbl[cab.stato_installazione]||""].filter(Boolean).join(" / ")||"—";
                     const cabinaCell=`${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''}`+(connLines?'\n'+connLines:'');
                     return[i+1, cab.numero||'—', cabinaCell, stato, pfsFibre||'—', pfpFibre||'—', cab.note||''];
                 });
@@ -2922,8 +2986,8 @@ createApp({
                         cab,
                         x: DX + LEFT_PAD + cVisual * STEP_X,
                         y: DY + TOP_PAD + RH_SEC/2 + r * STEP_Y,
-                        col: cab.stato==='ONLINE'?GREEN : cab.stato==='PARZIALE'?[30,120,210] : cab.stato==='BYPASSATA'?AMBER : RED,
-                        fill: cab.stato==='ONLINE'?[225,248,235] : cab.stato==='PARZIALE'?[220,235,255] : cab.stato==='BYPASSATA'?[255,244,215] : [255,225,225],
+                        col: (()=>{const op=cab.stato_operativo||'',ins=cab.stato_installazione||''; return ins==='manca_apparato'||ins==='dismessa'||op==='offline'||op==='bypassata'?RED:ins==='da_rilegare'||ins==='in_attesa'?AMBER:op==='parzialmente'?[30,120,210]:op==='online'||op==='remoto'?GREEN:RED;})(),
+                        fill:(()=>{const op=cab.stato_operativo||'',ins=cab.stato_installazione||''; return ins==='manca_apparato'||ins==='dismessa'||op==='offline'||op==='bypassata'?[255,225,225]:ins==='da_rilegare'||ins==='in_attesa'?[255,244,215]:op==='parzialmente'?[220,235,255]:op==='online'||op==='remoto'?[225,248,235]:[255,225,225];})(),
                     };
                 });
 
@@ -3021,7 +3085,8 @@ createApp({
                     doc.text(String(cab.numero||i+1), cp.x - RW_SEC/2 - 1.5, cp.y - RH_SEC/2 - 0.2, {align:'center'});
 
                     // Badge stato (in alto a destra)
-                    const bTxt = cab.stato==='COMPLETATA'?'OK' : cab.stato==='BYPASSATA'?'BYP' : 'KO';
+                    const _op=cab.stato_operativo||'', _ins=cab.stato_installazione||'';
+                    const bTxt = _op==='online'?'OK' : _op==='bypassata'?'BYP' : _op==='parzialmente'?'PARZ' : 'KO';
                     doc.setFillColor(...cp.col); doc.circle(cp.x + RW_SEC/2 + 1.5, cp.y - RH_SEC/2 - 1.5, 3.2, 'F');
                     doc.setFont('helvetica','bold'); doc.setFontSize(4); doc.setTextColor(255,255,255);
                     doc.text(bTxt, cp.x + RW_SEC/2 + 1.5, cp.y - RH_SEC/2 - 0.2, {align:'center'});
@@ -3055,7 +3120,7 @@ createApp({
                     }
 
                     // Motivo bypass
-                    if(cab.stato==='BYPASSATA' && cab.motivo_bypass){
+                    if(cab.stato_operativo==='bypassata' && cab.motivo_bypass){
                         const mo = clean(cab.motivo_bypass);
                         doc.setFont('helvetica','normal'); doc.setFontSize(4); doc.setTextColor(...AMBER);
                         doc.text(mo, cp.x, cp.y + RH_SEC/2 + (cd?12:8.5), {align:'center'});
@@ -3063,8 +3128,8 @@ createApp({
                 });
             }
 
-            const comp = sorted.filter(c=>c.stato==='COMPLETATA').length;
-            const byp  = sorted.filter(c=>c.stato==='BYPASSATA').length;
+            const comp = sorted.filter(c=>c.stato_operativo==='online').length;
+            const byp  = sorted.filter(c=>c.stato_operativo==='bypassata').length;
 
             // ── TABELLA RIEPILOGO ──
             const tableY = H - 13;
@@ -3732,16 +3797,7 @@ createApp({
                 msg+=`\n_Totale: ${items.length} voci · ${totPz} pz_`;
             }
             // Prova prima clipboard, poi fallback wa.me
-            if(navigator.clipboard && navigator.clipboard.writeText){
-                navigator.clipboard.writeText(msg).then(()=>{
-                    this.showToast('✓ Copiato! Incolla su WhatsApp');
-                    setTimeout(()=>{ window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank'); }, 600);
-                }).catch(()=>{
-                    window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
-                });
-            } else {
-                window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
-            }
+            this.triggerWa(msg);
         },
 
                 exportWhatsapp(){
@@ -3795,9 +3851,12 @@ createApp({
                 const sortedCabsWA=[...(s.cabine_secondarie||[])].sort((a,b)=>(Number(a.numero)||9999)-(Number(b.numero)||9999));
                 sortedCabsWA.forEach((cab,i)=>{
                     const numStr=cab.numero?`#${cab.numero}`:`#${i+1}`;
-                    const statoIcon=cab.stato==='COMPLETATA'?'✅':cab.stato==='BYPASSATA'?'⚡':'🔴';
-                    msg+=`*${numStr}* 🏢 ${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''} ${statoIcon}\n`;
-                    if(cab.stato==='BYPASSATA'&&cab.motivo_bypass) msg+=`  ⚡ ${cab.motivo_bypass.replace(/_/g,' ')}\n`;
+                    const op=cab.stato_operativo||''; const inst=cab.stato_installazione||'';
+                    const ledIcon=op==='online'?'🟢':op==='parzialmente'?'🔵':op==='offline'?'🔴':op==='remoto'?'🔎':'⚪';
+                    const opLabel={online:'Online',parzialmente:'Parz. Online',offline:'Offline',bypassata:'Bypassata',remoto:'Verif. Remoto'}[op]||op;
+                    const instLabel={normale:'Normale',manca_apparato:'Manca Apparato Attivo',non_sopralluogata:'Non Sopralluogata',da_rilegare:'Da Rilegare',in_attesa:'In Attesa Infrastruttura',dismessa:'Dismessa'}[inst]||inst;
+                    const statoStr=[ledIcon, opLabel, instLabel?`/ ${instLabel}`:''].filter(Boolean).join(' ');
+                    msg+=`*${numStr}* 🏢 ${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''} ${statoStr}\n`;
                     const pfsFibre=[cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean);
                     const pfpFibre=[cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean);
                     if(pfsFibre.length) msg+=`  🔵 PFS: ${pfsFibre.join(', ')}\n`;
@@ -3847,14 +3906,7 @@ createApp({
                 });
             }
             // Clipboard + WA
-            if(navigator.clipboard && navigator.clipboard.writeText){
-                navigator.clipboard.writeText(msg).then(()=>{
-                    this.showToast('✓ Copiato! Apertura WhatsApp...');
-                    setTimeout(()=>window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank'),500);
-                }).catch(()=>window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank'));
-            } else {
-                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
-            }
+            this.triggerWa(msg);
         },
 
         // ── PDF editor (rapido, tutte le schede) ──
@@ -3897,7 +3949,7 @@ createApp({
                         else { const f=sortedCabs.find(x=>x.id===dest); if(f) dest=(f.nome||'')+(f.codice?' ('+f.codice+')':''); }
                         return `M${c.modulo} F${c.fibre} → ${dest}`;
                     }).join('\n');
-                    const statoMap={'ONLINE':'ONLINE','PARZIALE':'PARZIALE','OFFLINE':'OFFLINE','BYPASSATA':'BYPASS','NON_ATTIVA':'N.ATTIVA','NON_SOPRALLUOGATA':'N.SOPR.','DISMESSA':'DISMESSA'}; const stato=statoMap[cab.stato]||cab.stato||'—';
+                    const opLbl={online:"Online",parzialmente:"Parz.",offline:"Offline",bypassata:"Bypassata",remoto:"Remoto"}; const instLbl={normale:"Normale",manca_apparato:"Manca App.",non_sopralluogata:"Non Sopr.",da_rilegare:"Da Rilegare",in_attesa:"In Attesa",dismessa:"Dismessa"}; const stato=[opLbl[cab.stato_operativo]||"", instLbl[cab.stato_installazione]||""].filter(Boolean).join(" / ")||"—";
                     const cabinaCell=`${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''}`+(connLines?'\n'+connLines:'');
                     return[i+1, cab.numero||'—', cabinaCell, stato, pfsFibre||'—', pfpFibre||'—', cab.note||''];
                 });
@@ -4002,8 +4054,8 @@ createApp({
                         'N° Anello':   cab.numero||'',
                         'Nome Cabina': cab.nome||'—',
                         'Codice':      cab.codice||'',
-                        'Stato':       cab.stato||'',
-                        'Motivo Bypass': cab.motivo_bypass?.replace(/_/g,' ')||'',
+                        'Stato Operativo': {online:'Online',parzialmente:'Parz. Online',offline:'Offline',bypassata:'Bypassata',remoto:'Verif. Remoto'}[cab.stato_operativo]||cab.stato_operativo||'',
+                        'Stato Installazione': {normale:'Normale',manca_apparato:'Manca Apparato Attivo',non_sopralluogata:'Non Sopralluogata',da_rilegare:'Da Rilegare',in_attesa:'In Attesa Infrastruttura',dismessa:'Dismessa'}[cab.stato_installazione]||cab.stato_installazione||'',
                         'PFS Fibre':   pfsFibre,
                         'PFP Fibre':   pfpFibre,
                         'Connessioni': conns,
