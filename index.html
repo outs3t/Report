@@ -525,7 +525,10 @@
                                     <div class="space-y-2">
                                         <!-- 4 PFS -->
                                         <div class="rounded-xl p-3 border" :class="darkMode?'bg-blue-950/30 border-blue-800':'bg-blue-50 border-blue-200'">
-                                            <div class="text-[9px] font-mono font-black text-blue-400 mb-2 uppercase tracking-wider">→ PFS</div>
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <span class="text-[9px] font-mono font-black text-blue-400 uppercase tracking-wider">→ PFS</span>
+                                                <input v-model="cab.pfs_nome" class="flex-1 bg-transparent border-b text-[10px] font-mono outline-none py-0.5" :class="darkMode?'border-blue-800 text-blue-300 placeholder-blue-900':'border-blue-300 text-blue-700 placeholder-blue-300'" placeholder="es. PFS-01 Via Roma">
+                                            </div>
                                             <div class="space-y-2">
                                                 <div v-for="n in 4" :key="'pfs'+n">
                                                     <div class="flex items-center gap-2">
@@ -566,7 +569,10 @@
                                         </div>
                                         <!-- 4 PFP -->
                                         <div class="rounded-xl p-3 border" :class="darkMode?'bg-purple-950/30 border-purple-800':'bg-purple-50 border-purple-200'">
-                                            <div class="text-[9px] font-mono font-black text-purple-400 mb-2 uppercase tracking-wider">→ PFP</div>
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <span class="text-[9px] font-mono font-black text-purple-400 uppercase tracking-wider">→ PFP</span>
+                                                <input v-model="cab.pfp_nome" class="flex-1 bg-transparent border-b text-[10px] font-mono outline-none py-0.5" :class="darkMode?'border-purple-800 text-purple-300 placeholder-purple-900':'border-purple-300 text-purple-700 placeholder-purple-300'" placeholder="es. PFP-01 Via Roma">
+                                            </div>
                                             <div class="space-y-2">
                                                 <div v-for="n in 4" :key="'pfp'+n">
                                                     <div class="flex items-center gap-2">
@@ -1464,8 +1470,8 @@
                                         </div>
                                     </td>
                                     <td style="font-size:8px;font-family:'JetBrains Mono',monospace;color:#374151;">
-                                        <div v-if="cab.pfs_f1||cab.pfs_f2||cab.pfs_f3||cab.pfs_f4">PFS: {{ [cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ') }}</div>
-                                        <div v-if="cab.pfp_f1||cab.pfp_f2||cab.pfp_f3||cab.pfp_f4">PFP: {{ [cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ') }}</div>
+                                        <div v-if="cab.pfs_f1||cab.pfs_f2||cab.pfs_f3||cab.pfs_f4">PFS<span v-if="cab.pfs_nome"> ({{ cab.pfs_nome }})</span>: {{ [cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ') }}</div>
+                                        <div v-if="cab.pfp_f1||cab.pfp_f2||cab.pfp_f3||cab.pfp_f4">PFP<span v-if="cab.pfp_nome"> ({{ cab.pfp_nome }})</span>: {{ [cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ') }}</div>
                                     </td>
                                     <td style="font-size:8px;color:#6b7280;">{{ cab.note }}</td>
                                 </tr>
@@ -2038,7 +2044,7 @@ createApp({
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
         }; },
-        newCabina(){ return{id:Date.now()+Math.random(),numero:'',nome:'',codice:'',connessioni:[],pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato_operativo:'',stato_installazione:'',note:'',is_prima:false,is_ultima:false}; },
+        newCabina(){ return{id:Date.now()+Math.random(),numero:'',nome:'',codice:'',connessioni:[],pfs_nome:'',pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_nome:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato_operativo:'',stato_installazione:'',note:'',is_prima:false,is_ultima:false}; },
         addCabina(){ if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie=[]; this.currentSheet.cabine_secondarie.push(this.newCabina()); },
         addBretellaggioStep(sheet){ if(!sheet.bretellaggio) sheet.bretellaggio=[]; sheet.bretellaggio.push({nodo:'',direzione:'andata'}); },
         initBrtratteSez(sheet){ 
@@ -3859,8 +3865,8 @@ createApp({
                     msg+=`*${numStr}* 🏢 ${cab.nome||'—'}${cab.codice?' ('+cab.codice+')':''} ${statoStr}\n`;
                     const pfsFibre=[cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean);
                     const pfpFibre=[cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean);
-                    if(pfsFibre.length) msg+=`  🔵 PFS: ${pfsFibre.join(', ')}\n`;
-                    if(pfpFibre.length) msg+=`  🟣 PFP: ${pfpFibre.join(', ')}\n`;
+                    if(pfsFibre.length) msg+=`  🔵 PFS${cab.pfs_nome?' ('+cab.pfs_nome+')':''}: ${pfsFibre.join(', ')}\n`;
+                    if(pfpFibre.length) msg+=`  🟣 PFP${cab.pfp_nome?' ('+cab.pfp_nome+')':''}: ${pfpFibre.join(', ')}\n`;
                     if(cab.connessioni?.length){
                         cab.connessioni.forEach(c=>{
                             let dest=c.destinazione||'';
