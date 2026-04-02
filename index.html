@@ -100,6 +100,22 @@
         /* ── MISC ── */
         .safe-pb { padding-bottom:calc(env(safe-area-inset-bottom,0px) + 90px); }
 
+        /* ── MOBILE CABINE ── */
+        @media (max-width:600px){
+            .cab-grid { grid-template-columns:1fr !important; }
+            .cab-body { padding:14px !important; }
+            .cab-header { flex-wrap:wrap; gap:6px; padding:10px 12px !important; }
+            .cab-stato-badge { font-size:9px !important; }
+            .cab-fields-grid { grid-template-columns:1fr !important; }
+            .cab-toggle-row { flex-direction:column !important; gap:6px !important; }
+            .cab-conn-row { flex-wrap:wrap; gap:6px !important; }
+            .cab-conn-row select { min-width:0; flex:1 1 calc(50% - 6px) !important; font-size:13px !important; }
+            .anello-grid { grid-template-columns:1fr !important; }
+            .anello-sw-grid { grid-template-columns:1fr !important; }
+            .pfs-fibre-row { flex-direction:column; align-items:flex-start !important; }
+            .ordine-anello-row { flex-wrap:wrap; }
+        }
+
         @page { size:A4 portrait; margin:0; }
         @media print {
             .no-print { display:none !important; }
@@ -339,7 +355,7 @@
                     </button>
                 </div>
                 <!-- Riga 1: codice + nome primaria -->
-                <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="grid grid-cols-2 gap-3 mb-3 anello-grid">
                     <div>
                         <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Codice Primaria</label>
                         <input v-model="currentSheet.anello_primaria" class="f-input font-mono font-black text-base" :class="darkMode?'text-white border-purple-800':'text-black border-purple-300'" placeholder="Es. CP-001">
@@ -350,7 +366,7 @@
                     </div>
                 </div>
                 <!-- Riga 2: stato anello + id anello + nome anello -->
-                <div class="grid grid-cols-3 gap-3 mb-3">
+                <div class="grid grid-cols-3 gap-3 mb-3 anello-grid">
                     <div>
                         <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Stato Anello</label>
                         <select v-model="currentSheet.stato_anello" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-purple-800 bg-transparent':'text-black border-purple-300 bg-transparent'">
@@ -374,7 +390,7 @@
                     </div>
                 </div>
                 <!-- Switch + Patch Panel -->
-                <div class="grid grid-cols-2 gap-3 pt-3 border-t" :class="darkMode?'border-purple-900':'border-purple-200'">
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t anello-sw-grid" :class="darkMode?'border-purple-900':'border-purple-200'">
                     <div class="rounded-xl p-3 border" :class="darkMode?'bg-blue-950/30 border-blue-800':'bg-blue-50 border-blue-200'">
                         <div class="text-[9px] font-mono font-black text-blue-400 mb-2 uppercase tracking-wider">→ Andata</div>
                         <div class="grid grid-cols-2 gap-2">
@@ -426,7 +442,7 @@
                          class="rounded-2xl border-2 overflow-hidden transition-all"
                          :class="cabStatoClass(cab)">
                         <!-- Cabina header -->
-                        <div class="flex items-center justify-between px-4 py-3 border-b" :class="darkMode?'border-gray-800 bg-black/20':'border-gray-100 bg-gray-50/50'">
+                        <div class="flex items-center justify-between px-4 py-3 border-b cab-header" :class="darkMode?'border-gray-800 bg-black/20':'border-gray-100 bg-gray-50/50'">
                             <div class="flex items-center gap-2 min-w-0">
                                 <!-- Numero anello (editabile inline) -->
                                 <div class="flex items-center gap-1 flex-shrink-0">
@@ -452,11 +468,11 @@
                             </div>
                         </div>
                         <!-- Cabina body -->
-                        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5 cab-body cab-grid">
                             <!-- DATI CABINA -->
                             <div class="space-y-3">
                                 <div class="text-[10px] font-black uppercase tracking-wider mb-2" :class="darkMode?'text-purple-400':'text-purple-700'">📍 Dati Cabina</div>
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="grid grid-cols-2 gap-3 cab-fields-grid">
                                     <div>
                                         <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Nome Cabina</label>
                                         <input v-model="cab.nome" class="f-input smart-caps" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" placeholder="Es. Cabina Via Roma">
@@ -467,7 +483,7 @@
                                     </div>
                                 </div>
                                 <!-- Prima / Ultima cabina anello -->
-                                <div class="flex gap-3">
+                                <div class="flex gap-3 cab-toggle-row">
                                     <label class="flex items-center gap-2 cursor-pointer flex-1 px-3 py-2 rounded-xl border transition-all"
                                            :class="cab.is_prima?(darkMode?'bg-green-900/30 border-green-600':'bg-green-50 border-green-400'):(darkMode?'border-gray-700':'border-gray-200')"
                                            @click="currentSheet.cabine_secondarie.forEach(c2=>c2.is_prima=false); cab.is_prima=!cab.is_prima">
@@ -487,7 +503,7 @@
                                         <span class="text-xs font-bold" :class="cab.is_ultima?(darkMode?'text-purple-400':'text-purple-700'):(darkMode?'text-gray-400':'text-gray-500')">Ultima Cabina</span>
                                     </label>
                                 </div>
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="grid grid-cols-2 gap-3 cab-fields-grid">
                                     <div>
                                         <label class="field-label" :class="darkMode?'text-gray-300':'text-gray-600'">Stato Operativo</label>
                                         <select v-model="cab.stato_operativo" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
@@ -515,6 +531,58 @@
                                 <div>
                                     <label class="field-label" :class="darkMode?'text-gray-400':'text-gray-500'">Note</label>
                                     <textarea v-model="cab.note" rows="2" class="f-textarea smart-caps text-sm" :class="darkMode?'text-white border-[#444]':'text-black border-gray-300'" placeholder="Note tecniche..."></textarea>
+                                </div>
+                                <!-- ── EVENTI GIORNALIERI ── -->
+                                <div class="rounded-xl border overflow-hidden" :class="darkMode?'border-purple-900/50':'border-purple-200'">
+                                    <div class="flex items-center justify-between px-3 py-2" :class="darkMode?'bg-purple-900/20':'bg-purple-50'">
+                                        <span class="text-[10px] font-black uppercase tracking-wider" :class="darkMode?'text-purple-400':'text-purple-700'">📅 Attività Giornaliere</span>
+                                        <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full" :class="darkMode?'bg-purple-900/50 text-purple-400':'bg-purple-100 text-purple-600'">{{ (cab.eventi||[]).length }}</span>
+                                    </div>
+                                    <!-- Aggiungi evento -->
+                                    <div class="p-3 border-b flex gap-2 items-end flex-wrap" :class="darkMode?'border-purple-900/30':'border-purple-100'">
+                                        <div class="flex-1 min-w-[110px]">
+                                            <label class="text-[9px] font-bold uppercase" :class="darkMode?'text-gray-400':'text-gray-500'">Data</label>
+                                            <input type="date" v-model="cab._newEventoData" class="w-full bg-transparent border-b outline-none text-xs font-mono py-1" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-gray-900'">
+                                        </div>
+                                        <div class="flex-1 min-w-[120px]">
+                                            <label class="text-[9px] font-bold uppercase" :class="darkMode?'text-gray-400':'text-gray-500'">Tipo Attività</label>
+                                            <select v-model="cab._newEventoTipo" class="w-full bg-transparent border-b outline-none text-xs font-bold py-1 cursor-pointer" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-gray-900'">
+                                                <option value="">-- Seleziona --</option>
+                                                <option value="rilegamento">🔗 Rilegamento</option>
+                                                <option value="giunzione">⚡ Giunzione</option>
+                                                <option value="collaudo">✅ Collaudo</option>
+                                                <option value="chiusura">🔒 Chiusura Anello</option>
+                                                <option value="bypass">⚠️ Bypass</option>
+                                                <option value="sopralluogo">🔍 Sopralluogo</option>
+                                                <option value="manutenzione">🔧 Manutenzione</option>
+                                                <option value="altro">📝 Altro</option>
+                                            </select>
+                                        </div>
+                                        <div class="w-full">
+                                            <label class="text-[9px] font-bold uppercase" :class="darkMode?'text-gray-400':'text-gray-500'">Descrizione intervento</label>
+                                            <textarea v-model="cab._newEventoDesc" rows="3"
+                                                class="w-full bg-transparent border rounded-lg p-2 outline-none text-xs resize-none mt-1 leading-relaxed"
+                                                :class="darkMode?'border-gray-700 text-white placeholder-gray-600':'border-gray-300 text-gray-900 placeholder-gray-400'"
+                                                placeholder="Es: Porta switch bruciata — collegato modulino porta 3. Cavo tranciato in canalina vetro-resina + pozzetto. Posati 100m cavo, eseguite 12 giunzioni PTE+PD+PFS+PFP. Cabina inserita in anello."></textarea>
+                                        </div>
+                                        <button @click="addEventoCabina(cab)" class="px-3 py-1.5 rounded-lg text-[10px] font-black transition-all active:scale-95 flex-shrink-0" :class="darkMode?'bg-purple-700 text-white hover:bg-purple-600':'bg-purple-600 text-white hover:bg-purple-700'">+ Aggiungi</button>
+                                    </div>
+                                    <!-- Lista eventi -->
+                                    <div class="divide-y" :class="darkMode?'divide-gray-800':'divide-gray-100'">
+                                        <div v-for="(ev, evIdx) in [...(cab.eventi||[])].reverse()" :key="evIdx" class="px-3 py-2.5">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div class="flex items-center gap-2 flex-wrap min-w-0">
+                                                    <span class="text-[10px] font-mono flex-shrink-0" :class="darkMode?'text-gray-500':'text-gray-400'">{{ ev.data }}</span>
+                                                    <span class="text-[10px] font-black px-1.5 py-0.5 rounded flex-shrink-0" :class="darkMode?'bg-purple-900/50 text-purple-300':'bg-purple-100 text-purple-700'">
+                                                        {{ {rilegamento:'🔗 Rileg.',giunzione:'⚡ Giunt.',collaudo:'✅ Collaudo',chiusura:'🔒 Chiusura',bypass:'⚠️ Bypass',sopralluogo:'🔍 Sopr.',manutenzione:'🔧 Manut.',altro:'📝 Altro'}[ev.tipo]||ev.tipo }}
+                                                    </span>
+                                                </div>
+                                                <button @click="cab.eventi.splice(cab.eventi.indexOf(ev),1)" class="text-gray-500 hover:text-red-400 flex-shrink-0 p-1"><i class="ph ph-x text-xs"></i></button>
+                                            </div>
+                                            <div v-if="ev.desc" class="mt-1.5 text-[11px] leading-relaxed whitespace-pre-wrap" :class="darkMode?'text-gray-300':'text-gray-700'">{{ ev.desc }}</div>
+                                        </div>
+                                        <div v-if="!cab.eventi||!cab.eventi.length" class="px-3 py-3 text-center text-[10px]" :class="darkMode?'text-gray-600':'text-gray-400'">Nessuna attività registrata</div>
+                                    </div>
                                 </div>
                             </div>
                             <!-- FIBRE + CONNESSIONI -->
@@ -617,7 +685,7 @@
                                         <button @click="cab.connessioni.push({modulo:'1',fibre:'1-2',destinazione:''})" class="text-[9px] font-bold text-green-500 hover:text-green-400">+ Aggiungi</button>
                                     </div>
                                     <div class="space-y-2">
-                                        <div v-for="(conn,connIdx) in cab.connessioni" :key="connIdx" class="flex items-center gap-2 rounded-lg p-2 border" :class="darkMode?'bg-gray-900/40 border-gray-700':'bg-gray-50 border-gray-200'">
+                                        <div v-for="(conn,connIdx) in cab.connessioni" :key="connIdx" class="flex items-center gap-2 rounded-lg p-2 border cab-conn-row" :class="darkMode?'bg-gray-900/40 border-gray-700':'bg-gray-50 border-gray-200'">
                                             <select v-model="conn.modulo" class="text-xs font-bold outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-cyan-400 bg-transparent':'border-gray-300 text-cyan-600 bg-transparent'">
                                                 <option value="1">Mod.1</option><option value="2">Mod.2</option><option value="3">Mod.3</option><option value="4">Mod.4</option>
                                             </select>
@@ -1419,8 +1487,17 @@
                         </table>
                     </div>
 
-                    <!-- CABINE: anello + tabella cabine secondarie -->
+                    <!-- CABINE: anello + tabella cabine secondarie filtrata per data -->
                     <div v-if="rapp.tipo==='cabine'" class="rapp-cabine-inner" style="overflow:visible;">
+                        <!-- Selettore data (no-print) -->
+                        <div class="no-print flex items-center gap-3 mb-3 p-2 rounded-lg border" :class="darkMode?'bg-purple-900/10 border-purple-800':'bg-purple-50 border-purple-200'">
+                            <i class="ph ph-calendar text-purple-400 text-sm flex-shrink-0"></i>
+                            <label class="text-[10px] font-black uppercase tracking-wider flex-shrink-0" :class="darkMode?'text-purple-400':'text-purple-700'">Mostra attività del:</label>
+                            <input type="date" v-model="rapp.cabineDate" class="flex-1 bg-transparent border-b outline-none text-xs font-mono py-0.5" :class="darkMode?'border-purple-700 text-white':'border-purple-300 text-gray-900'">
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full flex-shrink-0" :class="darkMode?'bg-purple-900 text-purple-300':'bg-purple-100 text-purple-700'">
+                                {{ (rapp.cabineData.cabine||[]).filter(c=>(c.eventi||[]).some(e=>e.data===rapp.cabineDate)).length }} cabine
+                            </span>
+                        </div>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;">
                             <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:3px;padding:3px 6px;">
                                 <span style="font-size:7px;font-family:'JetBrains Mono',monospace;color:#7c3aed;text-transform:uppercase;">Cabina Primaria</span>
@@ -1429,7 +1506,6 @@
                                     <span v-if="rapp.cabineData.anello_primaria&&rapp.cabineData.nome_primaria" style="font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:400;color:#6b7280;">({{ rapp.cabineData.anello_primaria }})</span>
                                     <span v-if="rapp.cabineData.id_anello" style="font-size:8px;font-family:'JetBrains Mono',monospace;font-weight:700;color:#7c3aed;margin-left:4px;">ID: {{ rapp.cabineData.id_anello }}</span>
                                 </div>
-
                             </div>
                             <div :style="{'background': rapp.cabineData.stato_anello==='Chiuso'?'#f0fdf4':rapp.cabineData.stato_anello==='Aperto'?'#fef2f2':rapp.cabineData.stato_anello==='Manca Bretellaggio'?'#fefce8':'#f0f9ff', 'border': rapp.cabineData.stato_anello==='Chiuso'?'1px solid #86efac':rapp.cabineData.stato_anello==='Aperto'?'1px solid #fca5a5':rapp.cabineData.stato_anello==='Manca Bretellaggio'?'1px solid #fde047':'1px solid #7dd3fc', 'border-radius':'3px','padding':'3px 6px'}">
                                 <span :style="{'font-size':'7px','font-family':'JetBrains Mono,monospace','text-transform':'uppercase','color': rapp.cabineData.stato_anello==='Chiuso'?'#166534':rapp.cabineData.stato_anello==='Aperto'?'#991b1b':rapp.cabineData.stato_anello==='Manca Bretellaggio'?'#854d0e':'#0c4a6e'}">Stato Anello</span>
@@ -1438,17 +1514,22 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Data selezionata stampata -->
+                        <div style="font-size:8px;font-weight:700;color:#7c3aed;margin-bottom:4px;font-family:'JetBrains Mono',monospace;letter-spacing:.05em;">
+                            ATTIVITÀ DEL {{ rapp.cabineDate ? new Date(rapp.cabineDate+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase() : '—' }}
+                        </div>
                         <table class="tech-table">
                             <thead><tr>
                                 <th style="width:18px;">N.</th>
                                 <th style="width:20px;">#</th>
-                                <th>NOME CABINA (CODICE) + CONNESSIONI</th>
+                                <th>NOME CABINA (CODICE)</th>
                                 <th style="width:55px;">STATO</th>
+                                <th>ATTIVITÀ DEL GIORNO</th>
                                 <th>FIBRE PFS / PFP</th>
-                                <th>NOTE</th>
                             </tr></thead>
                             <tbody>
-                                <tr v-for="(cab,i) in rapp.cabineData.cabine" :key="i">
+                                <template v-for="(cab,i) in rapp.cabineData.cabine" :key="i">
+                                <tr v-if="(cab.eventi||[]).some(e=>e.data===rapp.cabineDate)">
                                     <td style="font-weight:700;color:#9ca3af;font-family:'JetBrains Mono',monospace;">{{ i+1 }}</td>
                                     <td style="font-weight:900;color:#7c3aed;font-family:'JetBrains Mono',monospace;text-align:center;">{{ cab.numero||'—' }}</td>
                                     <td style="font-weight:700;">
@@ -1469,14 +1550,24 @@
                                             {{ {normale:'✅ Normale',manca_apparato:'📦 Manca App.',non_sopralluogata:'🔍 Non Sopr.',da_rilegare:'🔗 Da Rilegare',in_attesa:'⏳ In Attesa',dismessa:'🚫 Dismessa'}[cab.stato_installazione] }}
                                         </div>
                                     </td>
+                                    <td style="font-size:8px;">
+                                        <div v-for="(ev,ei) in (cab.eventi||[]).filter(e=>e.data===rapp.cabineDate)" :key="ei" style="margin-bottom:3px;">
+                                            <div style="font-weight:800;color:#7c3aed;white-space:nowrap;">
+                                                {{ {rilegamento:'🔗 Rilegamento',giunzione:'⚡ Giunzione',collaudo:'✅ Collaudo',chiusura:'🔒 Chiusura',bypass:'⚠️ Bypass',sopralluogo:'🔍 Sopralluogo',manutenzione:'🔧 Manutenzione',altro:'📝 Altro'}[ev.tipo]||ev.tipo }}
+                                            </div>
+                                            <div v-if="ev.desc" style="font-size:7.5px;color:#374151;white-space:pre-wrap;line-height:1.4;margin-top:1px;">{{ ev.desc }}</div>
+                                        </div>
+                                    </td>
                                     <td style="font-size:8px;font-family:'JetBrains Mono',monospace;color:#374151;">
                                         <div v-if="cab.pfs_f1||cab.pfs_f2||cab.pfs_f3||cab.pfs_f4">PFS<span v-if="cab.pfs_nome"> ({{ cab.pfs_nome }})</span>: {{ [cab.pfs_f1,cab.pfs_f2,cab.pfs_f3,cab.pfs_f4].filter(Boolean).join(', ') }}</div>
                                         <div v-if="cab.pfp_f1||cab.pfp_f2||cab.pfp_f3||cab.pfp_f4">PFP<span v-if="cab.pfp_nome"> ({{ cab.pfp_nome }})</span>: {{ [cab.pfp_f1,cab.pfp_f2,cab.pfp_f3,cab.pfp_f4].filter(Boolean).join(', ') }}</div>
                                     </td>
-                                    <td style="font-size:8px;color:#6b7280;">{{ cab.note }}</td>
                                 </tr>
-                                <tr v-if="!rapp.cabineData.cabine||!rapp.cabineData.cabine.length">
-                                    <td colspan="6" style="text-align:center;color:#9ca3af;font-size:9px;padding:8px;">Nessuna cabina — importa dati</td>
+                                </template>
+                                <tr v-if="!(rapp.cabineData.cabine||[]).some(c=>(c.eventi||[]).some(e=>e.data===rapp.cabineDate))">
+                                    <td colspan="6" style="text-align:center;color:#9ca3af;font-size:9px;padding:12px;">
+                                        Nessuna attività registrata per questa data
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1665,6 +1756,11 @@
                     :class="darkMode?'bg-green-950/20 border-green-800 text-green-500 hover:bg-green-900/20':'bg-green-50/50 border-green-300 text-green-600 hover:bg-green-50'">
                 <i class="ph ph-copy text-lg"></i>
                 WhatsApp 2 <span class="font-normal text-xs ml-1">(incolla tu)</span>
+            </button>
+            <button v-if="sheetType==='cabine'" @click="waOpenGiornaliero()" class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm border transition-all active:scale-95"
+                    :class="darkMode?'bg-purple-900/30 border-purple-700 text-purple-300 hover:bg-purple-900/50':'bg-purple-50 border-purple-400 text-purple-700 hover:bg-purple-100'">
+                <i class="ph ph-calendar-check text-lg"></i>
+                Solo Attività di Oggi <span class="font-normal text-xs ml-1">(giornaliero)</span>
             </button>
         </div>
         <p class="text-[10px]" :class="darkMode?'text-gray-600':'text-gray-400'">Il testo è già copiato — apri manualmente il secondo WhatsApp e incolla.</p>
@@ -1924,6 +2020,7 @@ createApp({
                 extraLines: [],
                 // Dati specifici per tipo
                 cabineData:{ anello_primaria:'', anello_nome:'', stato_anello:'', sw1_porta:'', pp_andata:'', sw2_porta:'', pp_ritorno:'', cabine:[] },
+                cabineDate: new Date().toISOString().split('T')[0],
                 brData:{ pop:'', splitter_num:'', pfp_appartenenza:'', att_otdr:'', istruzioni_telaio:'', spl_pri_att:'', spl_pri_n:'', spl_pri_seriale:'', pfs_list:[] },
                 srbData:{ antenna:'', pop_start:'', tratte:[] }
             }
@@ -2044,7 +2141,16 @@ createApp({
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
         }; },
-        newCabina(){ return{id:Date.now()+Math.random(),numero:'',nome:'',codice:'',connessioni:[],pfs_nome:'',pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_nome:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato_operativo:'',stato_installazione:'',note:'',is_prima:false,is_ultima:false}; },
+        newCabina(){ return{id:Date.now()+Math.random(),numero:'',nome:'',codice:'',connessioni:[],pfs_nome:'',pfs_f1:'',pfs_f2:'',pfs_f3:'',pfs_f4:'',pfp_nome:'',pfp_f1:'',pfp_f2:'',pfp_f3:'',pfp_f4:'',stato_operativo:'',stato_installazione:'',note:'',is_prima:false,is_ultima:false,eventi:[],_newEventoData:new Date().toISOString().split('T')[0],_newEventoTipo:'',_newEventoDesc:''}; },
+        addEventoCabina(cab){
+            if(!cab._newEventoTipo){ this.showToast('Seleziona un tipo di attività'); return; }
+            if(!cab.eventi) cab.eventi=[];
+            cab.eventi.push({ data: cab._newEventoData||new Date().toISOString().split('T')[0], tipo: cab._newEventoTipo, desc: cab._newEventoDesc||'' });
+            cab._newEventoTipo='';
+            cab._newEventoDesc='';
+            cab._newEventoData = new Date().toISOString().split('T')[0];
+            this.showToast('✓ Attività aggiunta');
+        },
         addCabina(){ if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie=[]; this.currentSheet.cabine_secondarie.push(this.newCabina()); },
         addBretellaggioStep(sheet){ if(!sheet.bretellaggio) sheet.bretellaggio=[]; sheet.bretellaggio.push({nodo:'',direzione:'andata'}); },
         initBrtratteSez(sheet){ 
@@ -2231,6 +2337,38 @@ createApp({
             this.showWaPicker = false;
             this.showToast('✓ Testo copiato — incolla su WhatsApp 2');
         },
+        waOpenGiornaliero(){
+            this.showWaPicker = false;
+            this.exportWaGiornaliero();
+        },
+        async exportWaGiornaliero(){
+            const s = this.currentSheet; if(!s) return;
+            const oggi = new Date().toISOString().split('T')[0];
+            const data = oggi;
+            const dataLabel = new Date(data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+            const team = this.smartFormat(s.team||'');
+            const priLabel = (s.nome_primaria||s.anello_primaria||'—') + (s.anello_primaria&&s.nome_primaria?' ('+s.anello_primaria+')':'');
+            const tipoLabel = {rilegamento:'🔗 Rilegamento',giunzione:'⚡ Giunzione',collaudo:'✅ Collaudo',chiusura:'🔒 Chiusura Anello',bypass:'⚠️ Bypass',sopralluogo:'🔍 Sopralluogo',manutenzione:'🔧 Manutenzione',altro:'📝 Altro'};
+            const sortedCabs = [...(s.cabine_secondarie||[])].sort((a,b)=>(Number(a.numero)||9999)-(Number(b.numero)||9999));
+            const cabineOggi = sortedCabs.filter(c=>(c.eventi||[]).some(e=>e.data===data));
+            if(!cabineOggi.length){ this.showToast('Nessuna attività per oggi'); return; }
+            let msg = `*📅 ATTIVITÀ GIORNALIERE — ${dataLabel.toUpperCase()}*\n`;
+            msg += `🏭 ${priLabel}`;
+            if(s.id_anello) msg += `  |  ID: ${s.id_anello}`;
+            msg += `\n👷 ${team}\n\n`;
+            cabineOggi.forEach((cab,i)=>{
+                const numStr = cab.numero ? `#${cab.numero}` : `#${i+1}`;
+                msg += `*${numStr} — ${cab.nome||'—'}*${cab.codice?' ('+cab.codice+')':''}\n`;
+                const eventiOggi = (cab.eventi||[]).filter(e=>e.data===data);
+                eventiOggi.forEach(ev=>{
+                    msg += `  ${tipoLabel[ev.tipo]||ev.tipo}\n`;
+                    if(ev.desc) msg += `  ${ev.desc}\n`;
+                });
+                msg += '─────\n';
+            });
+            msg += `\n_${cabineOggi.length} cabin${cabineOggi.length===1?'a':'e'} lavorate_`;
+            await this.triggerWa(msg);
+        },
         // ── MIGRAZIONE VECCHI STATI CABINA ──
         migrateCabineStato(sheet){
             const oldOpMap={ONLINE:'online',PARZIALE:'parzialmente',OFFLINE:'offline',BYPASSATA:'bypassata',NON_ATTIVA:'offline',NON_SOPRALLUOGATA:'',DISMESSA:'offline'};
@@ -2242,6 +2380,10 @@ createApp({
                     delete cab.stato;
                 }
                 if(cab.online_stato) delete cab.online_stato;
+                if(!cab.eventi) cab.eventi=[];
+                if(cab._newEventoData===undefined) cab._newEventoData=new Date().toISOString().split('T')[0];
+                if(cab._newEventoTipo===undefined) cab._newEventoTipo='';
+                if(cab._newEventoDesc===undefined) cab._newEventoDesc='';
             });
         },
         // ── LED COLOR per cabina ──
@@ -2453,10 +2595,12 @@ createApp({
                             }
                             return {modulo:c.modulo, fibre:c.fibre, destinazione:dest};
                         }),
-                        note: cab.note||''
+                        note: cab.note||'',
+                        eventi: (cab.eventi||[])
                     }))
                 };
                 this.rapp.localita=fs.anello_nome||fs.nome_primaria||fs.anello_primaria||'';
+                this.rapp.cabineDate = fs.date || new Date().toISOString().split('T')[0];
 
             } else if(type==='bretellaggio'){
                 const rows=sheets.flatMap(s=>s.rows||[]);
