@@ -100,21 +100,86 @@
         /* ── MISC ── */
         .safe-pb { padding-bottom:calc(env(safe-area-inset-bottom,0px) + 90px); }
 
-        /* ── MOBILE CABINE ── */
-        @media (max-width:600px){
-            .cab-grid { grid-template-columns:1fr !important; }
-            .cab-body { padding:14px !important; }
+        /* ══════════════════════════════════════════════
+           MOBILE — tutte le sezioni (max 640px)
+        ══════════════════════════════════════════════ */
+        @media (max-width:640px){
+
+            /* ── BASE GLOBALE ── */
+            * { box-sizing:border-box; }
+            input, select, textarea { max-width:100% !important; font-size:16px !important; }
+            .max-w-7xl.mx-auto { padding-left:10px !important; padding-right:10px !important; }
+
+            /* ── CARD PADDING ── */
+            .rounded-2xl.p-4, .rounded-2xl.p-5, .rounded-2xl.p-6 { padding:12px !important; }
+
+            /* ── HEADER SEZIONE ── */
+            .flex.items-center.justify-between { flex-wrap:wrap; gap:6px; }
+            .flex.items-center.gap-3 { flex-wrap:wrap; gap:6px; }
+            .flex.items-center.gap-2.mb-3 { flex-wrap:wrap; gap:6px; }
+            .flex.items-center.gap-2.mb-5 { flex-wrap:wrap; gap:6px; }
+
+            /* ── GRIDS GENERICI → 1 colonna ── */
+            [class*="grid-cols-2"]:not(.keep-2col),
+            [class*="grid-cols-3"]:not(.keep-3col),
+            [class*="grid-cols-4"]:not(.keep-4col) { grid-template-columns:1fr !important; }
+
+            /* Ore lavorate: mantieni 3 col (piccole) */
+            .grid.grid-cols-3.gap-3.pt-1 { grid-template-columns:1fr 1fr 1fr !important; }
+
+            /* ── CABINE ── */
+            .cab-grid  { grid-template-columns:1fr !important; }
+            .cab-body  { padding:12px !important; }
             .cab-header { flex-wrap:wrap; gap:6px; padding:10px 12px !important; }
-            .cab-stato-badge { font-size:9px !important; }
             .cab-fields-grid { grid-template-columns:1fr !important; }
-            .cab-toggle-row { flex-direction:column !important; gap:6px !important; }
-            .cab-conn-row { flex-wrap:wrap; gap:6px !important; }
-            .cab-conn-row select { min-width:0; flex:1 1 calc(50% - 6px) !important; font-size:13px !important; }
-            .anello-grid { grid-template-columns:1fr !important; }
+            .cab-toggle-row  { flex-direction:column !important; gap:6px !important; }
+            .cab-conn-row    { flex-wrap:wrap; gap:6px !important; }
+            .cab-conn-row select { min-width:0; flex:1 1 calc(50% - 6px) !important; }
+            .anello-grid    { grid-template-columns:1fr !important; }
             .anello-sw-grid { grid-template-columns:1fr !important; }
-            .pfs-fibre-row { flex-direction:column; align-items:flex-start !important; }
-            .ordine-anello-row { flex-wrap:wrap; }
+
+            /* Fibre PFS/PFP inline → colonna */
+            .flex.items-center.gap-2.mb-2:has(input[v-model*="pfs_nome"]),
+            .flex.items-center.gap-2.mb-2:has(input[v-model*="pfp_nome"]) { flex-wrap:wrap; }
+
+            /* ── GUASTI / CREATION ── */
+            .grid.grid-cols-1.md\\:grid-cols-2.gap-6 { grid-template-columns:1fr !important; }
+            .flex.justify-between.items-center.mb-4 { flex-wrap:wrap; gap:8px; }
+            .flex.justify-between.items-center.mb-4 select { flex:1; min-width:0; }
+
+            /* ── BRETELLAGGIO ── */
+            .grid.grid-cols-2.md\\:grid-cols-4.gap-4 { grid-template-columns:1fr 1fr !important; }
+            /* brtratte rows */
+            .flex.items-start.gap-1\\.5.group,
+            .flex.items-center.gap-1\\.5.group { flex-wrap:wrap; gap:5px; }
+            .flex.items-start.gap-1\\.5.group > input,
+            .flex.items-center.gap-1\\.5.group > input { min-width:0; flex:1 1 80px; }
+
+            /* ── SRB / INSTRADAMENTO ── */
+            .grid.grid-cols-2.gap-4.mb-5 { grid-template-columns:1fr !important; }
+            .grid.grid-cols-1.sm\\:grid-cols-2.gap-3 { grid-template-columns:1fr !important; }
+            .ml-auto.flex.items-center.gap-2 { flex-wrap:wrap; justify-content:flex-end; }
+
+            /* Tratta DA/A inner */
+            .grid.grid-cols-1.sm\\:grid-cols-2.gap-3.px-3.py-3 { grid-template-columns:1fr !important; }
+
+            /* ── TELAIO righe coordinate ── */
+            .telaio-riga { display:flex !important; flex-wrap:wrap; gap:6px; }
+            .telaio-riga .t-pos  { flex:0 0 72px; }
+            .telaio-riga .t-fibre { flex:1 1 120px; min-width:100px; }
+            .telaio-riga .t-note  { flex:1 1 100%; }
+            .telaio-riga .t-del   { flex:0 0 28px; }
+
+            /* ── BOTTOM BAR ── */
+            .bottom-bar .flex { gap:2px !important; }
+            .bottom-bar .min-w-\[56px\] { min-width:44px !important; }
+            .bottom-bar .w-12.h-12 { width:42px !important; height:42px !important; }
+            .bottom-bar .text-\[10px\] { font-size:9px !important; }
+
+            /* ── HEADER sticky bar ── */
+            .flex.overflow-x-auto.gap-2.px-3.py-2 { padding:6px 8px !important; gap:4px !important; }
         }
+
 
         @page { size:A4 portrait; margin:0; }
         @media print {
@@ -1303,6 +1368,76 @@
                     <i class="ph ph-plus-circle mr-1"></i> Aggiungi Tratta
                 </button>
             </div>
+
+            <!-- ══ TELAI POP ══ -->
+            <div class="rounded-2xl p-5 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-violet-800':'bg-white border-violet-300'">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-9 h-9 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+                        <i class="ph ph-stack text-violet-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-black text-base uppercase tracking-widest" :class="darkMode?'text-violet-400':'text-violet-700'">Telai POP</div>
+                        <div class="text-xs font-mono opacity-50">Coordinate telaio per ogni nodo</div>
+                    </div>
+                    <button @click="addTelaio" class="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all hover:scale-105 active:scale-95"
+                            :class="darkMode?'border-violet-700 text-violet-300 bg-violet-900/20 hover:bg-violet-900/40':'border-violet-300 text-violet-700 bg-violet-50 hover:bg-violet-100'">
+                        <i class="ph ph-plus-circle text-sm"></i> Aggiungi Telaio
+                    </button>
+                </div>
+
+                <div v-if="!currentSheet.srb_telai||!currentSheet.srb_telai.length"
+                     class="py-8 text-center text-xs font-mono italic rounded-xl border-2 border-dashed"
+                     :class="darkMode?'border-violet-900 text-gray-600':'border-violet-200 text-gray-400'">
+                    Nessun telaio — aggiungi con il pulsante
+                </div>
+
+                <div class="space-y-5">
+                    <div v-for="(tel, tIdx) in (currentSheet.srb_telai||[])" :key="tel.id"
+                         class="rounded-xl border-2 overflow-hidden"
+                         :class="darkMode?'border-violet-800/60 bg-violet-950/10':'border-violet-200 bg-violet-50/30'">
+
+                        <!-- Telaio header -->
+                        <div class="flex items-center gap-3 px-4 py-3 border-b" :class="darkMode?'border-violet-900/50 bg-violet-900/20':'border-violet-100 bg-violet-100/60'">
+                            <i class="ph ph-stack text-violet-400 text-base flex-shrink-0"></i>
+                            <input v-model="tel.nome_pop" class="flex-1 bg-transparent font-black text-sm outline-none border-b"
+                                   :class="darkMode?'border-violet-700 text-white placeholder-violet-900':'border-violet-300 text-violet-900 placeholder-violet-300'"
+                                   placeholder="Nome POP (es. NA_01 — Via Roma 12)">
+                            <button @click="currentSheet.srb_telai.splice(tIdx,1)" class="text-gray-500 hover:text-red-400 p-1 flex-shrink-0"><i class="ph ph-trash text-sm"></i></button>
+                        </div>
+
+                        <!-- Righe coordinate -->
+                        <div class="p-3 space-y-2">
+                            <div class="grid grid-cols-12 gap-1 mb-1 px-1 hidden sm:grid">
+                                <span class="col-span-2 text-[9px] font-black uppercase tracking-wider" :class="darkMode?'text-violet-400':'text-violet-600'">Posizione</span>
+                                <span class="col-span-4 text-[9px] font-black uppercase tracking-wider" :class="darkMode?'text-violet-400':'text-violet-600'">Fibre</span>
+                                <span class="col-span-4 text-[9px] font-black uppercase tracking-wider" :class="darkMode?'text-violet-400':'text-violet-600'">Note / Destinazione</span>
+                                <span class="col-span-2"></span>
+                            </div>
+
+                            <div v-for="(riga, rIdx) in (tel.righe||[])" :key="rIdx"
+                                 class="telaio-riga items-center rounded-lg px-2 py-2 border"
+                                 :class="darkMode?'border-violet-900/40 bg-black/20':'border-violet-100 bg-white'">
+                                <input v-model="riga.posizione" class="t-pos bg-transparent text-xs font-black font-mono outline-none border-b text-center"
+                                       :class="darkMode?'border-violet-800 text-violet-300':'border-violet-300 text-violet-700'"
+                                       placeholder="T1 R3">
+                                <input v-model="riga.fibre" class="t-fibre bg-transparent text-xs font-mono outline-none border-b"
+                                       :class="darkMode?'border-gray-700 text-white':'border-gray-300 text-gray-900'"
+                                       placeholder="F1→F14 / 77-90">
+                                <input v-model="riga.note" class="t-note bg-transparent text-xs outline-none border-b"
+                                       :class="darkMode?'border-gray-700 text-gray-300':'border-gray-300 text-gray-600'"
+                                       placeholder="Es. verso SRB Posillipo">
+                                <button @click="tel.righe.splice(rIdx,1)" class="t-del text-gray-500 hover:text-red-400 text-xs text-right"><i class="ph ph-x"></i></button>
+                            </div>
+
+                            <button @click="if(!tel.righe)tel.righe=[]; tel.righe.push({posizione:'',fibre:'',note:''})"
+                                    class="w-full py-1.5 rounded-lg border border-dashed text-[10px] font-bold transition-all"
+                                    :class="darkMode?'border-violet-900 text-violet-600 hover:bg-violet-900/20':'border-violet-200 text-violet-500 hover:bg-violet-50'">
+                                <i class="ph ph-plus mr-1"></i> Aggiungi riga
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- BOTTOM BAR – mobile native -->
@@ -2136,7 +2271,7 @@ createApp({
             }
             this.currentSheetIdx=0; this.view='editor'; if(type==='cabine'&&this.currentSheet) this.initBrtratteSez(this.currentSheet);
         },
-        makeSrbSheet(n){ return{id:Date.now()+Math.random(),name:'Instradamento '+n,date:new Date().toISOString().split('T')[0],team:'',localita_ref:'',assistente:'',mezzo:'',targa:'',srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[],h_ord:'',h_str:'',h_vg:''}; },
+        makeSrbSheet(n){ return{id:Date.now()+Math.random(),name:'Instradamento '+n,date:new Date().toISOString().split('T')[0],team:'',localita_ref:'',assistente:'',mezzo:'',targa:'',srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[],srb_telai:[],h_ord:'',h_str:'',h_vg:''}; },
         makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',localita_ref:'',assistente:'',mezzo:'',targa:'',h_ord:'',h_str:'',h_vg:'',rows:[],magazzino_items:[],magazzino_assistente:'',anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',note_primaria:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0,srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[]}; },
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
@@ -2151,7 +2286,10 @@ createApp({
             cab._newEventoData = new Date().toISOString().split('T')[0];
             this.showToast('✓ Attività aggiunta');
         },
-        addCabina(){ if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie=[]; this.currentSheet.cabine_secondarie.push(this.newCabina()); },
+        addTelaio(){
+            if(!this.currentSheet.srb_telai) this.currentSheet.srb_telai=[];
+            this.currentSheet.srb_telai.push({id:Date.now()+Math.random(), nome_pop:'', righe:[{posizione:'',fibre:'',note:''}]});
+        },
         addBretellaggioStep(sheet){ if(!sheet.bretellaggio) sheet.bretellaggio=[]; sheet.bretellaggio.push({nodo:'',direzione:'andata'}); },
         initBrtratteSez(sheet){ 
             if(!sheet.brtratte_sez||sheet.brtratte_sez.length<2){ 
@@ -3646,9 +3784,191 @@ createApp({
                 }
             }
 
+            // ═══════════════════════════════════════════════
+            // PAGINA TELAI POP
+            // ═══════════════════════════════════════════════
+            const telai = (s.srb_telai||[]).filter(t=>t.nome_pop||(t.righe&&t.righe.length));
+            if(telai.length > 0){
+                doc.addPage('a4','portrait');
+                const PW=210, PH=297, PMX=12;
+                const CONTENT_W = PW - PMX*2;
+
+                const drawTelaiHeader = () => {
+                    doc.setFillColor(248,248,255); doc.rect(0,0,PW,PH,'F');
+                    doc.setFillColor(243,240,255); doc.rect(0,0,PW,19,'F');
+                    doc.setFillColor(...VIOLET); doc.rect(0,0,PW,2.5,'F');
+                    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...INK);
+                    doc.text('FIBER',PMX,13); doc.setTextColor(...VIOLET); doc.text('REPORT',PMX+17,13);
+                    doc.setFont('helvetica','normal'); doc.setFontSize(5); doc.setTextColor(150,140,185);
+                    doc.text('PRO',PMX+50,13);
+                    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...VIOLET);
+                    doc.text('TELAI POP — COORDINATE FIBRE', PW-PMX, 11, {align:'right'});
+                    doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(100,95,140);
+                    doc.text([dateStr, team].filter(Boolean).join('   |   '), PW-PMX, 17, {align:'right'});
+                };
+                drawTelaiHeader();
+
+                // Rotta — usa testo ASCII puro, niente unicode speciale
+                const rotta = clean(tipoPartenza) + ': ' + clean(popStart||'—') + '  ->  ' + clean(tipoArrivo) + ': ' + clean(antenna||'—');
+                doc.setFillColor(235,228,255);
+                doc.roundedRect(PMX, 21, CONTENT_W, 8, 1.5, 1.5, 'F');
+                doc.setDrawColor(...VIOLET); doc.setLineWidth(0.3);
+                doc.roundedRect(PMX, 21, CONTENT_W, 8, 1.5, 1.5, 'S');
+                doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...VIOLET);
+                doc.text(rotta, PW/2, 26.5, {align:'center'});
+
+                // Colonne: POSIZIONE = 68mm, FIBRE = 66mm, NOTE = resto (~52mm)
+                // POSIZIONE è la più importante — prende metà pagina utile
+                const CW_POS  = 68;
+                const CW_FIB  = 66;
+                const CW_NOTE = CONTENT_W - CW_POS - CW_FIB;
+                const COL_POS_X  = PMX;
+                const COL_FIB_X  = PMX + CW_POS;
+                const COL_NOTE_X = PMX + CW_POS + CW_FIB;
+                const CH  = 7;    // intestazione colonne
+                const HDR = 10;   // altezza header telaio
+                const LINE_H = 4; // interlinea testo
+
+                // Funzione: calcola altezza riga in base al contenuto più alto
+                const calcRH = (r) => {
+                    doc.setFont('helvetica','bold'); doc.setFontSize(7);
+                    const posLines = r.posizione ? doc.splitTextToSize(clean(r.posizione), CW_POS-6).length : 1;
+                    doc.setFont('courier','bold'); doc.setFontSize(7);
+                    const fibLines = r.fibre ? doc.splitTextToSize(clean(r.fibre), CW_FIB-6).length : 1;
+                    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+                    const noteLines = r.note ? doc.splitTextToSize(clean(r.note), CW_NOTE-6).length : 1;
+                    const maxLines = Math.max(posLines, fibLines, noteLines);
+                    return Math.max(9, maxLines * LINE_H + 5);
+                };
+
+                // Funzione: disegna intestazione colonne
+                const drawColHeader = (y) => {
+                    doc.setFillColor(...VIOLET.map(v=>Math.min(v+55,255)));
+                    doc.rect(PMX, y, CONTENT_W, CH, 'F');
+                    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(255,255,255);
+                    doc.text('POSIZIONE',    COL_POS_X  + CW_POS/2,  y+5, {align:'center'});
+                    doc.text('FIBRE',        COL_FIB_X  + CW_FIB/2,  y+5, {align:'center'});
+                    doc.text('NOTE / DEST.', COL_NOTE_X + CW_NOTE/2, y+5, {align:'center'});
+                    doc.setDrawColor(255,255,255); doc.setLineWidth(0.5);
+                    doc.line(COL_FIB_X,  y, COL_FIB_X,  y+CH);
+                    doc.line(COL_NOTE_X, y, COL_NOTE_X, y+CH);
+                };
+
+                let ty = 32;
+
+                telai.forEach((tel, ti) => {
+                    const righe = (tel.righe||[]).filter(r => r.posizione||r.fibre||r.note);
+                    // Stima altezza blocco (almeno header + col header + 1 riga)
+                    const estBlockH = HDR + 1 + CH + (righe.length > 0 ? righe.reduce((s,r)=>s+calcRH(r), 0) : 12) + 8;
+
+                    if(ty + Math.min(estBlockH, 60) > PH - 20){
+                        doc.addPage('a4','portrait');
+                        drawTelaiHeader();
+                        ty = 22;
+                    }
+
+                    // ── Header telaio ──
+                    doc.setFillColor(...VIOLET);
+                    doc.roundedRect(PMX, ty, CONTENT_W, HDR, 2, 2, 'F');
+                    doc.setFillColor(255,255,255);
+                    doc.roundedRect(PMX+2, ty+2, 16, 6, 1.5, 1.5, 'F');
+                    doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...VIOLET);
+                    doc.text('T ' + (ti+1), PMX+10, ty+6.5, {align:'center'});
+                    const nomePop = clean(tel.nome_pop||('POP ' + (ti+1)));
+                    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(255,255,255);
+                    doc.text(nomePop.substring(0,42), PMX+22, ty+7);
+                    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(210,200,250);
+                    doc.text((ti+1) + ' di ' + telai.length, PW-PMX-2, ty+7, {align:'right'});
+                    ty += HDR + 1;
+
+                    if(righe.length === 0){
+                        doc.setFillColor(248,246,255);
+                        doc.roundedRect(PMX, ty, CONTENT_W, 12, 0, 2, 'F');
+                        doc.setFont('helvetica','italic'); doc.setFontSize(7); doc.setTextColor(170,160,210);
+                        doc.text('Nessuna riga coordinata inserita', PW/2, ty+7.5, {align:'center'});
+                        ty += 16;
+                        return;
+                    }
+
+                    // Intestazione colonne
+                    drawColHeader(ty);
+                    ty += CH;
+
+                    const rowsStartY = ty;
+
+                    // ── Righe dati con altezza dinamica ──
+                    righe.forEach((r, ri) => {
+                        const rh = calcRH(r);
+
+                        if(ty + rh > PH - 18){
+                            doc.addPage('a4','portrait');
+                            drawTelaiHeader();
+                            ty = 22;
+                            drawColHeader(ty);
+                            ty += CH;
+                        }
+
+                        // Sfondo zebra
+                        doc.setFillColor(...(ri%2===0 ? [249,247,255] : [255,255,255]));
+                        doc.rect(PMX, ty, CONTENT_W, rh, 'F');
+
+                        // Bordi
+                        doc.setDrawColor(225,220,242); doc.setLineWidth(0.15);
+                        doc.line(PMX, ty+rh, PMX+CONTENT_W, ty+rh);
+                        doc.setDrawColor(215,210,238); doc.setLineWidth(0.2);
+                        doc.line(COL_FIB_X,  ty, COL_FIB_X,  ty+rh);
+                        doc.line(COL_NOTE_X, ty, COL_NOTE_X, ty+rh);
+
+                        const PAD_TOP = 3.5;
+
+                        // ── POSIZIONE — testo viola wrappato, NO troncamento ──
+                        if(r.posizione){
+                            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...VIOLET);
+                            const posLines = doc.splitTextToSize(clean(r.posizione), CW_POS-6);
+                            posLines.forEach((line, li) => {
+                                doc.text(line, COL_POS_X+3, ty + PAD_TOP + li*LINE_H);
+                            });
+                        }
+
+                        // ── FIBRE — monospace wrappato ──
+                        if(r.fibre){
+                            doc.setFont('courier','bold'); doc.setFontSize(7); doc.setTextColor(...INK);
+                            const fibLines = doc.splitTextToSize(clean(r.fibre), CW_FIB-6);
+                            fibLines.forEach((line, li) => {
+                                doc.text(line, COL_FIB_X+3, ty + PAD_TOP + li*LINE_H);
+                            });
+                        }
+
+                        // ── NOTE — normale wrappato ──
+                        if(r.note){
+                            doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(70,65,110);
+                            const noteLines = doc.splitTextToSize(clean(r.note), CW_NOTE-6);
+                            noteLines.forEach((line, li) => {
+                                doc.text(line, COL_NOTE_X+3, ty + PAD_TOP + li*LINE_H);
+                            });
+                        }
+
+                        ty += rh;
+                    });
+
+                    // Bordo esterno blocco
+                    if(ty <= PH - 18){
+                        doc.setDrawColor(...VIOLET.map(v=>Math.min(v+130,255)));
+                        doc.setLineWidth(0.4);
+                        const blockTop = rowsStartY - CH - HDR - 1;
+                        doc.roundedRect(PMX, blockTop, CONTENT_W, ty - blockTop, 2, 2, 'S');
+                    }
+
+                    ty += 7;
+                });
+
+                this._pdfFooter(doc, VIOLET, PH);
+            }
+
             doc.save('InstFibre_'+(clean(s.srb_antenna)||'destinazione')+'_'+((s.date||'').replace(/-/g,''))+'.pdf');
             this.showToast('PDF Instradamento Fibre esportato!');
         },
+
 
         exportBretellaggioPDF(){
             if(!window.jspdf){ this.showToast('Errore: jsPDF non disponibile'); return; }
@@ -4054,6 +4374,19 @@ createApp({
                     if(tr.note)     msg+=`  Note: ${tr.note}\n`;
                     msg+='─────\n';
                 });
+                // Telai POP
+                const telai=(s.srb_telai||[]).filter(t=>t.nome_pop||(t.righe&&t.righe.length));
+                if(telai.length){
+                    msg+=`\n📦 *TELAI POP*\n`;
+                    telai.forEach((tel,ti)=>{
+                        msg+=`\n*Telaio ${ti+1}: ${tel.nome_pop||'—'}*\n`;
+                        (tel.righe||[]).filter(r=>r.posizione||r.fibre||r.note).forEach(r=>{
+                            msg+=`  ${r.posizione||'—'} │ ${r.fibre||'—'}`;
+                            if(r.note) msg+=` → ${r.note}`;
+                            msg+=`\n`;
+                        });
+                    });
+                }
             }
             // Clipboard + WA
             this.triggerWa(msg);
