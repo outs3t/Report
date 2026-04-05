@@ -19,80 +19,241 @@
         }
     </script>
     <style>
+        /* ══════════════════════════════════════════════
+           CSS VARIABLES — dark & light tokens
+        ══════════════════════════════════════════════ */
+        :root {
+            --bg-app:       #f9fafb;
+            --bg-card:      #ffffff;
+            --bg-card-2:    #f3f4f6;
+            --bg-input:     transparent;
+            --border:       #d1d5db;
+            --border-light: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary:#4b5563;
+            --text-muted:   #9ca3af;
+            --shadow:       0 4px 20px rgba(0,0,0,.08);
+        }
+        .dark {
+            --bg-app:       #050505;
+            --bg-card:      #121212;
+            --bg-card-2:    #1a1a1a;
+            --bg-input:     transparent;
+            --border:       #2d2d2d;
+            --border-light: #1f1f1f;
+            --text-primary: #f9fafb;
+            --text-secondary:#9ca3af;
+            --text-muted:   #6b7280;
+            --shadow:       0 4px 20px rgba(0,0,0,.5);
+        }
+
+        /* ══════════════════════════════════════════════
+           DARK MODE — force override Tailwind utilities
+           Tailwind bg-white/bg-gray-* have high specificity;
+           these rules ensure nothing stays white in dark mode.
+        ══════════════════════════════════════════════ */
+        .dark { background-color:#050505; color:#f9fafb; }
+
+        /* Backgrounds */
+        .dark .bg-white          { background-color:#121212 !important; }
+        .dark .bg-gray-50        { background-color:#111111 !important; }
+        .dark .bg-gray-100       { background-color:#1a1a1a !important; }
+        .dark .bg-gray-200       { background-color:#222222 !important; }
+        .dark .bg-gray-800       { background-color:#1e1e1e !important; }
+        .dark .bg-gray-900       { background-color:#141414 !important; }
+        .dark .hover\:bg-gray-200:hover { background-color:#2a2a2a !important; }
+        .dark .hover\:bg-gray-500\/10:hover { background-color:rgba(255,255,255,.06) !important; }
+
+        /* Text */
+        .dark .text-gray-900     { color:#f3f4f6 !important; }
+        .dark .text-gray-800     { color:#e5e7eb !important; }
+        .dark .text-gray-700     { color:#d1d5db !important; }
+        .dark .text-gray-600     { color:#9ca3af !important; }
+        .dark .text-gray-500     { color:#6b7280 !important; }
+        .dark .text-black        { color:#f9fafb !important; }
+
+        /* Borders */
+        .dark .border-gray-200   { border-color:#2d2d2d !important; }
+        .dark .border-gray-300   { border-color:#3d3d3d !important; }
+        .dark .border-gray-100   { border-color:#1f1f1f !important; }
+
+        /* Placeholders */
+        .dark input::placeholder,
+        .dark textarea::placeholder { color:#4b5563 !important; }
+
+        /* Selects — bg-transparent shows OS white on macOS/iOS, force dark */
+        .dark select,
+        .dark select.f-input,
+        .dark select[class*="bg-transparent"] { background-color:#1a1a1a !important; color:#f9fafb !important; }
+        .dark select option      { background-color:#1a1a1a !important; color:#f9fafb !important; }
+
+        /* Rounded cards that use bg-white / bg-gray-50 but no dark class */
+        .dark .rounded-2xl:not([class*="bg-["]):not([class*="bg-emerald"]):not([class*="bg-orange"]):not([class*="bg-cyan"]):not([class*="bg-purple"]):not([class*="bg-violet"]):not([class*="bg-blue"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-yellow"]):not([class*="bg-amber"]):not([class*="bg-black"]):not([class*="bg-gradient"]):not(.a4-page):not(.tech-box) {
+            background-color:#121212;
+            border-color:#2d2d2d;
+        }
+        /* Sub-panels: rounded-xl and rounded-lg without explicit dark bg */
+        .dark .rounded-xl:not([class*="bg-"]):not(.sheet-tab):not(.type-card) { background-color:#1a1a1a; border-color:#2d2d2d; }
+        .dark .rounded-3xl:not([class*="bg-["]):not([class*="bg-emerald"]):not([class*="bg-orange"]):not([class*="bg-cyan"]):not([class*="bg-purple"]):not([class*="bg-violet"]):not([class*="bg-blue"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-yellow"]):not([class*="bg-amber"]):not([class*="bg-black"]):not([class*="bg-white"]):not([class*="bg-gradient"]) { background-color:#121212; }
+
+        /* Bottom bar */
+        .dark .bottom-bar        { background-color:rgba(10,10,10,.96) !important;
+                                   border-color:#1f1f1f !important; }
+
+        /* Header sticky */
+        .dark header              { background-color:rgba(10,10,10,.95) !important;
+                                    border-color:#1f1f1f !important; }
+
+        /* Modals inner panels */
+        .dark .rapportino-panel  { background-color:#111827; }
+
+        /* Tab pills */
+        .dark .sheet-tab         { color:#9ca3af; }
+
+        /* Rapportino PDF button override */
+        .dark .bg-white.text-black { background-color:#e5e7eb !important; color:#111827 !important; }
+
+        /* ── CATCH-ALL: app root and all direct children in dark mode ── */
+        .dark #app { background-color:#050505; min-height:100vh; }
+        .dark #app > div { background-color:#050505; }
+        .dark main  { background-color:#050505; }
+
+        /* All sections that contain cards but aren't themselves cards */
+        .dark .space-y-4,
+        .dark .space-y-5,
+        .dark .space-y-6 { background:transparent; }
+
+        /* The grid container for guasti/creation cards */
+        .dark .grid.grid-cols-1 { background:transparent; }
+
+        /* Ensure all remaining selects are dark (belt-and-suspenders) */
+        .dark select             { background-color:#1a1a1a !important; color:#f9fafb !important; border-color:#2d2d2d !important; }
+        .dark select option      { background-color:#1a1a1a !important; color:#f9fafb !important; }
+
+        /* Fix: rapportino sticky nav bar */
+        .dark .rapportino-panel .sticky { background-color:#0f172a !important; }
+
+        /* Fix: SRB tratta cards */
+        .dark .rounded-xl.border-2:not([class*="border-blue"]):not([class*="border-green"]):not([class*="border-orange"]):not([class*="border-violet"]):not([class*="border-purple"]):not([class*="border-emerald"]):not([class*="border-cyan"]):not([class*="border-red"]):not([class*="border-yellow"]):not([class*="border-amber"]) { background-color:#141414; border-color:#2a2a2a; }
+
+        /* Fix: any leftover white panels */
+        .dark [class*="bg-white\/"] { background-color:rgba(255,255,255,.03) !important; }
+
+        /* Fix: input placeholder visibility in dark */
+        .dark input::placeholder,
+        .dark textarea::placeholder { color:#374151 !important; opacity:1; }
+
+        /* Fix: transparent inputs get card bg in dark so they look contained */
+        .dark .f-input { border-bottom-color:#2d2d2d; color:#f9fafb; }
+        .dark .f-textarea { border-color:#2d2d2d; color:#f9fafb; }
+
+        /* Fix: tech-table in rapportino (stays white - it's A4 content, intentional) */
+        /* Fix: magazzino header text */
+        .dark .text-xs.font-mono.opacity-50 { color:#6b7280 !important; opacity:1 !important; }
+
         /* ── BASE ── */
-        *{ -webkit-tap-highlight-color:transparent; box-sizing:border-box; }
-        body { transition:background-color .3s,color .3s; -webkit-text-size-adjust:100%; }
+        *, *::before, *::after { -webkit-tap-highlight-color:transparent; box-sizing:border-box; }
+        body { transition:background-color .3s,color .3s; -webkit-text-size-adjust:100%;
+               background:var(--bg-app); color:var(--text-primary); overflow-x:hidden; }
 
         /* ── INPUTS ── */
-        .f-input  { width:100%; background:transparent; border-bottom-width:1px; padding:10px 0; outline:none; font-weight:600; transition:all .3s; font-size:16px; /* 16px prevents iOS zoom */ }
-        .f-input:focus { border-color:#ff8000 !important; }
-        .f-textarea { width:100%; background:transparent; border:1px solid; border-radius:12px; padding:12px; outline:none; resize:vertical; min-height:80px; font-size:16px; font-weight:500; transition:all .3s; }
+        .f-input  { width:100%; background:var(--bg-input); border-bottom:1px solid var(--border);
+                    padding:10px 0; outline:none; font-weight:600; transition:border-color .2s;
+                    font-size:16px; color:var(--text-primary); }
+        .f-input:focus  { border-color:#ff8000 !important; }
+        .f-textarea { width:100%; background:var(--bg-input); border:1px solid var(--border);
+                      border-radius:12px; padding:12px; outline:none; resize:vertical;
+                      min-height:80px; font-size:16px; font-weight:500;
+                      color:var(--text-primary); transition:border-color .2s; }
         .f-textarea:focus { border-color:#ff8000 !important; }
-        select.f-input { font-size:16px; }
+        select.f-input  { font-size:16px; background:var(--bg-card); }
+        .dark select.f-input  { background:var(--bg-card); color:var(--text-primary); }
+        .dark select.f-input option { background:#1a1a1a; color:#f9fafb; }
 
-        .smart-caps { text-transform:capitalize; }
-        .field-label { font-size:11px; text-transform:uppercase; font-weight:700; margin-bottom:6px; display:block; letter-spacing:.05em; }
-        .checkbox-box { min-width:26px; height:26px; border:2px solid #06b6d4; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
-        .checkbox-box.active { background-color:#06b6d4; }
+        .smart-caps   { text-transform:capitalize; }
+        .field-label  { font-size:11px; text-transform:uppercase; font-weight:700;
+                        margin-bottom:6px; display:block; letter-spacing:.05em;
+                        color:var(--text-secondary); }
+        .checkbox-box { min-width:26px; height:26px; border:2px solid #06b6d4; border-radius:8px;
+                        display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
+        .checkbox-box.active { background:#06b6d4; }
+
+        /* ── CARD BASE ── */
+        .fiber-card { border-radius:20px; border-width:2px; overflow:hidden; transition:all .3s; }
+        .fcard      { background:var(--bg-card); border:2px solid var(--border); border-radius:20px;
+                      box-shadow:var(--shadow); }
 
         /* ── SCROLLBAR ── */
         ::-webkit-scrollbar { height:3px; width:3px; }
         ::-webkit-scrollbar-thumb { background:#ff8000; border-radius:10px; }
-
-        /* ── MIC ── */
-        /* mic-active rimosso - ora usa animate-ping Tailwind */
 
         /* ── DATE PICKER ── */
         input[type="date"]::-webkit-calendar-picker-indicator { cursor:pointer; filter:invert(.5); }
         .dark input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(1); }
 
         /* ── RAPPORTINO PANEL ── */
-        .rapportino-panel { position:fixed; inset:0; z-index:80; background:#111827; transform:translateX(100%); transition:transform .35s cubic-bezier(.25,.46,.45,.94); overflow-y:auto; }
+        .rapportino-panel { position:fixed; inset:0; z-index:80; background:#111827;
+                            transform:translateX(100%); transition:transform .35s cubic-bezier(.25,.46,.45,.94);
+                            overflow-y:auto; }
         .rapportino-panel.open { transform:translateX(0); }
 
         /* ── A4 PAGE ── */
-        .a4-page { width:210mm; min-height:296mm; background:white; margin:0 auto; padding:6mm 9mm; box-shadow:0 20px 50px rgba(0,0,0,.5); display:flex; flex-direction:column; position:relative; }
+        .a4-page { width:210mm; min-height:296mm; background:white; margin:0 auto;
+                   padding:6mm 9mm; box-shadow:0 20px 50px rgba(0,0,0,.5);
+                   display:flex; flex-direction:column; position:relative; }
         @media (max-width:900px) { .a4-page { min-width:210mm; } .screen-wrapper { justify-content:flex-start; } }
-        .screen-wrapper { padding:24px 10px 40px; display:flex; justify-content:flex-start; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        .screen-wrapper { padding:24px 10px 40px; display:flex; justify-content:flex-start;
+                          overflow-x:auto; -webkit-overflow-scrolling:touch; background:#111827; }
+        .dark .screen-wrapper { background:#0a0a0a; }
 
         /* ── RAPPORTINO INPUTS ── */
-        .r-input { width:100%; background:transparent; border:none; outline:none; font-size:10px; font-weight:600; color:#111827; padding:0; margin:0; text-transform:capitalize; font-family:'Inter',sans-serif; }
+        .r-input { width:100%; background:transparent; border:none; outline:none;
+                   font-size:10px; font-weight:600; color:#111827; padding:0; margin:0;
+                   text-transform:capitalize; font-family:'Inter',sans-serif; }
         .r-input::placeholder { color:#d1d5db; font-weight:400; text-transform:none; }
         textarea.r-input { resize:none; overflow:hidden; min-height:16px; line-height:1.3; display:block; }
-        .tech-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:4px; padding:4px 7px; margin-bottom:5px; }
+        .tech-box   { background:#f9fafb; border:1px solid #e5e7eb; border-radius:4px; padding:4px 7px; margin-bottom:5px; }
         .tech-label { font-family:'JetBrains Mono',monospace; font-size:7px; text-transform:uppercase; color:#6b7280; display:block; margin-bottom:1px; }
         .tech-table { width:100%; border-collapse:collapse; font-size:9px; }
         .tech-table th { text-align:left; font-family:'JetBrains Mono',monospace; font-size:7px; color:#6b7280; text-transform:uppercase; padding:3px 0; border-bottom:2px solid #111827; }
         .tech-table td { padding:4px 3px; border-bottom:1px solid #f3f4f6; vertical-align:top; }
         .tech-table tr:last-child td { border-bottom:none; }
-        .mono { font-family:'JetBrains Mono',monospace; }
-        .print-text { font-size:10px; font-weight:600; color:#000; white-space:pre-wrap; line-height:1.3; text-transform:capitalize; }
+        .mono           { font-family:'JetBrains Mono',monospace; }
+        .print-text     { font-size:10px; font-weight:600; color:#000; white-space:pre-wrap; line-height:1.3; text-transform:capitalize; }
         .signature-font { font-family:'Dancing Script',cursive; font-size:1.6rem; line-height:1; }
-        .header-bar { border-left:4px solid #2563eb; padding-left:8px; }
+        .header-bar     { border-left:4px solid #2563eb; padding-left:8px; }
 
         /* ── TOAST ── */
-        .toast { position:fixed; bottom:env(safe-area-inset-bottom,0px); bottom:calc(env(safe-area-inset-bottom,0px) + 88px); left:50%; transform:translateX(-50%) translateY(20px); background:#ff8000; color:white; font-weight:700; font-size:13px; padding:11px 28px; border-radius:100px; z-index:300; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; white-space:nowrap; }
+        .toast { position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 88px); left:50%;
+                 transform:translateX(-50%) translateY(20px); background:#ff8000; color:white;
+                 font-weight:700; font-size:13px; padding:11px 28px; border-radius:100px;
+                 z-index:300; opacity:0; transition:opacity .3s,transform .3s;
+                 pointer-events:none; white-space:nowrap; }
         .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
         /* ── WELCOME CARDS ── */
-        .type-card { border:2px solid transparent; border-radius:18px; padding:20px; cursor:pointer; transition:all .2s; active:scale(0.97); }
+        .type-card { border:2px solid transparent; border-radius:18px; padding:20px;
+                     cursor:pointer; transition:all .2s; }
         @media (hover:hover){ .type-card:hover { transform:translateY(-3px); } }
         .type-card:active { transform:scale(.97); }
 
         /* ── MOBILE NAV / TABS ── */
-        .sheet-tab { flex:0 0 auto; padding:8px 16px; border-radius:10px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; cursor:pointer; transition:all .2s; white-space:nowrap; }
-
-        /* ── CARD ── */
-        .fiber-card { border-radius:20px; border-width:2px; overflow:hidden; transition:all .3s; }
+        .sheet-tab { flex:0 0 auto; padding:8px 16px; border-radius:10px; font-size:12px;
+                     font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+                     cursor:pointer; transition:all .2s; white-space:nowrap; }
 
         /* ── BOTTOM BAR ── */
-        .bottom-bar { position:fixed; bottom:0; left:0; right:0; z-index:50; padding-bottom:env(safe-area-inset-bottom,0px); }
+        .bottom-bar { position:fixed; bottom:0; left:0; right:0; z-index:50;
+                      padding-bottom:env(safe-area-inset-bottom,0px); }
 
         /* ── MODAL FULLSCREEN ON MOBILE ── */
         @media (max-width:640px) {
-            .modal-full { position:fixed !important; inset:0 !important; border-radius:0 !important; max-width:100% !important; height:100% !important; overflow-y:auto; }
-            .fiber-manager-layout { flex-direction:column !important; height:auto !important; }
-            .fiber-manager-sidebar { width:100% !important; border-right:none !important; border-bottom:1px solid rgba(255,255,255,.1); flex-direction:row; flex-wrap:wrap; padding:8px; gap:6px; }
+            .modal-full { position:fixed !important; inset:0 !important; border-radius:0 !important;
+                          max-width:100% !important; height:100% !important; overflow-y:auto; }
+            .fiber-manager-layout  { flex-direction:column !important; height:auto !important; }
+            .fiber-manager-sidebar { width:100% !important; border-right:none !important;
+                                     border-bottom:1px solid rgba(255,255,255,.1);
+                                     flex-direction:row; flex-wrap:wrap; padding:8px; gap:6px; }
             .fiber-manager-sidebar .std-item { flex:0 0 auto; border-radius:10px; }
             .fiber-manager-main { flex:1; min-height:60vh; }
         }
@@ -104,82 +265,89 @@
            MOBILE — tutte le sezioni (max 640px)
         ══════════════════════════════════════════════ */
         @media (max-width:640px){
-
-            /* ── BASE GLOBALE ── */
-            * { box-sizing:border-box; }
-            input, select, textarea { max-width:100% !important; font-size:16px !important; }
+            /* ── BASE ── */
+            html, body { overflow-x:hidden; width:100%; }
+            * { max-width:100%; }
+            input, select, textarea { font-size:16px !important; width:100%; }
             .max-w-7xl.mx-auto { padding-left:10px !important; padding-right:10px !important; }
 
             /* ── CARD PADDING ── */
-            .rounded-2xl.p-4, .rounded-2xl.p-5, .rounded-2xl.p-6 { padding:12px !important; }
+            .rounded-2xl.p-4,
+            .rounded-2xl.p-5,
+            .rounded-2xl.p-6 { padding:12px !important; }
 
-            /* ── HEADER SEZIONE ── */
-            .flex.items-center.justify-between { flex-wrap:wrap; gap:6px; }
-            .flex.items-center.gap-3 { flex-wrap:wrap; gap:6px; }
-            .flex.items-center.gap-2.mb-3 { flex-wrap:wrap; gap:6px; }
-            .flex.items-center.gap-2.mb-5 { flex-wrap:wrap; gap:6px; }
-
-            /* ── GRIDS GENERICI → 1 colonna ── */
+            /* ── GRIDS → 1 col on mobile ── */
             [class*="grid-cols-2"]:not(.keep-2col),
             [class*="grid-cols-3"]:not(.keep-3col),
             [class*="grid-cols-4"]:not(.keep-4col) { grid-template-columns:1fr !important; }
-
-            /* Ore lavorate: mantieni 3 col (piccole) */
+            /* Ore: mantieni 3 col */
             .grid.grid-cols-3.gap-3.pt-1 { grid-template-columns:1fr 1fr 1fr !important; }
 
-            /* ── CABINE ── */
-            .cab-grid  { grid-template-columns:1fr !important; }
-            .cab-body  { padding:12px !important; }
-            .cab-header { flex-wrap:wrap; gap:6px; padding:10px 12px !important; }
-            .cab-fields-grid { grid-template-columns:1fr !important; }
-            .cab-toggle-row  { flex-direction:column !important; gap:6px !important; }
-            .cab-conn-row    { flex-wrap:wrap; gap:6px !important; }
-            .cab-conn-row select { min-width:0; flex:1 1 calc(50% - 6px) !important; }
-            .anello-grid    { grid-template-columns:1fr !important; }
-            .anello-sw-grid { grid-template-columns:1fr !important; }
+            /* ── FLEX ROWS → wrap ── */
+            .flex.items-center.justify-between { flex-wrap:wrap; gap:6px; }
+            .flex.items-center.gap-3 { flex-wrap:wrap; gap:6px; }
 
-            /* Fibre PFS/PFP inline → colonna */
-            .flex.items-center.gap-2.mb-2:has(input[v-model*="pfs_nome"]),
-            .flex.items-center.gap-2.mb-2:has(input[v-model*="pfp_nome"]) { flex-wrap:wrap; }
+            /* ── BOTTONE X MATERIALE — sempre visibile su mobile ── */
+            .group .opacity-0 { opacity:1 !important; }
+            .mat-del { opacity:1 !important; min-width:40px; min-height:40px;
+                       display:flex; align-items:center; justify-content:center; }
+            /* Riga materiale → stack se stretta */
+            .mat-row { flex-wrap:wrap; gap:6px; }
+            .mat-row input  { flex:1 1 160px; min-width:0; }
+            .mat-row button { flex:0 0 40px; min-height:40px; }
 
-            /* ── GUASTI / CREATION ── */
+            /* ── GUASTI / CREATION card ── */
             .grid.grid-cols-1.md\\:grid-cols-2.gap-6 { grid-template-columns:1fr !important; }
             .flex.justify-between.items-center.mb-4 { flex-wrap:wrap; gap:8px; }
             .flex.justify-between.items-center.mb-4 select { flex:1; min-width:0; }
 
-            /* ── BRETELLAGGIO ── */
+            /* Card header: stato select non tronca */
+            .fiber-card .flex.justify-between select { flex:1; min-width:120px; font-size:12px; }
+
+            /* ── CABINE ── */
+            .cab-grid       { grid-template-columns:1fr !important; }
+            .cab-body       { padding:12px !important; }
+            .cab-header     { flex-wrap:wrap; gap:6px; padding:10px 12px !important; }
+            .cab-fields-grid{ grid-template-columns:1fr !important; }
+            .cab-toggle-row { flex-direction:column !important; gap:6px !important; }
+            .cab-conn-row   { flex-wrap:wrap; gap:6px !important; }
+            .cab-conn-row select { min-width:0; flex:1 1 calc(50% - 6px) !important; }
+            .anello-grid    { grid-template-columns:1fr !important; }
+            .anello-sw-grid { grid-template-columns:1fr !important; }
+
+            /* ── BRETELLAGGIO brtratte ── */
             .grid.grid-cols-2.md\\:grid-cols-4.gap-4 { grid-template-columns:1fr 1fr !important; }
-            /* brtratte rows */
             .flex.items-start.gap-1\\.5.group,
             .flex.items-center.gap-1\\.5.group { flex-wrap:wrap; gap:5px; }
             .flex.items-start.gap-1\\.5.group > input,
             .flex.items-center.gap-1\\.5.group > input { min-width:0; flex:1 1 80px; }
 
-            /* ── SRB / INSTRADAMENTO ── */
+            /* ── SRB ── */
             .grid.grid-cols-2.gap-4.mb-5 { grid-template-columns:1fr !important; }
             .grid.grid-cols-1.sm\\:grid-cols-2.gap-3 { grid-template-columns:1fr !important; }
+            .grid.grid-cols-1.sm\\:grid-cols-2.gap-3.px-3.py-3 { grid-template-columns:1fr !important; }
             .ml-auto.flex.items-center.gap-2 { flex-wrap:wrap; justify-content:flex-end; }
 
-            /* Tratta DA/A inner */
-            .grid.grid-cols-1.sm\\:grid-cols-2.gap-3.px-3.py-3 { grid-template-columns:1fr !important; }
-
-            /* ── TELAIO righe coordinate ── */
-            .telaio-riga { display:flex !important; flex-wrap:wrap; gap:6px; }
-            .telaio-riga .t-pos  { flex:0 0 72px; }
-            .telaio-riga .t-fibre { flex:1 1 120px; min-width:100px; }
-            .telaio-riga .t-note  { flex:1 1 100%; }
-            .telaio-riga .t-del   { flex:0 0 28px; }
+            /* ── TELAIO ── */
+            .telaio-riga         { display:flex !important; flex-wrap:wrap; gap:6px; }
+            .telaio-riga .t-pos  { display:none; }
+            .telaio-riga .t-fibre{ flex:1 1 120px; min-width:100px; }
+            .telaio-riga .t-note { flex:1 1 100%; }
+            .telaio-riga .t-del  { flex:0 0 40px; min-height:40px;
+                                   display:flex; align-items:center; justify-content:center; }
 
             /* ── BOTTOM BAR ── */
-            .bottom-bar .flex { gap:2px !important; }
+            .bottom-bar .flex         { gap:2px !important; }
             .bottom-bar .min-w-\[56px\] { min-width:44px !important; }
-            .bottom-bar .w-12.h-12 { width:42px !important; height:42px !important; }
-            .bottom-bar .text-\[10px\] { font-size:9px !important; }
+            .bottom-bar .w-12.h-12    { width:42px !important; height:42px !important; }
+            .bottom-bar .text-\[10px\]{ font-size:9px !important; }
 
-            /* ── HEADER sticky bar ── */
+            /* ── HEADER BAR ── */
             .flex.overflow-x-auto.gap-2.px-3.py-2 { padding:6px 8px !important; gap:4px !important; }
-        }
 
+            /* ── WA PICKER modal ── */
+            .showWaPicker-modal { max-width:calc(100vw - 32px) !important; }
+        }
 
         @page { size:A4 portrait; margin:0; }
         @media print {
@@ -187,7 +355,8 @@
             body { background:white; margin:0; }
             .rapportino-panel { position:static; transform:none; overflow:visible; background:white; }
             .screen-wrapper { padding:0; }
-            .a4-page { margin:0; box-shadow:none; width:210mm; height:296mm; padding:6mm 9mm; box-sizing:border-box; display:flex; flex-direction:column; position:relative; overflow:hidden; }
+            .a4-page { margin:0; box-shadow:none; width:210mm; height:296mm; padding:6mm 9mm;
+                       box-sizing:border-box; display:flex; flex-direction:column; position:relative; overflow:hidden; }
             .a4-page > div:first-child { flex:1; min-height:0; display:flex; flex-direction:column; }
             .rapp-section-02 { flex:1; min-height:0; overflow:hidden; }
             .a4-page.a4-multipage { height:auto !important; overflow:visible !important; }
@@ -195,20 +364,19 @@
             .a4-page.a4-multipage .rapp-section-02 { overflow:visible !important; flex:none !important; }
             .a4-page.a4-multipage .rapp-cabine-inner { overflow:visible !important; max-height:none !important; }
             .rapp-footer { position:absolute !important; bottom:6mm; left:9mm; right:9mm; background:white; }
-            .a4-page.a4-multipage .rapp-footer { position:relative !important; bottom:auto !important; left:auto !important; right:auto !important; margin-top:8px; }
+            .a4-page.a4-multipage .rapp-footer { position:relative !important; bottom:auto !important;
+                                                  left:auto !important; right:auto !important; margin-top:8px; }
             .rapp-inner { padding-bottom:38mm !important; }
         }
     </style>
 </head>
-<body class="antialiased min-h-screen transition-colors duration-300"
-      :class="darkMode ? 'dark bg-[#050505] text-white' : 'bg-gray-50 text-gray-900'">
+<body class="antialiased min-h-screen transition-colors duration-300" :class="darkMode ? 'dark' : ''">
 <div id="app">
 
 <!-- ══════════════════════════════════
      WELCOME – scelta tipo intervento
 ══════════════════════════════════ -->
-<div v-if="view==='welcome'" class="min-h-screen flex flex-col items-center justify-center p-6"
-     :class="darkMode?'bg-[#050505]':'bg-gray-50'">
+<div v-if="view==='welcome'" class="min-h-screen flex flex-col items-center justify-center p-6" :style="darkMode?'background:#050505;color:#f9fafb':''">
     <div class="flex items-center gap-3 mb-10 select-none">
         <div class="w-1.5 h-12 bg-gradient-to-b from-orange-400 to-red-600 rounded-full shadow-lg"></div>
         <div>
@@ -295,7 +463,7 @@
 <!-- ══════════════════════════════════
      EDITOR
 ══════════════════════════════════ -->
-<div v-if="view==='editor'" class="safe-pb">
+<div v-if="view==='editor'" class="safe-pb" :style="darkMode?'background:#050505;min-height:100vh':''">
 
     <!-- HEADER -->
     <header class="sticky top-0 z-40 border-b shadow-lg backdrop-blur-xl" :class="darkMode?'bg-[#0a0a0a]/95 border-gray-800':'bg-white/95 border-gray-200'">
@@ -345,7 +513,7 @@
         </div>
 
         <!-- Team / Matricola / Data – mobile stack -->
-        <div class="border-b overflow-hidden transition-all duration-300" :class="darkMode?'bg-fiber-darkcard border-gray-800':'bg-white border-gray-200'" :style="headerCollapsed ? 'max-height:0; border-bottom-width:0;' : 'max-height:600px;'">
+        <div class="border-b overflow-hidden transition-all duration-300" :class="darkMode?'bg-[#121212] border-gray-800':'bg-white border-gray-200'" :style="headerCollapsed ? 'max-height:0; border-bottom-width:0;' : 'max-height:600px;'">
             <div v-if="currentSheet" class="p-3 space-y-3">
                 <div class="flex gap-3 items-end">
                     <div class="flex-1">
@@ -434,7 +602,7 @@
                 <div class="grid grid-cols-3 gap-3 mb-3 anello-grid">
                     <div>
                         <label class="field-label" :class="darkMode?'text-purple-400':'text-purple-700'">Stato Anello</label>
-                        <select v-model="currentSheet.stato_anello" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-purple-800 bg-transparent':'text-black border-purple-300 bg-transparent'">
+                        <select v-model="currentSheet.stato_anello" class="f-input cursor-pointer outline-none font-bold"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'text-white border-purple-800 bg-[#1a1a1a]':'text-black border-purple-300 bg-white'">
                             <option value="">-- Stato --</option>
                             <option value="Chiuso">Chiuso</option>
                             <option value="Chiuso (con Cabine da rilegare)">Chiuso (con Cabine da rilegare)</option>
@@ -571,7 +739,7 @@
                                 <div class="grid grid-cols-2 gap-3 cab-fields-grid">
                                     <div>
                                         <label class="field-label" :class="darkMode?'text-gray-300':'text-gray-600'">Stato Operativo</label>
-                                        <select v-model="cab.stato_operativo" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
+                                        <select v-model="cab.stato_operativo" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
                                             <option value="">-- Operativo --</option>
                                             <option value="online">🟢 Online</option>
                                             <option value="parzialmente">🔵 Parz. Online</option>
@@ -582,7 +750,7 @@
                                     </div>
                                     <div>
                                         <label class="field-label" :class="darkMode?'text-gray-300':'text-gray-600'">Stato Installazione</label>
-                                        <select v-model="cab.stato_installazione" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
+                                        <select v-model="cab.stato_installazione" class="w-full border-b py-2 outline-none font-bold text-sm cursor-pointer"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'border-[#444] text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
                                             <option value="">-- Installazione --</option>
                                             <option value="non_sopralluogata">🔍 Non Sopralluogata</option>
                                             <option value="normale">✅ Normale</option>
@@ -611,7 +779,7 @@
                                         </div>
                                         <div class="flex-1 min-w-[120px]">
                                             <label class="text-[9px] font-bold uppercase" :class="darkMode?'text-gray-400':'text-gray-500'">Tipo Attività</label>
-                                            <select v-model="cab._newEventoTipo" class="w-full bg-transparent border-b outline-none text-xs font-bold py-1 cursor-pointer" :class="darkMode?'border-gray-600 text-white':'border-gray-300 text-gray-900'">
+                                            <select v-model="cab._newEventoTipo" class="w-full border-b outline-none text-xs font-bold py-1 cursor-pointer"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'border-gray-600 text-white bg-[#1a1a1a]':'border-gray-300 text-gray-900 bg-white'">
                                                 <option value="">-- Seleziona --</option>
                                                 <option value="rilegamento">🔗 Rilegamento</option>
                                                 <option value="giunzione">⚡ Giunzione</option>
@@ -642,7 +810,7 @@
                                                         {{ {rilegamento:'🔗 Rileg.',giunzione:'⚡ Giunt.',collaudo:'✅ Collaudo',chiusura:'🔒 Chiusura',bypass:'⚠️ Bypass',sopralluogo:'🔍 Sopr.',manutenzione:'🔧 Manut.',altro:'📝 Altro'}[ev.tipo]||ev.tipo }}
                                                     </span>
                                                 </div>
-                                                <button @click="cab.eventi.splice(cab.eventi.indexOf(ev),1)" class="text-gray-500 hover:text-red-400 flex-shrink-0 p-1"><i class="ph ph-x text-xs"></i></button>
+                                                <button @click="cab.eventi.splice(cab.eventi.indexOf(ev),1)" class="text-red-400/50 hover:text-red-400 flex-shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors"><i class="ph ph-x text-sm"></i></button>
                                             </div>
                                             <div v-if="ev.desc" class="mt-1.5 text-[11px] leading-relaxed whitespace-pre-wrap" :class="darkMode?'text-gray-300':'text-gray-700'">{{ ev.desc }}</div>
                                         </div>
@@ -751,14 +919,14 @@
                                     </div>
                                     <div class="space-y-2">
                                         <div v-for="(conn,connIdx) in cab.connessioni" :key="connIdx" class="flex items-center gap-2 rounded-lg p-2 border cab-conn-row" :class="darkMode?'bg-gray-900/40 border-gray-700':'bg-gray-50 border-gray-200'">
-                                            <select v-model="conn.modulo" class="text-xs font-bold outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-cyan-400 bg-transparent':'border-gray-300 text-cyan-600 bg-transparent'">
+                                            <select v-model="conn.modulo" class="text-xs font-bold outline-none cursor-pointer border-b w-16"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'border-gray-600 text-cyan-400 bg-[#1a1a1a]':'border-gray-300 text-cyan-600 bg-white'">
                                                 <option value="1">Mod.1</option><option value="2">Mod.2</option><option value="3">Mod.3</option><option value="4">Mod.4</option>
                                             </select>
-                                            <select v-model="conn.fibre" class="text-xs font-mono font-bold outline-none cursor-pointer border-b w-16" :class="darkMode?'border-gray-600 text-blue-400 bg-transparent':'border-gray-300 text-blue-600 bg-transparent'">
+                                            <select v-model="conn.fibre" class="text-xs font-mono font-bold outline-none cursor-pointer border-b w-16"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'border-gray-600 text-blue-400 bg-[#1a1a1a]':'border-gray-300 text-blue-600 bg-white'">
                                                 <option value="1-2">F 1-2</option><option value="3-4">F 3-4</option><option value="5-6">F 5-6</option><option value="7-8">F 7-8</option>
                                             </select>
                                             <i class="ph ph-arrow-right text-gray-500 text-xs flex-shrink-0"></i>
-                                            <select v-model="conn.destinazione" class="flex-1 text-xs font-bold outline-none border-b cursor-pointer" :class="darkMode?'border-gray-600 text-white bg-[#111]':'border-gray-300 text-black bg-white'">
+                                            <select v-model="conn.destinazione" class="flex-1 text-xs font-bold outline-none border-b cursor-pointer"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'border-gray-600 text-white bg-[#1a1a1a]':'border-gray-300 text-black bg-white'">
                                                 <option value="">-- Cabina --</option>
                                                 <option :value="'__primaria__'">
                                                     🟣 {{ primariaLabel(currentSheet) }}
@@ -767,7 +935,7 @@
                                                     {{ cabLabel(c2, i2) }}
                                                 </option>
                                             </select>
-                                            <button @click="cab.connessioni.splice(connIdx,1)" class="text-red-500/60 hover:text-red-500 text-xs flex-shrink-0"><i class="ph ph-x"></i></button>
+                                            <button @click="cab.connessioni.splice(connIdx,1)" class="text-red-500/50 hover:text-red-500 flex-shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors"><i class="ph ph-x text-sm"></i></button>
                                         </div>
                                         <button v-if="cab.connessioni.length===0" @click="cab.connessioni.push({modulo:'1',fibre:'1-2',destinazione:''})" class="w-full text-[10px] text-gray-500 border border-dashed rounded-lg py-2" :class="darkMode?'border-gray-700':'border-gray-300'">+ Connessione</button>
                                     </div>
@@ -891,7 +1059,7 @@
                                 <div v-if="!sez.righe||!sez.righe.length" class="px-4 py-3 text-center text-xs font-mono italic" :class="darkMode?'text-gray-600':'text-gray-400'">
                                     Nessuna riga — premi + Riga
                                 </div>
-                                <div v-for="(r, ri) in sez.righe" :key="ri" class="flex items-center gap-2 px-3 py-2 group">
+                                <div v-for="(r, ri) in sez.righe" :key="ri" class="flex flex-wrap items-center gap-2 px-3 py-2">
                                     <!-- Numero globale -->
                                     <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 border"
                                           :class="sez.tipo==='andata'?(darkMode?'bg-blue-900/50 border-blue-700 text-blue-300':'bg-blue-100 border-blue-300 text-blue-700'):sez.tipo==='ritorno'?(darkMode?'bg-green-900/50 border-green-700 text-green-300':'bg-green-100 border-green-300 text-green-700'):(darkMode?'bg-orange-900/50 border-orange-700 text-orange-300':'bg-orange-100 border-orange-300 text-orange-700')">
@@ -907,7 +1075,7 @@
                                            :class="sez.tipo==='andata'?(darkMode?'border-blue-800 text-blue-300':'border-blue-300 text-blue-700'):sez.tipo==='ritorno'?(darkMode?'border-green-800 text-green-300':'border-green-300 text-green-700'):(darkMode?'border-orange-800 text-orange-300':'border-orange-300 text-orange-700')"
                                            placeholder="191-192">
                                     <!-- Da cassetto -->
-                                    <input v-model="r.da_cassetto" class="w-12 bg-transparent text-xs font-black font-mono outline-none border-b text-center"
+                                    <input v-model="r.da_cassetto" class="w-14 min-w-[56px] bg-transparent text-xs font-black font-mono outline-none border-b text-center"
                                            :class="darkMode?'border-gray-700 text-white':'border-gray-300 text-black'"
                                            placeholder="04W">
                                     <!-- Freccia -->
@@ -918,7 +1086,7 @@
                                            :class="sez.tipo==='andata'?(darkMode?'border-blue-800 text-blue-300':'border-blue-300 text-blue-700'):sez.tipo==='ritorno'?(darkMode?'border-green-800 text-green-300':'border-green-300 text-green-700'):(darkMode?'border-orange-800 text-orange-300':'border-orange-300 text-orange-700')"
                                            placeholder="150-151">
                                     <!-- A cassetto -->
-                                    <input v-model="r.a_cassetto" class="w-12 bg-transparent text-xs font-black font-mono outline-none border-b text-center"
+                                    <input v-model="r.a_cassetto" class="w-14 min-w-[56px] bg-transparent text-xs font-black font-mono outline-none border-b text-center"
                                            :class="darkMode?'border-gray-700 text-white':'border-gray-300 text-black'"
                                            placeholder="02W">
                                     <!-- Inter-POP: POP destinazione -->
@@ -927,7 +1095,7 @@
                                            :class="darkMode?'border-orange-800 text-orange-300':'border-orange-300 text-orange-700'"
                                            placeholder="NA_05">
                                     <!-- Delete -->
-                                    <button @click="sez.righe.splice(ri,1)" class="opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 ml-auto flex-shrink-0"><i class="ph ph-x text-xs"></i></button>
+                                    <button @click="sez.righe.splice(ri,1)" class="text-red-500/40 hover:text-red-500 ml-auto flex-shrink-0 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"><i class="ph ph-x text-xs"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -947,13 +1115,13 @@
                 <div class="grid grid-cols-2 gap-3 mb-4 p-3 rounded-xl border" :class="darkMode?'bg-yellow-950/20 border-yellow-900':'bg-yellow-50 border-yellow-200'">
                     <div>
                         <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Standard (questo foglio)</label>
-                        <select v-model="currentSheet.fiber_standard_id" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
+                        <select v-model="currentSheet.fiber_standard_id" class="f-input cursor-pointer outline-none font-bold"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'text-white border-yellow-900 bg-[#1a1a1a]':'text-black border-yellow-300 bg-white'">
                             <option v-for="s in fiberStandards" :key="s.id" :value="s.id">{{ s.nome }}</option>
                         </select>
                     </div>
                     <div>
                         <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Fibre/Tubetto (questo foglio)</label>
-                        <select v-model.number="currentSheet.fiber_per_tubetto" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
+                        <select v-model.number="currentSheet.fiber_per_tubetto" class="f-input cursor-pointer outline-none font-bold"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'text-white border-yellow-900 bg-[#1a1a1a]':'text-black border-yellow-300 bg-white'">
                             <option :value="12">12</option><option :value="24">24</option><option :value="36">36</option>
                         </select>
                     </div>
@@ -967,13 +1135,13 @@
                     </div>
                     <div>
                         <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Standard</label>
-                        <select v-model="fiberCalc.standardId" @change="calcolaFibra" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
+                        <select v-model="fiberCalc.standardId" @change="calcolaFibra" class="f-input cursor-pointer outline-none font-bold"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'text-white border-yellow-900 bg-[#1a1a1a]':'text-black border-yellow-300 bg-white'">
                             <option v-for="s in fiberStandards" :key="s.id" :value="s.id">{{ s.nome }}</option>
                         </select>
                     </div>
                     <div>
                         <label class="field-label" :class="darkMode?'text-yellow-400':'text-yellow-700'">Fibre/Tubetto</label>
-                        <select v-model.number="fiberCalc.perTubetto" @change="calcolaFibra" class="f-input cursor-pointer outline-none font-bold" :class="darkMode?'text-white border-yellow-900 bg-transparent':'text-black border-yellow-300 bg-transparent'">
+                        <select v-model.number="fiberCalc.perTubetto" @change="calcolaFibra" class="f-input cursor-pointer outline-none font-bold"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'text-white border-yellow-900 bg-[#1a1a1a]':'text-black border-yellow-300 bg-white'">
                             <option :value="12">12</option><option :value="24">24</option><option :value="36">36</option>
                         </select>
                     </div>
@@ -1076,7 +1244,7 @@
                 <!-- Card header -->
                 <div class="flex justify-between items-center mb-4 pb-2 border-b" :class="darkMode?'border-gray-800':'border-gray-100'">
                     <span class="text-cyan-500 font-black text-xs tracking-widest bg-cyan-500/10 px-3 py-1.5 rounded-md border border-cyan-500/20">SCHEDA #{{ rIdx+1 }}</span>
-                    <select v-model="row.stato" class="ml-2 text-xs font-bold uppercase rounded-lg px-2 py-1 outline-none border cursor-pointer" :class="darkMode?'bg-gray-800 text-white border-gray-600':'bg-white text-gray-900 border-gray-300'">
+                    <select v-model="row.stato" class="ml-2 text-xs font-bold uppercase rounded-lg px-2 py-1 outline-none border cursor-pointer"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'bg-[#1a1a1a] text-white border-gray-600':'bg-white text-gray-900 border-gray-300'">
                         <option value="">-- STATO --</option>
                         <option value="DA_SBLOCCARE">🟢 Da Sbloccare</option>
                         <option value="OCCORRE_ASSISTENTE">🟡 Occorre Assistente</option>
@@ -1118,7 +1286,7 @@
                             <div class="flex items-center gap-2">
                                 <select v-model="row.tipo_elemento_ottico"
                                         class="f-input outline-none cursor-pointer"
-                                        :class="darkMode?'text-white border-[#333] bg-transparent':'text-black border-gray-300 bg-transparent'">
+                                         :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'text-white border-[#333] bg-[#1a1a1a]':'text-black border-gray-300 bg-white'">
                                     <option value="">-- Seleziona --</option>
                                     <option v-for="opt in tipiElementoOttico" :key="opt" :value="opt">{{ opt }}</option>
                                 </select>
@@ -1147,12 +1315,12 @@
                 <div class="pt-4 mt-4 border-t" :class="darkMode?'border-gray-800':'border-gray-100'">
                     <label class="text-[11px] uppercase font-black text-fiber-orange mb-3 block tracking-wider flex items-center gap-2"><i class="ph ph-wrench-fill"></i> Materiale</label>
                     <div class="space-y-2 mb-3">
-                        <div v-for="(item,mIdx) in row.materiale_list" :key="mIdx" class="flex items-center gap-2 py-1.5 group">
+                        <div v-for="(item,mIdx) in row.materiale_list" :key="mIdx" class="flex items-center gap-2 py-1.5 mat-row">
                             <span class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black flex-shrink-0"
                                   :class="darkMode?'bg-orange-900/50 text-orange-300':'bg-orange-100 text-orange-600'">{{ mIdx+1 }}</span>
                             <input v-model="item.text" class="flex-grow bg-transparent border-b outline-none text-sm font-medium smart-caps"
-                                   :class="darkMode?'text-white border-gray-700':'text-black border-gray-200'" placeholder="Es. Giunto FOSC 400...">
-                            <button @click="row.materiale_list.splice(mIdx,1)" class="opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 p-1 flex-shrink-0 transition-opacity"><i class="ph ph-x text-xs"></i></button>
+                                   :class="darkMode?'text-white border-gray-700':'text-gray-900 border-gray-200'" placeholder="Es. Giunto FOSC 400...">
+                            <button @click="row.materiale_list.splice(mIdx,1)" class="mat-del text-red-500/60 hover:text-red-500 flex-shrink-0 transition-colors"><i class="ph ph-x text-sm"></i></button>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -1166,7 +1334,7 @@
                     <div v-for="(extra,eIdx) in row.extras" :key="eIdx" class="flex gap-2 mb-2 items-center">
                         <input v-model="extra.key" class="w-1/3 text-xs font-bold bg-transparent border-b border-cyan-800 text-cyan-500 outline-none p-1 smart-caps" placeholder="Nome">
                         <input v-model="extra.value" class="w-full text-xs bg-transparent border-b outline-none p-1 smart-caps" :class="darkMode?'border-[#333] text-white':'border-gray-300 text-black'" placeholder="Valore">
-                        <button @click="row.extras.splice(eIdx,1)" class="text-red-500"><i class="ph ph-x"></i></button>
+                        <button @click="row.extras.splice(eIdx,1)" class="text-red-500/50 hover:text-red-500 min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors"><i class="ph ph-x text-sm"></i></button>
                     </div>
                 </div>
                 <button @click="row.extras.push({key:'',value:''})" class="text-[10px] font-bold text-cyan-600 hover:text-cyan-400 mt-2">+ EXTRA</button>
@@ -1174,9 +1342,9 @@
             </div>
 
             <!-- Add row button -->
-            <button @click="addRow" class="h-full min-h-[250px] border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 transition-all opacity-60 hover:opacity-100 hover:scale-[1.01]" :class="darkMode?'border-gray-800 hover:border-orange-500 bg-white/5':'border-gray-300 hover:border-orange-500 bg-gray-50'">
+            <button @click="addRow" class="h-full min-h-[250px] border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 transition-all opacity-60 hover:opacity-100 hover:scale-[1.01]" :class="darkMode?'border-gray-800 hover:border-orange-500 bg-white/5':'border-gray-300 hover:border-orange-500 bg-gray-50/50'">
                 <div class="w-16 h-16 rounded-full flex items-center justify-center border-2" :class="darkMode?'border-gray-700 text-gray-500':'border-gray-400 text-gray-400'"><i class="ph ph-plus text-3xl"></i></div>
-                <span class="text-xs font-black uppercase tracking-widest text-gray-500">Nuova Scheda</span>
+                <span class="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Nuova Scheda</span>
             </button>
         </div>
         </template><!-- /sheetType!==cabine -->
@@ -1185,7 +1353,7 @@
 
 
         <!-- ══ MAGAZZINO: layout dedicato ══ -->
-        <div v-if="sheetType==='magazzino' && currentSheet" class="space-y-4 pb-24">
+        <div v-if="sheetType==='magazzino' && currentSheet" class="space-y-4 pb-24" :style="darkMode?'background:#050505;min-height:100vh':''">
             <div class="rounded-2xl p-5 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-emerald-800':'bg-white border-emerald-300'">
                 <!-- Header -->
                 <div class="flex items-center gap-3 mb-5">
@@ -1211,31 +1379,27 @@
                     </div>
                     <div class="space-y-2 mb-3">
                         <div v-for="(item, idx) in (currentSheet.magazzino_items||[])" :key="idx"
-                             class="flex items-center gap-3 p-2 rounded-xl border group"
+                             class="flex flex-wrap items-center gap-2 p-2 rounded-xl border"
                              :class="darkMode?'bg-gray-900/40 border-gray-800':'bg-gray-50 border-gray-200'">
                             <!-- Numero -->
                             <span class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black flex-shrink-0"
                                   :class="darkMode?'bg-emerald-900 text-emerald-300':'bg-emerald-100 text-emerald-700'">{{ idx+1 }}</span>
                             <!-- Descrizione -->
-                            <input v-model="item.desc" class="flex-1 bg-transparent outline-none text-sm font-medium smart-caps border-b"
-                                   :class="darkMode?'text-white border-gray-700':'text-black border-gray-300'"
+                            <input v-model="item.desc" class="flex-1 min-w-[120px] bg-transparent outline-none text-sm font-medium smart-caps border-b"
+                                   :class="darkMode?'text-white border-gray-700':'text-gray-900 border-gray-300'"
                                    placeholder="Es. Giunto FOSC 400, Manicotto, Cavo FO...">
                             <!-- Quantità -->
-                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <div class="flex items-center gap-1 flex-shrink-0">
                                 <span class="text-[10px] font-bold opacity-50">Q.</span>
                                 <input v-model="item.qty" type="number" min="1"
-                                       class="w-14 bg-transparent outline-none text-sm font-black text-center border-b"
+                                       class="w-12 bg-transparent outline-none text-sm font-black text-center border-b"
                                        :class="darkMode?'text-emerald-300 border-emerald-800':'text-emerald-700 border-emerald-300'"
                                        placeholder="1">
                                 <span class="text-[10px] font-mono opacity-40">pz</span>
                             </div>
-                            <!-- Note opzionale -->
-                            <input v-model="item.note" class="w-20 bg-transparent outline-none text-[10px] border-b opacity-60"
-                                   :class="darkMode?'text-gray-400 border-gray-800':'text-gray-500 border-gray-200'"
-                                   placeholder="Note...">
                             <!-- Delete -->
                             <button @click="currentSheet.magazzino_items.splice(idx,1)"
-                                    class="opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 flex-shrink-0 transition-opacity">
+                                    class="text-red-500/40 hover:text-red-500 flex-shrink-0 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center">
                                 <i class="ph ph-trash text-sm"></i>
                             </button>
                         </div>
@@ -1267,7 +1431,7 @@
         </div>
 
         <!-- ══ INSTRADAMENTO FIBRE: layout dedicato ══ -->
-        <div v-if="sheetType==='srb' && currentSheet" class="space-y-4 pb-24">
+        <div v-if="sheetType==='srb' && currentSheet" class="space-y-4 pb-24" :style="darkMode?'background:#050505;min-height:100vh':''">
             <div class="rounded-2xl p-5 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-violet-800':'bg-white border-violet-300'">
                 <div class="flex items-center gap-3 mb-5">
                     <div class="w-9 h-9 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0"><i class="ph ph-broadcast text-violet-400 text-xl"></i></div>
@@ -1300,7 +1464,7 @@
                     </div>
                     <div>
                         <label class="field-label" :class="darkMode?'text-violet-400':'text-violet-700'">Tipo Destinazione</label>
-                        <select v-model="currentSheet.srb_tipo_arrivo" class="f-input cursor-pointer font-bold outline-none" :class="darkMode?'text-white border-violet-900 bg-transparent':'text-black border-violet-300 bg-transparent'">
+                        <select v-model="currentSheet.srb_tipo_arrivo" class="f-input cursor-pointer font-bold outline-none"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'text-white border-violet-900 bg-[#1a1a1a]':'text-black border-violet-300 bg-white'">
                             <option value="POP">POP</option>
                             <option value="SRB">SRB</option>
                             <option value="PCN">PCN</option>
@@ -1313,7 +1477,7 @@
                     </div>
                     <div>
                         <label class="field-label" :class="darkMode?'text-violet-400':'text-violet-700'">Tipo Partenza</label>
-                        <select v-model="currentSheet.srb_tipo_partenza" class="f-input cursor-pointer font-bold outline-none" :class="darkMode?'text-white border-violet-900 bg-transparent':'text-black border-violet-300 bg-transparent'">
+                        <select v-model="currentSheet.srb_tipo_partenza" class="f-input cursor-pointer font-bold outline-none"  :style="darkMode?'background:#1a1a1a;color:#f9fafb;border-color:#2d2d2d':''" :class="darkMode?'text-white border-violet-900 bg-[#1a1a1a]':'text-black border-violet-300 bg-white'">
                             <option value="POP">POP</option>
                             <option value="SRB">SRB</option>
                             <option value="PCN">PCN</option>
@@ -1329,7 +1493,7 @@
                     <div v-for="(tr, ti) in (currentSheet.srb_tratte||[])" :key="tr.id"
                          class="rounded-xl border-2 group overflow-hidden"
                          :class="tr.is_arrivo?(darkMode?'border-violet-700 bg-violet-950/20':'border-violet-300 bg-violet-50'):(darkMode?'border-gray-800 bg-gray-900/30':'border-gray-200 bg-gray-50')">
-                        <div class="flex items-center gap-2 px-3 py-2" :class="tr.is_arrivo?(darkMode?'bg-violet-900/30':'bg-violet-100/60'):(darkMode?'bg-gray-900/40':'bg-gray-100/60')">
+                        <div class="flex flex-wrap items-center gap-2 px-3 py-2" :class="tr.is_arrivo?(darkMode?'bg-violet-900/30':'bg-violet-100/60'):(darkMode?'bg-gray-900/40':'bg-gray-100/60')">
                             <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
                                   :class="tr.is_arrivo?(darkMode?'bg-violet-600 text-white':'bg-violet-600 text-white'):(darkMode?'bg-gray-700 text-gray-200':'bg-gray-300 text-gray-700')">{{ ti+1 }}</span>
                             <label class="flex items-center gap-2 cursor-pointer ml-2">
@@ -1338,7 +1502,7 @@
                                     {{ tr.is_arrivo ? '📡 Arrivo ' + (currentSheet.srb_tipo_arrivo||'POP') + ': ' + (currentSheet.srb_antenna||'Destinazione') : 'Tratta intermedia' }}
                                 </span>
                             </label>
-                            <button @click="currentSheet.srb_tratte.splice(ti,1)" class="ml-auto opacity-0 group-hover:opacity-100 text-red-500/60 hover:text-red-500 transition-opacity flex-shrink-0"><i class="ph ph-trash text-sm"></i></button>
+                            <button @click="currentSheet.srb_tratte.splice(ti,1)" class="ml-auto text-red-500/40 hover:text-red-500 transition-colors flex-shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"><i class="ph ph-trash text-sm"></i></button>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 px-3 py-3">
                             <div class="space-y-2 pb-2 border-b sm:border-b-0 sm:border-r" :class="darkMode?'border-gray-800':'border-gray-200'">
@@ -1407,26 +1571,28 @@
 
                         <!-- Righe coordinate -->
                         <div class="p-3 space-y-2">
-                            <div class="grid grid-cols-12 gap-1 mb-1 px-1 hidden sm:grid">
-                                <span class="col-span-2 text-[9px] font-black uppercase tracking-wider" :class="darkMode?'text-violet-400':'text-violet-600'">Posizione</span>
-                                <span class="col-span-4 text-[9px] font-black uppercase tracking-wider" :class="darkMode?'text-violet-400':'text-violet-600'">Fibre</span>
-                                <span class="col-span-4 text-[9px] font-black uppercase tracking-wider" :class="darkMode?'text-violet-400':'text-violet-600'">Note / Destinazione</span>
-                                <span class="col-span-2"></span>
+                            <div class="flex gap-2 mb-1 px-1">
+                                <span class="text-[9px] font-black uppercase tracking-wider" :class="darkMode?'text-violet-400':'text-violet-600'">Posizione · Fibre · Note</span>
                             </div>
 
                             <div v-for="(riga, rIdx) in (tel.righe||[])" :key="rIdx"
-                                 class="telaio-riga items-center rounded-lg px-2 py-2 border"
+                                 class="telaio-riga items-start rounded-lg px-2 py-2 border"
                                  :class="darkMode?'border-violet-900/40 bg-black/20':'border-violet-100 bg-white'">
-                                <input v-model="riga.posizione" class="t-pos bg-transparent text-xs font-black font-mono outline-none border-b text-center"
-                                       :class="darkMode?'border-violet-800 text-violet-300':'border-violet-300 text-violet-700'"
-                                       placeholder="T1 R3">
+                                <!-- Posizione: riga intera da sola -->
+                                <div class="w-full mb-1">
+                                    <label class="text-[9px] font-black uppercase tracking-wider mb-0.5 block" :class="darkMode?'text-violet-400':'text-violet-600'">Posizione</label>
+                                    <input v-model="riga.posizione" class="w-full bg-transparent text-xs font-black font-mono outline-none border-b py-1"
+                                           :class="darkMode?'border-violet-800 text-violet-300':'border-violet-300 text-violet-700'"
+                                           placeholder="Es. Fila A Telaio 2 TTF W Cassetto B">
+                                </div>
+                                <!-- Fibre e Note sulla stessa riga -->
                                 <input v-model="riga.fibre" class="t-fibre bg-transparent text-xs font-mono outline-none border-b"
                                        :class="darkMode?'border-gray-700 text-white':'border-gray-300 text-gray-900'"
                                        placeholder="F1→F14 / 77-90">
                                 <input v-model="riga.note" class="t-note bg-transparent text-xs outline-none border-b"
                                        :class="darkMode?'border-gray-700 text-gray-300':'border-gray-300 text-gray-600'"
                                        placeholder="Es. verso SRB Posillipo">
-                                <button @click="tel.righe.splice(rIdx,1)" class="t-del text-gray-500 hover:text-red-400 text-xs text-right"><i class="ph ph-x"></i></button>
+                                <button @click="tel.righe.splice(rIdx,1)" class="t-del text-red-400/50 hover:text-red-400 min-w-[40px] min-h-[40px] flex items-center justify-center transition-colors"><i class="ph ph-x text-sm"></i></button>
                             </div>
 
                             <button @click="if(!tel.righe)tel.righe=[]; tel.righe.push({posizione:'',fibre:'',note:''})"
@@ -1487,7 +1653,7 @@
             <button @click="showImportModal=true" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded text-[10px] uppercase whitespace-nowrap flex items-center gap-1"><i class="ph ph-download-simple"></i> Importa Dati</button>
             <button @click="view='editor'" class="px-3 py-1 border border-gray-600 text-gray-300 hover:text-white rounded text-[10px] uppercase whitespace-nowrap flex items-center gap-1"><i class="ph ph-arrow-left"></i> Indietro</button>
             <button @click="downloadFiberPDF" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded text-[10px] uppercase whitespace-nowrap flex items-center gap-1"><i class="ph ph-table"></i> PDF TAB</button>
-            <button @click="downloadRapportinoPDF" :disabled="pdfGenerating" class="px-4 py-1 bg-white text-black hover:bg-gray-200 font-bold rounded text-[10px] uppercase flex items-center gap-1.5 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+            <button @click="downloadRapportinoPDF" :disabled="pdfGenerating" class="px-4 py-1 font-bold rounded text-[10px] uppercase flex items-center gap-1.5 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed transition-colors" :class="darkMode?'bg-gray-200 text-gray-900 hover:bg-white':'bg-white text-black hover:bg-gray-200'">
                 <i :class="pdfGenerating?'ph ph-spinner animate-spin':'ph ph-file-pdf'"></i>
                 {{ pdfGenerating ? 'Generando...' : 'PDF A4' }}
             </button>
@@ -1878,7 +2044,7 @@
                 <i class="ph ph-whatsapp-logo text-green-500 text-xl"></i>
                 <span class="font-black text-sm tracking-wide">Scegli WhatsApp</span>
             </div>
-            <button @click="showWaPicker=false" class="text-gray-500 hover:text-red-400 p-1"><i class="ph ph-x"></i></button>
+            <button @click="showWaPicker=false" class="text-gray-500 hover:text-red-400 min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors"><i class="ph ph-x text-sm"></i></button>
         </div>
         <p class="text-xs" :class="darkMode?'text-gray-400':'text-gray-500'">Il testo è già stato copiato negli appunti. Scegli con quale app aprire o incolla manualmente.</p>
         <div class="flex flex-col gap-2">
@@ -2028,7 +2194,7 @@
             </div>
 
             <!-- Editor standard (colonna destra) -->
-            <div class="fiber-manager-main flex-1 overflow-y-auto p-5">
+            <div class="fiber-manager-main flex-1 overflow-y-auto p-5" :style="darkMode?'background:#0f0f0f;color:#f9fafb':''">
                 <div v-if="!fiberManagerEdit" class="flex items-center justify-center h-full text-gray-500 text-xs font-mono italic">
                     Seleziona o crea uno standard
                 </div>
@@ -2124,7 +2290,7 @@ createApp({
             isListening: false,
             pdfGenerating: false,
             showMemory: false,
-            headerCollapsed: false,
+            headerCollapsed: true,
             showImportModal: false,
             showGestisciElementiOttici: false,
             showWaPicker: false,
