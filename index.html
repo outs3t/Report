@@ -317,10 +317,7 @@
 
             /* ── BRETELLAGGIO brtratte ── */
             .grid.grid-cols-2.md\\:grid-cols-4.gap-4 { grid-template-columns:1fr 1fr !important; }
-            .flex.items-start.gap-1\\.5.group,
-            .flex.items-center.gap-1\\.5.group { flex-wrap:wrap; gap:5px; }
-            .flex.items-start.gap-1\\.5.group > input,
-            .flex.items-center.gap-1\\.5.group > input { min-width:0; flex:1 1 80px; }
+            .group { --mobile-gap-fix:1; }
 
             /* ── SRB ── */
             .grid.grid-cols-2.gap-4.mb-5 { grid-template-columns:1fr !important; }
@@ -2968,7 +2965,7 @@ createApp({
                 image: { type:'jpeg', quality:0.98 },
                 html2canvas: { scale:2, useCORS:true, backgroundColor:'#ffffff', letterRendering:true },
                 jsPDF: { unit:'mm', format:'a4', orientation:'portrait' },
-                pagebreak: { mode:['css','legacy'], avoid:['.tech-box','.tech-table tr'] }
+                pagebreak: { mode:['css','legacy'], avoid:['.tech-box'] }
             };
             try {
                 // Clona la pagina A4 in un contenitore neutro per evitare PDF bianchi su desktop
@@ -2988,6 +2985,25 @@ createApp({
                 clone.style.transform = 'none';
                 clone.style.visibility = 'visible';
                 clone.style.opacity = '1';
+
+                // Se il contenuto e lungo, passa a layout multipage per evitare taglio del footer.
+                const isLong = (el.scrollHeight - el.clientHeight) > 8;
+                if(isLong){
+                    clone.classList.add('a4-multipage');
+                    clone.style.height = 'auto';
+                    clone.style.minHeight = '296mm';
+                    clone.style.overflow = 'visible';
+                    const cloneInner = clone.querySelector('.rapp-inner');
+                    if(cloneInner) cloneInner.style.paddingBottom = '8mm';
+                    const cloneFooter = clone.querySelector('.rapp-footer');
+                    if(cloneFooter){
+                        cloneFooter.style.position = 'relative';
+                        cloneFooter.style.bottom = 'auto';
+                        cloneFooter.style.left = 'auto';
+                        cloneFooter.style.right = 'auto';
+                        cloneFooter.style.marginTop = '8px';
+                    }
+                }
                 tempHost.appendChild(clone);
                 document.body.appendChild(tempHost);
 
@@ -3009,7 +3025,12 @@ createApp({
                     }
                     div.innerText = val;
                     const cs = window.getComputedStyle(inp);
-                    div.style.fontSize = cs.fontSize;
+                    let fs = parseFloat(cs.fontSize || '10');
+                    if(!Number.isFinite(fs)) fs = 10;
+                    // Evita font enormi in export se qualche stile li ha alterati.
+                    if(inp.closest('.tech-table')) fs = Math.min(fs, 8.8);
+                    else fs = Math.min(fs, 10);
+                    div.style.fontSize = fs + 'px';
                     div.style.fontWeight = cs.fontWeight;
                     div.style.fontFamily = cs.fontFamily;
                     div.style.color = '#111827';
