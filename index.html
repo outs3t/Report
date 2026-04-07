@@ -1791,7 +1791,7 @@
                         <div class="no-print flex items-center gap-3 mb-3 p-2 rounded-lg border" :class="darkMode?'bg-purple-900/10 border-purple-800':'bg-purple-50 border-purple-200'">
                             <i class="ph ph-calendar text-purple-400 text-sm flex-shrink-0"></i>
                             <label class="text-[10px] font-black uppercase tracking-wider flex-shrink-0" :class="darkMode?'text-purple-400':'text-purple-700'">Mostra attività del:</label>
-                            <input type="date" v-model="rapp.cabineDate" class="flex-1 bg-transparent border-b outline-none text-xs font-mono py-0.5" :class="darkMode?'border-purple-700 text-white':'border-purple-300 text-gray-900'">
+                            <input type="date" v-model="rapp.cabineDate" class="flex-1 border-b outline-none text-xs font-mono py-0.5 px-1 rounded" :class="darkMode?'bg-[#1a1026] border-purple-700 text-purple-200':'bg-white border-purple-300 text-gray-900'">
                             <span class="text-[10px] font-mono px-2 py-0.5 rounded-full flex-shrink-0" :class="darkMode?'bg-purple-900 text-purple-300':'bg-purple-100 text-purple-700'">
                                 {{ (rapp.cabineData.cabine||[]).filter(c=>(c.eventi||[]).some(e=>e.data===rapp.cabineDate)).length }} cabine
                             </span>
@@ -2957,13 +2957,14 @@ createApp({
             if(!el){ this.showToast('❌ Elemento PDF non trovato'); return; }
             this.pdfGenerating = true;
             this.showToast('⏳ Generazione PDF...');
+            const isMobilePdf = window.innerWidth <= 900;
             let tempHost = null;
             const dateFile = (this.rapp.displayDate||'report').replace(/\//g,'-');
             const opt = {
                 margin: 0,
                 filename: `Rapportino_${dateFile}.pdf`,
                 image: { type:'jpeg', quality:0.98 },
-                html2canvas: { scale:2, useCORS:true, backgroundColor:'#ffffff', letterRendering:true },
+                html2canvas: { scale:isMobilePdf?1.6:2, useCORS:true, backgroundColor:'#ffffff', letterRendering:true, scrollX:0, scrollY:0 },
                 jsPDF: { unit:'mm', format:'a4', orientation:'portrait' },
                 pagebreak: { mode:['css','legacy'], avoid:['.tech-box'] }
             };
@@ -2971,9 +2972,9 @@ createApp({
                 // Clona la pagina A4 in un contenitore neutro per evitare PDF bianchi su desktop
                 // quando il nodo originale e dentro un pannello fixed/transform.
                 tempHost = document.createElement('div');
-                tempHost.style.position = 'fixed';
-                tempHost.style.left = '-10000px';
-                tempHost.style.top = '0';
+                tempHost.style.position = 'absolute';
+                tempHost.style.left = '0';
+                tempHost.style.top = '-10000px';
                 tempHost.style.width = '794px';
                 tempHost.style.background = '#ffffff';
                 tempHost.style.zIndex = '-1';
@@ -2985,6 +2986,9 @@ createApp({
                 clone.style.transform = 'none';
                 clone.style.visibility = 'visible';
                 clone.style.opacity = '1';
+                clone.style.width = '794px';
+                clone.style.maxWidth = '794px';
+                clone.style.minWidth = '794px';
 
                 // Se il contenuto e lungo, passa a layout multipage per evitare taglio del footer.
                 const isLong = (el.scrollHeight - el.clientHeight) > 8;
@@ -3006,6 +3010,8 @@ createApp({
                 }
                 tempHost.appendChild(clone);
                 document.body.appendChild(tempHost);
+                opt.html2canvas.windowWidth = Math.ceil(clone.scrollWidth || 794);
+                opt.html2canvas.width = Math.ceil(clone.scrollWidth || 794);
 
                 // In clone: nasconde elementi no-print e converte input/textarea/select in testo statico.
                 const cloneNoPrint = clone.querySelectorAll('.no-print');
@@ -3028,13 +3034,14 @@ createApp({
                     let fs = parseFloat(cs.fontSize || '10');
                     if(!Number.isFinite(fs)) fs = 10;
                     // Evita font enormi in export se qualche stile li ha alterati.
-                    if(inp.closest('.tech-table')) fs = Math.min(fs, 8.8);
-                    else fs = Math.min(fs, 10);
+                    if(inp.closest('.tech-table')) fs = Math.min(fs, isMobilePdf ? 8.2 : 8.8);
+                    else fs = Math.min(fs, isMobilePdf ? 9.2 : 10);
                     div.style.fontSize = fs + 'px';
                     div.style.fontWeight = cs.fontWeight;
                     div.style.fontFamily = cs.fontFamily;
                     div.style.color = '#111827';
                     div.style.textTransform = cs.textTransform;
+                    div.style.lineHeight = '1.25';
                     inp.parentNode.insertBefore(div, inp);
                     inp.remove();
                 });
