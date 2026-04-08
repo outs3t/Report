@@ -2614,6 +2614,28 @@ createApp({
         },
         removeSheet(i){ if(confirm('Eliminare foglio?')){ this.allSheets[this.sheetType].splice(i,1); if(this.currentSheetIdx>=this.allSheets[this.sheetType].length) this.currentSheetIdx=Math.max(0,this.allSheets[this.sheetType].length-1); }},
         addRow(){ if(this.currentSheet) this.currentSheet.rows.push(this.newRow()); },
+        addCabina(){
+            if(!this.currentSheet) return;
+            if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie = [];
+            const n = this.currentSheet.cabine_secondarie.length + 1;
+            this.currentSheet.cabine_secondarie.push({
+                id: Date.now() + Math.random(),
+                numero: n,
+                nome: '',
+                codice: '',
+                stato_operativo: '',
+                stato_installazione: '',
+                note: '',
+                is_prima: false,
+                is_ultima: false,
+                pfs_nome: '',
+                pfp_nome: '',
+                pfs_f1: '', pfs_f2: '', pfs_f3: '', pfs_f4: '',
+                pfp_f1: '', pfp_f2: '', pfp_f3: '', pfp_f4: '',
+                connessioni: [],
+                eventi: []
+            });
+        },
         removeRow(i){ if(confirm('Eliminare riga?')) this.currentSheet.rows.splice(i,1); },
         addMaterial(row,text=null){ const v=text||row.tempMaterial; if(v){row.materiale_list.push({text:v});row.tempMaterial='';} },
 
