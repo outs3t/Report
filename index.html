@@ -132,6 +132,9 @@
 
         /* Fix: rapportino sticky nav bar */
         .dark .rapportino-panel .sticky { background-color:#0f172a !important; }
+        .pdf-capture-desktop .rapportino-panel { position:static !important; transform:none !important; overflow:visible !important; background:white !important; }
+        .pdf-capture-desktop .screen-wrapper { padding:0 !important; overflow:visible !important; background:white !important; }
+        .pdf-capture-desktop .a4-page { box-shadow:none !important; margin:0 auto !important; }
 
         /* Fix: SRB tratta cards */
         .dark .rounded-xl.border-2:not([class*="border-blue"]):not([class*="border-green"]):not([class*="border-orange"]):not([class*="border-violet"]):not([class*="border-purple"]):not([class*="border-emerald"]):not([class*="border-cyan"]):not([class*="border-red"]):not([class*="border-yellow"]):not([class*="border-amber"]) { background-color:#141414; border-color:#2a2a2a; }
@@ -229,6 +232,7 @@
                  font-weight:700; font-size:13px; padding:11px 28px; border-radius:100px;
                  z-index:300; opacity:0; transition:opacity .3s,transform .3s;
                  pointer-events:none; white-space:nowrap; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
         /* ── WELCOME CARDS ── */
@@ -454,6 +458,15 @@
             <h3 class="font-black text-sm" :class="darkMode?'text-white':'text-gray-900'">Instradamento Fibre</h3>
             <p class="text-xs mt-1" :class="darkMode?'text-gray-400':'text-gray-500'">Instradamento Pop, SRB, PCN, Mini PCN</p>
         </div>
+        <!-- COLLAUDI -->
+        <div class="type-card" :class="darkMode?'bg-[#121212] border-teal-500/30 hover:border-teal-400 hover:bg-teal-950/30':'bg-white border-teal-200 hover:border-teal-400 hover:bg-teal-50'" @click="selectType('collaudi')">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-700 text-white flex items-center justify-center mb-3 shadow-lg"><i class="ph ph-check-square text-2xl"></i></div>
+            <h3 class="font-black text-sm" :class="darkMode?'text-white':'text-gray-900'">Collaudi</h3>
+            <p class="text-xs mt-1" :class="darkMode?'text-gray-400':'text-gray-500'">OLT, GPON/OTDR, ODF, PFS, Semianello, Permutatore</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+                <span v-for="f in ['OLT','GPON','ODF','PFS','Pte']" :key="f" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-teal-500/10 text-teal-400">{{ f }}</span>
+            </div>
+        </div>
     </div>
 
     <div class="flex gap-4 mt-10 items-center">
@@ -479,10 +492,10 @@
         <!-- Top bar -->
         <div class="px-4 py-3 max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center gap-2 select-none cursor-pointer" @click="view='welcome'" title="Cambia tipo">
-                <div class="w-2 h-7 rounded-full shadow-lg" :class="sheetType==='guasti'?'bg-gradient-to-b from-orange-400 to-red-600':sheetType==='creation'?'bg-gradient-to-b from-cyan-400 to-blue-600':sheetType==='bretellaggio'?'bg-gradient-to-b from-yellow-400 to-orange-500':'bg-gradient-to-b from-purple-400 to-purple-700'"></div>
+                <div class="w-2 h-7 rounded-full shadow-lg" :class="sheetType==='guasti'?'bg-gradient-to-b from-orange-400 to-red-600':sheetType==='creation'?'bg-gradient-to-b from-cyan-400 to-blue-600':sheetType==='bretellaggio'?'bg-gradient-to-b from-yellow-400 to-orange-500':sheetType==='collaudi'?'bg-gradient-to-b from-teal-400 to-cyan-600':'bg-gradient-to-b from-purple-400 to-purple-700'"></div>
                 <div>
                     <h1 class="text-xl font-black tracking-tighter italic leading-none"><span class="text-[#ff8000]">Fiber</span><span class="text-[#06b6d4]">Report</span></h1>
-                    <div class="text-[9px] font-mono uppercase font-bold mt-0.5" :class="sheetType==='guasti'?'text-orange-400':sheetType==='creation'?'text-cyan-400':sheetType==='bretellaggio'?'text-yellow-400':'text-purple-400'">◀ {{ sheetType==='srb'?'Instradamento Fibre':sheetType }}</div>
+                    <div class="text-[9px] font-mono uppercase font-bold mt-0.5" :class="sheetType==='guasti'?'text-orange-400':sheetType==='creation'?'text-cyan-400':sheetType==='bretellaggio'?'text-yellow-400':sheetType==='collaudi'?'text-teal-400':'text-purple-400'">◀ {{ sheetType==='srb'?'Instradamento Fibre':sheetType==='collaudi'?'Collaudi':sheetType }}</div>
                 </div>
             </div>
             <div class="flex gap-2 items-center flex-wrap sm:flex-nowrap ml-auto">
@@ -674,10 +687,22 @@
                         <i class="ph ph-buildings text-purple-400"></i> Cabine Secondarie
                         <span class="text-[10px] font-mono px-2 py-0.5 rounded-full" :class="darkMode?'bg-purple-900/50 text-purple-400':'bg-purple-100 text-purple-700'">{{ (currentSheet.cabine_secondarie||[]).length }}</span>
                     </h3>
-                    <button @click="addCabina" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105"
-                            :class="darkMode?'bg-purple-900/50 text-purple-300 border border-purple-700 hover:bg-purple-800/50':'bg-purple-50 text-purple-700 border border-purple-300 hover:bg-purple-100'">
-                        <i class="ph ph-plus-circle"></i> Aggiungi Cabina
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <!-- OCR import -->
+                        <button @click="$refs.ocrCabineInput.click()" :disabled="ocrLoading"
+                                class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                :class="darkMode?'bg-cyan-900/40 text-cyan-300 border border-cyan-700 hover:bg-cyan-800/50':'bg-cyan-50 text-cyan-700 border border-cyan-300 hover:bg-cyan-100'"
+                                title="Importa cabine da foto tabella">
+                            <span v-if="ocrLoading" style="display:inline-block;animation:spin 1s linear infinite;">⟳</span>
+                            <i v-else class="ph ph-camera"></i>
+                            {{ ocrLoading ? 'Analisi...' : 'Importa Foto' }}
+                        </button>
+                        <input ref="ocrCabineInput" type="file" accept="image/*" style="display:none" @change="importCabineOCR">
+                        <button @click="addCabina" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105"
+                                :class="darkMode?'bg-purple-900/50 text-purple-300 border border-purple-700 hover:bg-purple-800/50':'bg-purple-50 text-purple-700 border border-purple-300 hover:bg-purple-100'">
+                            <i class="ph ph-plus-circle"></i> Aggiungi Cabina
+                        </button>
+                    </div>
                 </div>
                 <div class="space-y-4">
                     <div v-for="(cab, cIdx) in sortedCabine" :key="cab.id"
@@ -1240,7 +1265,7 @@
         </div><!-- /bretellaggio -->
 
         <!-- ══ GUASTI + CREATION: summary chips + card grid ══ -->
-        <template v-if="sheetType!=='cabine' && sheetType!=='bretellaggio' && sheetType!=='magazzino' && sheetType!=='srb'">
+        <template v-if="sheetType!=='cabine' && sheetType!=='bretellaggio' && sheetType!=='magazzino' && sheetType!=='srb' && sheetType!=='collaudi'">
         <div v-if="currentSheet.rows.length>0" class="mb-5 flex flex-wrap gap-3 text-[11px] font-bold">
             <div v-for="(count,stato) in statsSummary" :key="stato" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" :class="statoChipClass(stato)">
                 <span>{{ statoEmoji(stato) }}</span><span>{{ statoLabel(stato) }}: {{ count }}</span>
@@ -1615,6 +1640,163 @@
             </div>
         </div>
 
+        <!-- ══ COLLAUDI: layout dedicato ══ -->
+        <div v-if="sheetType==='collaudi' && currentSheet" class="space-y-5 pb-28">
+
+            <!-- HEADER POP/PCN -->
+            <div class="rounded-2xl p-4 border-2 shadow-xl" :class="darkMode?'bg-[#121212] border-teal-800':'bg-white border-teal-300'">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 rounded-xl bg-teal-500/20 flex items-center justify-center flex-shrink-0"><i class="ph ph-check-square text-teal-400 text-lg"></i></div>
+                    <span class="font-black text-sm uppercase tracking-widest" :class="darkMode?'text-teal-400':'text-teal-700'">Dati POP / PCN</span>
+                </div>
+                <div>
+                    <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Nome POP / PCN</label>
+                    <input v-model="currentSheet.nome_pop" class="f-input font-black text-base smart-caps"
+                           :class="darkMode?'text-white border-teal-800':'text-black border-teal-300'"
+                           placeholder="Es. POP_NA01 / PCN Roma Nord">
+                </div>
+                <div class="mt-3">
+                    <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">📝 Note POP / PCN</label>
+                    <textarea v-model="currentSheet.note_pop" rows="2" class="f-textarea text-sm"
+                              :class="darkMode?'text-white border-teal-800 bg-transparent':'text-gray-900 border-teal-300'"
+                              placeholder="Note generali sul POP o PCN..."></textarea>
+                </div>
+            </div>
+
+            <!-- RIGHE COLLAUDO -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-black text-sm uppercase tracking-widest flex items-center gap-2" :class="darkMode?'text-white':'text-gray-900'">
+                        <i class="ph ph-list-checks text-teal-400"></i> Schede Collaudo
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full" :class="darkMode?'bg-teal-900/50 text-teal-400':'bg-teal-100 text-teal-700'">{{ (currentSheet.rows||[]).length }}</span>
+                    </h3>
+                    <button @click="if(!currentSheet.rows)currentSheet.rows=[]; currentSheet.rows.push(newCollaudiRow())"
+                            class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105 active:scale-95"
+                            :class="darkMode?'bg-teal-900/50 text-teal-300 border border-teal-700 hover:bg-teal-800/50':'bg-teal-50 text-teal-700 border border-teal-300 hover:bg-teal-100'">
+                        <i class="ph ph-plus-circle"></i> Aggiungi Scheda
+                    </button>
+                </div>
+
+                <!-- Empty state -->
+                <div v-if="!currentSheet.rows||!currentSheet.rows.length"
+                     class="rounded-2xl border-2 border-dashed flex flex-col items-center justify-center py-14 gap-3"
+                     :class="darkMode?'border-gray-800':'border-gray-300'">
+                    <i class="ph ph-check-square text-4xl" :class="darkMode?'text-gray-700':'text-gray-400'"></i>
+                    <p class="text-sm font-semibold" :class="darkMode?'text-gray-500':'text-gray-400'">Nessuna scheda collaudo</p>
+                    <button @click="if(!currentSheet.rows)currentSheet.rows=[]; currentSheet.rows.push(newCollaudiRow())"
+                            class="px-5 py-2 rounded-xl text-xs font-bold bg-teal-600 text-white hover:bg-teal-500 transition-colors">
+                        + Aggiungi Scheda
+                    </button>
+                </div>
+
+                <!-- Cards -->
+                <div class="space-y-4">
+                    <div v-for="(row, rIdx) in (currentSheet.rows||[])" :key="row.id"
+                         class="rounded-2xl border-2 overflow-hidden transition-all"
+                         :class="darkMode?'bg-[#121212] border-teal-900':'bg-white border-teal-200'">
+
+                        <!-- Card header -->
+                        <div class="flex items-center justify-between px-4 py-3 border-b"
+                             :class="darkMode?'border-teal-900/60 bg-teal-950/20':'border-teal-100 bg-teal-50/50'">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0"
+                                      :class="darkMode?'bg-teal-900/60 text-teal-300':'bg-teal-100 text-teal-700'">{{ rIdx+1 }}</span>
+                                <span class="font-bold text-sm truncate" :class="darkMode?'text-white':'text-gray-900'">
+                                    {{ row.nome_pfs || row.localita || 'Nuova scheda' }}
+                                </span>
+                                <span v-if="row.id_gpon" class="font-mono text-[10px] flex-shrink-0" :class="darkMode?'text-teal-400':'text-teal-600'">{{ row.id_gpon }}</span>
+                            </div>
+                            <button @click="currentSheet.rows.splice(rIdx,1)"
+                                    class="text-gray-500 hover:text-red-500 transition-colors p-1 flex-shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center">
+                                <i class="ph ph-trash text-base"></i>
+                            </button>
+                        </div>
+
+                        <!-- Fields grid -->
+                        <div class="p-4 grid grid-cols-2 gap-4">
+                            <!-- Località -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Località</label>
+                                <input v-model="row.localita" class="f-input smart-caps"
+                                       :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                       placeholder="Es. Napoli Centro">
+                            </div>
+                            <!-- Via -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Via</label>
+                                <input v-model="row.via" class="f-input smart-caps"
+                                       :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                       placeholder="Es. Via Roma 12">
+                            </div>
+                            <!-- Porta OLT -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Porta OLT</label>
+                                <input v-model="row.porta_olt" class="f-input font-mono font-black"
+                                       :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                       placeholder="Es. 1/1/3">
+                            </div>
+                            <!-- Porta GPON/OTDR -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Porta GPON / OTDR</label>
+                                <input v-model="row.porta_gpon" class="f-input font-mono font-black"
+                                       :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                       placeholder="Es. GPON-04 / Ch.7">
+                            </div>
+                            <!-- Porta ODF (campo lungo) -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Porta ODF</label>
+                                <textarea v-model="row.porta_odf" rows="2" class="f-textarea font-mono font-black text-xs"
+                                          :class="darkMode?'text-white border-teal-900 bg-transparent':'text-black border-teal-200'"
+                                          placeholder="Es. ODF-A3 / Modulo 12 / slot 4"></textarea>
+                            </div>
+                            <!-- Porta PP/Semianello -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Porta PP / Semianello</label>
+                                <input v-model="row.porta_pp" class="f-input font-mono font-black"
+                                       :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                       placeholder="Es. PP-14 / Semi-B">
+                            </div>
+                            <!-- Nome PFS -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Nome PFS</label>
+                                <input v-model="row.nome_pfs" class="f-input font-bold smart-caps"
+                                       :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                       placeholder="Es. PFS-01 Via Manzoni">
+                            </div>
+                            <!-- Id GPON Rete/Splitter -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Id Gpon Rete / Splitter</label>
+                                <input v-model="row.id_gpon" class="f-input font-mono font-black uppercase"
+                                       :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                       placeholder="Es. ON1234 / SP-08">
+                            </div>
+                            <!-- Porta Pte (campo lungo) -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Porta Pte</label>
+                                <textarea v-model="row.porta_pte" rows="2" class="f-textarea font-mono font-black text-xs"
+                                          :class="darkMode?'text-white border-teal-900 bg-transparent':'text-black border-teal-200'"
+                                          placeholder="Es. PTE-5 / derivazione 2 / montante B"></textarea>
+                            </div>
+                            <!-- Porta Permutatore -->
+                            <div>
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Porta Permutatore</label>
+                                <input v-model="row.porta_permutatore" class="f-input font-mono font-black"
+                                       :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                       placeholder="Es. P-22">
+                            </div>
+                            <!-- Note (full width) -->
+                            <div class="col-span-2">
+                                <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">📝 Note</label>
+                                <textarea v-model="row.note" rows="2" class="f-textarea smart-caps text-sm"
+                                          :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                          placeholder="Note tecniche, anomalie, osservazioni..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /collaudi -->
+
         <!-- BOTTOM BAR – mobile native -->
     <div class="bottom-bar" :class="darkMode?'bg-[#111]/96 border-t border-gray-800':'bg-white/96 border-t border-gray-200'" style="backdrop-filter:blur(20px);">
         <div class="flex items-center justify-around px-1 py-2 max-w-sm mx-auto">
@@ -1734,11 +1916,11 @@
                 <div class="rapp-section-02" style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #d1d5db;margin-bottom:3px;padding-bottom:2px;">
                         <span style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#111827;">
-                            02. {{ rapp.tipo==='guasti'?'Dettaglio Guasti':rapp.tipo==='creation'?'Dettaglio Lavorazioni':rapp.tipo==='cabine'?'Riepilogo Anello':rapp.tipo==='srb'?'Schema Instradamento Fibre':'Dettaglio Bretellaggio' }}
+                            02. {{ rapp.tipo==='guasti'?'Dettaglio Guasti':rapp.tipo==='creation'?'Dettaglio Lavorazioni':rapp.tipo==='collaudi'?'Dettaglio Collaudi':rapp.tipo==='cabine'?'Riepilogo Anello':rapp.tipo==='srb'?'Schema Instradamento Fibre':'Dettaglio Bretellaggio' }}
                         </span>
                         <div class="no-print" style="display:flex;gap:8px;">
                             <button @click="showImportModal=true" style="font-size:8px;color:#2563eb;font-weight:700;">AGGIORNA</button>
-                            <button v-if="rapp.tipo==='guasti'||rapp.tipo==='creation'" @click="addWork" style="font-size:8px;color:#16a34a;font-weight:700;">+ RIGA</button>
+                            <button v-if="rapp.tipo==='guasti'||rapp.tipo==='creation'||rapp.tipo==='collaudi'" @click="addWork" style="font-size:8px;color:#16a34a;font-weight:700;">+ RIGA</button>
                             <button @click="addRapportinoExtraLine" style="font-size:8px;color:#7c3aed;font-weight:700;">+ NOTA</button>
                         </div>
                     </div>
@@ -1759,12 +1941,12 @@
                     </div>
 
                     <!-- GUASTI / CREATION: tabella works -->
-                    <div v-if="rapp.tipo==='guasti'||rapp.tipo==='creation'" style="overflow:hidden;max-height:100%;">
+                    <div v-if="rapp.tipo==='guasti'||rapp.tipo==='creation'||rapp.tipo==='collaudi'" :style="rapp.tipo==='collaudi'?'overflow:hidden;max-height:100%;':'overflow:hidden;max-height:100%;'">
                         <table class="tech-table">
                             <thead><tr>
                                 <th style="width:16px;">N.</th>
                                 <th style="width:28%;">INDIRIZZO</th>
-                                <th>{{ rapp.tipo==='guasti'?'PROBLEMA / INTERVENTO':'NODO / EL.OTTICO / UI / GIUNZIONI' }}</th>
+                                <th>{{ rapp.tipo==='guasti'?'PROBLEMA / INTERVENTO':rapp.tipo==='collaudi'?'PFS / PORTE / NOTE':'NODO / EL.OTTICO / UI / GIUNZIONI' }}</th>
                                 <th v-if="rapp.tipo==='guasti'" style="width:46px;">STATO</th>
                                 <th v-if="rapp.tipo==='guasti'" style="width:52px;">MATERIALE</th>
                                 <th style="width:22px;text-align:center;">Q.</th>
@@ -1773,8 +1955,8 @@
                             <tbody>
                                 <tr v-for="(work,i) in rapp.works" :key="i">
                                     <td style="font-weight:700;color:#9ca3af;font-family:'JetBrains Mono',monospace;">{{ i+1 }}</td>
-                                    <td style="padding-right:5px;"><textarea v-model="work.address" rows="1" class="r-input font-bold uppercase" placeholder="VIA..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
-                                    <td style="padding-right:5px;"><textarea v-model="work.desc" rows="1" class="r-input" style="color:#374151;" placeholder="Dettagli..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
+                                    <td :style="rapp.tipo==='collaudi'?'padding-right:4px;padding-top:2px;padding-bottom:2px;':'padding-right:5px;'"><textarea v-model="work.address" rows="1" class="r-input font-bold uppercase" :style="rapp.tipo==='collaudi'?'min-height:12px;line-height:1.15;':''" placeholder="VIA..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
+                                    <td :style="rapp.tipo==='collaudi'?'padding-right:4px;padding-top:2px;padding-bottom:2px;':'padding-right:5px;'"><textarea v-model="work.desc" rows="1" class="r-input" :style="rapp.tipo==='collaudi'?'color:#374151;min-height:12px;line-height:1.15;':'color:#374151;'" placeholder="Dettagli..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea></td>
                                     <td v-if="rapp.tipo==='guasti'" style="vertical-align:middle;text-align:center;padding:2px;">
                                         <span v-if="work.stato"
                                               style="display:inline-block;font-size:6.5px;font-weight:800;padding:2px 3px;border-radius:4px;white-space:nowrap;text-transform:uppercase;line-height:1.3;"
@@ -1790,7 +1972,7 @@
                                             <span v-if="typeof m==='object'&&m.qty>1" style="color:#f97316;font-weight:800;">×{{ m.qty }}</span>
                                         </div>
                                     </td>
-                                    <td style="text-align:center;"><input type="number" v-model="work.qty" class="r-input text-center font-bold mono"></td>
+                                    <td :style="rapp.tipo==='collaudi'?'text-align:center;padding-top:2px;padding-bottom:2px;':'text-align:center;'"><input type="number" v-model="work.qty" class="r-input text-center font-bold mono"></td>
                                     <td style="text-align:center;" class="no-print"><button @click="rapp.works.splice(i,1)" style="color:#f87171;">×</button></td>
                                 </tr>
                             </tbody>
@@ -2085,13 +2267,13 @@
         </div>
         <p class="text-gray-400 text-xs mb-5">Scegli da quale foglio importare. I dati attuali verranno sostituiti.</p>
         <div class="space-y-3">
-            <button v-for="type in ['guasti','creation','cabine','bretellaggio','srb']" :key="type" @click="doImport(type)"
+            <button v-for="type in ['guasti','creation','cabine','bretellaggio','srb','collaudi']" :key="type" @click="doImport(type)"
                     class="w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all group"
-                    :class="type==='guasti'?'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 hover:border-orange-400':type==='creation'?'border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-400':type==='bretellaggio'?'border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 hover:border-yellow-400':type==='srb'?'border-violet-500/40 bg-violet-500/10 hover:bg-violet-500/20 hover:border-violet-400':'border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-400'">
-                <i class="text-xl" :class="type==='guasti'?'ph ph-wrench text-orange-400':type==='creation'?'ph ph-cable-car text-cyan-400':type==='bretellaggio'?'ph ph-git-branch text-yellow-400':type==='srb'?'ph ph-broadcast text-violet-400':'ph ph-circle-dashed text-purple-400'"></i>
+                    :class="type==='guasti'?'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 hover:border-orange-400':type==='creation'?'border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-400':type==='bretellaggio'?'border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 hover:border-yellow-400':type==='srb'?'border-violet-500/40 bg-violet-500/10 hover:bg-violet-500/20 hover:border-violet-400':type==='collaudi'?'border-teal-500/40 bg-teal-500/10 hover:bg-teal-500/20 hover:border-teal-400':'border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-400'">
+                <i class="text-xl" :class="type==='guasti'?'ph ph-wrench text-orange-400':type==='creation'?'ph ph-cable-car text-cyan-400':type==='bretellaggio'?'ph ph-git-branch text-yellow-400':type==='srb'?'ph ph-broadcast text-violet-400':type==='collaudi'?'ph ph-check-square text-teal-400':'ph ph-circle-dashed text-purple-400'"></i>
                 <div class="text-left flex-1">
-                    <div class="text-white font-black capitalize">{{ type }}</div>
-                    <div class="text-[10px] font-mono" :class="type==='guasti'?'text-orange-400/60':type==='creation'?'text-cyan-400/60':type==='srb'?'text-violet-400/60':'text-purple-400/60'">
+                    <div class="text-white font-black capitalize">{{ reportTypeLabel(type) }}</div>
+                    <div class="text-[10px] font-mono" :class="type==='guasti'?'text-orange-400/60':type==='creation'?'text-cyan-400/60':type==='srb'?'text-violet-400/60':type==='collaudi'?'text-teal-400/60':'text-purple-400/60'">
                         {{ type==='srb' ? (allSheets.srb&&allSheets.srb.length ? allSheets.srb[0].srb_tratte?.length+' tratte' : 'nessun dato') : (sheetsByType[type] ? sheetsByType[type].rows.length+' schede' : 'nessun dato') }}
                     </div>
                 </div>
@@ -2287,6 +2469,48 @@
 </div>
 
 <div class="toast" :class="{show:toastVisible}">{{ toastMsg }}</div>
+
+<!-- ══ OCR IMPORT MODAL ══ -->
+<div v-if="ocrModal" style="position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);">
+    <div class="w-full max-w-lg rounded-t-3xl shadow-2xl border-t-2" :class="darkMode?'bg-[#121212] border-purple-700':'bg-white border-purple-400'" style="max-height:85vh;display:flex;flex-direction:column;">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" :class="darkMode?'border-gray-800':'border-gray-200'">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-cyan-500/20 flex items-center justify-center"><i class="ph ph-camera text-cyan-400 text-lg"></i></div>
+                <div>
+                    <div class="font-black text-sm" :class="darkMode?'text-white':'text-gray-900'">Anteprima Importazione OCR</div>
+                    <div class="text-[10px]" :class="darkMode?'text-gray-400':'text-gray-500'">{{ ocrModalData.length }} cabine riconosciute — verifica prima di confermare</div>
+                </div>
+            </div>
+            <button @click="ocrModal=false" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all"><i class="ph ph-x"></i></button>
+        </div>
+        <!-- Preview list -->
+        <div style="overflow-y:auto;flex:1;" class="px-4 py-3 space-y-2">
+            <div v-if="!ocrModalData.length" class="text-center py-8 text-gray-500 text-sm">Nessuna cabina riconosciuta nell'immagine</div>
+            <div v-for="(item,i) in ocrModalData" :key="i"
+                 class="flex items-center gap-3 rounded-xl px-3 py-2.5 border"
+                 :class="darkMode?'bg-gray-900/60 border-gray-700':'bg-gray-50 border-gray-200'">
+                <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
+                      :class="darkMode?'bg-purple-900/60 text-purple-300':'bg-purple-100 text-purple-700'">{{ i+1 }}</span>
+                <div class="flex-1 min-w-0">
+                    <div class="font-bold text-sm truncate" :class="darkMode?'text-white':'text-gray-900'">{{ item.nome || '—' }}</div>
+                    <div class="font-mono text-[10px]" :class="darkMode?'text-cyan-400':'text-cyan-600'">{{ item.codice || '—' }}</div>
+                </div>
+                <button @click="ocrModalData.splice(i,1)" class="text-red-400/50 hover:text-red-400 transition-colors flex-shrink-0"><i class="ph ph-trash text-sm"></i></button>
+            </div>
+        </div>
+        <!-- Footer -->
+        <div class="px-4 py-4 border-t flex gap-3 flex-shrink-0" :class="darkMode?'border-gray-800':'border-gray-200'">
+            <button @click="ocrModal=false" class="flex-1 py-3 rounded-2xl text-sm font-bold border transition-all"
+                    :class="darkMode?'border-gray-700 text-gray-400 hover:bg-gray-800':'border-gray-300 text-gray-600 hover:bg-gray-100'">Annulla</button>
+            <button @click="confirmOcrImport" :disabled="!ocrModalData.length"
+                    class="flex-1 py-3 rounded-2xl text-sm font-black text-white transition-all disabled:opacity-40"
+                    :class="darkMode?'bg-purple-600 hover:bg-purple-500':'bg-purple-600 hover:bg-purple-500'">
+                <i class="ph ph-check-circle mr-1"></i> Inserisci {{ ocrModalData.length }} Cabine
+            </button>
+        </div>
+    </div>
+</div>
 </div><!-- /app -->
 
 <script>
@@ -2301,6 +2525,9 @@ createApp({
             showMemory: false,
             headerCollapsed: true,
             showImportModal: false,
+            ocrLoading: false,
+            ocrModal: false,
+            ocrModalData: [],
             showGestisciElementiOttici: false,
             showWaPicker: false,
             waPickerMsg: '',
@@ -2310,7 +2537,7 @@ createApp({
             sheetType: null,
             srbPdfStyle: 'design',
             tipiElementoOttico: ['PFP','PFS','PDA','PDI','PTA','PD','PAC/PAL','POP/PCN'],
-            allSheets: { guasti:[], creation:[], cabine:[], bretellaggio:[], magazzino:[], srb:[] },
+            allSheets: { guasti:[], creation:[], cabine:[], bretellaggio:[], magazzino:[], srb:[], collaudi:[] },
             currentSheetIdx: 0,
             recognition: null,
             dictationMemory: JSON.parse(localStorage.getItem('fiber_memory')) || { 'tubo r k':'Tubo Rame', 'fibra uno':'Fibra 1Gb' },
@@ -2353,7 +2580,7 @@ createApp({
         },
         sheetsByType() {
             const res={};
-            for(const t of ['guasti','creation','cabine','bretellaggio','magazzino','srb']){
+            for(const t of ['guasti','creation','cabine','bretellaggio','magazzino','srb','collaudi']){
                 const sheets=this.allSheets[t]||[];
                 if(sheets.length>0){
                     res[t]={ rows:sheets.flatMap(s=>s.rows||[]), team:sheets[0].team, date:sheets[0].date, matricola:sheets[0].matricola };
@@ -2370,9 +2597,13 @@ createApp({
         }
     },
     mounted() {
+        // Safety: ripulisci eventuale classe temporanea rimasta da export precedente
+        document.body.classList.remove('pdf-capture-desktop');
         if(localStorage.getItem('fiber_theme')==='light') this.darkMode=false;
         const saved=localStorage.getItem('fiber_all_sheets');
         if(saved){ try{ this.allSheets=JSON.parse(saved); }catch(e){} }
+        // Assicura che collaudi esista (migrazione da versioni precedenti)
+        if(!this.allSheets.collaudi) this.allSheets.collaudi=[];
         // ── MIGRAZIONE: non toccare anello_nome (ora è campo visibile), ma assicura che esista in tutti i fogli
         (this.allSheets.cabine||[]).forEach(sh=>{ if(sh.anello_nome===undefined) sh.anello_nome=''; this.migrateCabineStato(sh); });
         const savedType=localStorage.getItem('fiber_sheet_type');
@@ -2411,6 +2642,16 @@ createApp({
         }
         if(!this.fiberCalc.standardId && this.fiberStandards.length>0) this.fiberCalc.standardId=this.fiberStandards[0].id;
         (this.allSheets.cabine||[]).forEach(sh=>this.initBrtratteSez(sh));
+        // Evita schermata vuota se stato salvato e incoerente
+        if(this.view==='editor'){
+            const list = this.allSheets[this.sheetType] || [];
+            if(!this.sheetType || !list.length){
+                this.sheetType = null;
+                this.currentSheetIdx = 0;
+                this.view = 'welcome';
+            }
+        }
+        if(!['welcome','editor','rapportino'].includes(this.view)) this.view='welcome';
         this.initSpeech();
     },
     watch: {
@@ -2435,6 +2676,11 @@ createApp({
                 if(!this.allSheets.srb.length) this.allSheets.srb.push(this.makeSrbSheet(1));
                 this.sheetType='srb'; this.currentSheetIdx=0; this.view='editor'; return;
             }
+            if(type==='collaudi'){
+                if(!this.allSheets.collaudi) this.allSheets.collaudi=[];
+                if(!this.allSheets.collaudi.length) this.allSheets.collaudi.push(this.makeCollaudiSheet(1));
+                this.sheetType='collaudi'; this.currentSheetIdx=0; this.view='editor'; return;
+            }
             this.sheetType=type;
             if(!this.allSheets[type]) this.allSheets[type]=[];
             if(type==='magazzino'){
@@ -2447,6 +2693,8 @@ createApp({
             this.currentSheetIdx=0; this.view='editor'; if(type==='cabine'&&this.currentSheet) this.initBrtratteSez(this.currentSheet);
         },
         makeSrbSheet(n){ return{id:Date.now()+Math.random(),name:'Instradamento '+n,date:new Date().toISOString().split('T')[0],team:'',localita_ref:'',assistente:'',mezzo:'',targa:'',srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[],srb_telai:[],h_ord:'',h_str:'',h_vg:''}; },
+        makeCollaudiSheet(n){ return{id:Date.now()+Math.random(),name:'Collaudo '+n,date:new Date().toISOString().split('T')[0],team:'',matricola:'',h_ord:'',h_str:'',h_vg:'',nome_pop:'',note_pop:'',rows:[]}; },
+        newCollaudiRow(){ return{id:Date.now()+Math.random(),localita:'',via:'',porta_olt:'',porta_gpon:'',porta_odf:'',porta_pp:'',nome_pfs:'',id_gpon:'',porta_pte:'',porta_permutatore:'',note:''}; },
         makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',localita_ref:'',assistente:'',mezzo:'',targa:'',h_ord:'',h_str:'',h_vg:'',rows:[],magazzino_items:[],magazzino_assistente:'',anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',note_primaria:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0,srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[]}; },
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
@@ -2605,6 +2853,8 @@ createApp({
             let s;
             if(this.sheetType==='srb'){
                 s=this.makeSrbSheet(l.length+1);
+            } else if(this.sheetType==='collaudi'){
+                s=this.makeCollaudiSheet(l.length+1);
             } else {
                 s=this.makeSheet(l.length+1);
                 s.rows.push(this.newRow());
@@ -2636,6 +2886,168 @@ createApp({
                 eventi: []
             });
         },
+
+        async importCabineOCR(e){
+            const file = e.target.files[0];
+            e.target.value = '';
+            if(!file) return;
+            this.ocrLoading = true;
+            try {
+                // ── 1. Carica Tesseract.js ──
+                if(!window.Tesseract) {
+                    await new Promise((res, rej) => {
+                        const s = document.createElement('script');
+                        s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+                        s.onload = res;
+                        s.onerror = () => rej(new Error('Impossibile caricare il motore OCR.'));
+                        document.head.appendChild(s);
+                    });
+                }
+
+                // ── 2. Preprocessing: soglia LOCALE adattiva (integral image) ──
+                //
+                // PERCHÉ serve la soglia LOCALE e non globale (Otsu):
+                // Otsu calcola UN threshold per tutta l'immagine. Con sfondo bianco dominante
+                // il threshold finisce intorno a 200. I pixel gialli (lum~193) cadono SOTTO
+                // la soglia → diventano neri → testo nero su sfondo nero = invisibile.
+                // La soglia locale confronta ogni pixel con la media del suo intorno (blocco ~40px):
+                // sfondo giallo, arancio, verde o bianco vengono tutti gestiti correttamente.
+                const preprocessedBlob = await new Promise((res, rej) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const SCALE = 2;
+                        const W = img.width * SCALE;
+                        const H = img.height * SCALE;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = W; canvas.height = H;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, W, H);
+                        ctx.drawImage(img, 0, 0, W, H);
+
+                        const imageData = ctx.getImageData(0, 0, W, H);
+                        const d = imageData.data;
+                        const n = W * H;
+
+                        // Grayscale
+                        const gray = new Uint8Array(n);
+                        for(let i = 0; i < n; i++){
+                            const p = i * 4;
+                            gray[i] = Math.round(0.299*d[p] + 0.587*d[p+1] + 0.114*d[p+2]);
+                        }
+
+                        // Integral image per calcolo rapido della media locale O(1) per pixel
+                        const integ = new Float64Array((W+1)*(H+1));
+                        for(let y = 0; y < H; y++)
+                            for(let x = 0; x < W; x++){
+                                const i = y*W+x;
+                                integ[(y+1)*(W+1)+(x+1)] = gray[i]
+                                    + integ[y*(W+1)+(x+1)]
+                                    + integ[(y+1)*(W+1)+x]
+                                    - integ[y*(W+1)+x];
+                            }
+
+                        // threshold(pixel) = media_locale - C
+                        // HALF=20 → blocco 40px a 2x (~20px originale ≈ 1 altezza riga)
+                        // C=10: offset; ridurre per testo più chiaro, aumentare per meno rumore
+                        const HALF = 20, C = 10;
+                        for(let i = 0; i < n; i++){
+                            const y = Math.floor(i/W), x = i%W;
+                            const x1=Math.max(0,x-HALF), y1=Math.max(0,y-HALF);
+                            const x2=Math.min(W-1,x+HALF), y2=Math.min(H-1,y+HALF);
+                            const area = (x2-x1+1)*(y2-y1+1);
+                            const sum  = integ[(y2+1)*(W+1)+(x2+1)]
+                                       - integ[y1*(W+1)+(x2+1)]
+                                       - integ[(y2+1)*(W+1)+x1]
+                                       + integ[y1*(W+1)+x1];
+                            const c = gray[i] < (sum/area) - C ? 0 : 255;
+                            const p = i*4; d[p]=d[p+1]=d[p+2]=c; d[p+3]=255;
+                        }
+
+                        ctx.putImageData(imageData, 0, 0);
+                        canvas.toBlob(b => b ? res(b) : rej(new Error('Canvas toBlob fallito')), 'image/png');
+                    };
+                    img.onerror = () => rej(new Error('Impossibile leggere l\'immagine'));
+                    img.src = URL.createObjectURL(file);
+                });
+
+                // ── 3. OCR ──
+                const worker = await Tesseract.createWorker(['ita','eng'], 1, { logger: ()=>{} });
+                await worker.setParameters({ tessedit_pageseg_mode: '6' });
+                const { data } = await worker.recognize(preprocessedBlob);
+                await worker.terminate();
+
+                // ── 4. Estrazione DN codes — doppio passaggio ──
+                const results    = [];
+                const seenCodes  = new Set();
+                const normDN = t => t.replace(/DN([A-Z0-9O]{8,12})/gi,
+                    (m,g) => 'DN' + g.toUpperCase().replace(/O/g,'0'));
+
+                // Passaggio A: riga per riga (ordine top→bottom garantito)
+                for(const line of (data.lines || [])){
+                    const text = line.text.trim();
+                    if(!text) continue;
+                    const norm = normDN(text);
+                    const dnM  = norm.match(/\bDN\d{8,12}\b/i);
+                    if(!dnM) continue;
+                    const codice = dnM[0].toUpperCase();
+                    if(seenCodes.has(codice)) continue;
+                    seenCodes.add(codice);
+                    const after = norm.slice(norm.indexOf(dnM[0]) + dnM[0].length);
+                    const nome  = after.replace(/[|\\\/\[\]{}()\d]/g,'').trim();
+                    results.push({ codice, nome });
+                }
+
+                // Passaggio B: scansione testo completo per codici eventualmente saltati
+                const fullNorm = normDN(data.text || '');
+                for(const m of fullNorm.matchAll(/\bDN\d{8,12}\b/gi)){
+                    const codice = m[0].toUpperCase();
+                    if(seenCodes.has(codice)) continue;
+                    seenCodes.add(codice);
+                    const after = fullNorm.slice(m.index + codice.length, m.index + codice.length + 60)
+                                          .split('\n')[0];
+                    const nome  = after.replace(/[|\\\/\[\]{}()\d]/g,'').trim();
+                    results.push({ codice, nome });
+                }
+
+                if(!results.length) throw new Error('Nessun codice DN riconosciuto. Assicurati che la tabella sia ben visibile e tutta inquadrata.');
+                this.ocrModalData = results;
+                this.ocrModal = true;
+            } catch(err) {
+                this.showToast('⚠️ OCR: ' + (err.message || 'errore imprevisto'));
+            } finally {
+                this.ocrLoading = false;
+            }
+        },
+
+        confirmOcrImport(){
+            if(!this.currentSheet) return;
+            if(!this.currentSheet.cabine_secondarie) this.currentSheet.cabine_secondarie = [];
+            const startN = this.currentSheet.cabine_secondarie.length + 1;
+            this.ocrModalData.forEach((item, i) => {
+                this.currentSheet.cabine_secondarie.push({
+                    id: Date.now() + Math.random() + i,
+                    numero: startN + i,
+                    nome: item.nome || '',
+                    codice: item.codice || '',
+                    stato_operativo: '',
+                    stato_installazione: '',
+                    note: '',
+                    is_prima: false,
+                    is_ultima: false,
+                    pfs_nome: '',
+                    pfp_nome: '',
+                    pfs_f1: '', pfs_f2: '', pfs_f3: '', pfs_f4: '',
+                    pfp_f1: '', pfp_f2: '', pfp_f3: '', pfp_f4: '',
+                    connessioni: [],
+                    eventi: []
+                });
+            });
+            const n = this.ocrModalData.length;
+            this.ocrModal = false;
+            this.ocrModalData = [];
+            this.showToast(`✓ ${n} cabine importate!`);
+        },
         removeRow(i){ if(confirm('Eliminare riga?')) this.currentSheet.rows.splice(i,1); },
         addMaterial(row,text=null){ const v=text||row.tempMaterial; if(v){row.materiale_list.push({text:v});row.tempMaterial='';} },
 
@@ -2653,39 +3065,63 @@ createApp({
             return{DA_SBLOCCARE:'border-green-400 bg-green-50 text-green-700',OCCORRE_ASSISTENTE:'border-yellow-400 bg-yellow-50 text-yellow-700',NEGATO_ACCESSO:'border-red-400 bg-red-50 text-red-700',NON_REALIZZATO:'border-red-600 bg-red-100 text-red-800',OCCORRE_MATERIALE:'border-orange-400 bg-orange-50 text-orange-700',COMPLETATO:'border-emerald-400 bg-emerald-50 text-emerald-700'}[s]||'border-gray-300 text-gray-600';
         },
         // ── WA PICKER HELPERS ──
+        async _copyTextSmart(text){
+            if(!text) return false;
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch(e1){
+                try {
+                    const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+                    await navigator.clipboard.write([new ClipboardItem({'text/plain': blob})]);
+                    return true;
+                } catch(e2){
+                    try {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.setAttribute('readonly','');
+                        ta.style.position = 'fixed';
+                        ta.style.left = '-9999px';
+                        ta.style.top = '0';
+                        document.body.appendChild(ta);
+                        ta.focus();
+                        ta.select();
+                        const ok = document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        return !!ok;
+                    } catch(e3){
+                        return false;
+                    }
+                }
+            }
+        },
         async triggerWa(msg){
             this.waPickerMsg = msg;
-            // Copia negli appunti con supporto UTF-8 per emoji su PC
-            try {
-                const blob = new Blob([msg], {type:'text/plain;charset=utf-8'});
-                await navigator.clipboard.write([new ClipboardItem({'text/plain': blob})]);
-            } catch(e){
-                try { await navigator.clipboard.writeText(msg); } catch(e2){}
-            }
+            await this._copyTextSmart(msg);
             this.showWaPicker = true;
         },
         waOpenPrimary(){
             this.showWaPicker = false;
             window.open('https://wa.me/?text='+encodeURIComponent(this.waPickerMsg),'_blank');
         },
-        waOpenSecondary(){
+        async waOpenSecondary(){
+            // Ricopia esplicitamente al click — la copia precedente potrebbe essere scaduta
+            const ok = await this._copyTextSmart(this.waPickerMsg);
             this.showWaPicker = false;
-            this.showToast('✓ Testo copiato — incolla su WhatsApp 2');
+            this.showToast(ok ? '✓ Testo copiato — incolla su WhatsApp 2' : '⚠️ Copia non consentita dal browser');
         },
-        waOpenGiornaliero(){
+        async waOpenGiornaliero(){
+            // Costruisce il messaggio giornaliero, lo copia e apre direttamente WA
+            // SENZA chiamare triggerWa (evita il flash di riapertura modal)
             this.showWaPicker = false;
-            this.exportWaGiornaliero();
-        },
-        async exportWaGiornaliero(){
             const s = this.currentSheet; if(!s) return;
             const oggi = new Date().toISOString().split('T')[0];
-            const data = oggi;
-            const dataLabel = new Date(data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+            const dataLabel = new Date(oggi+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
             const team = this.smartFormat(s.team||'');
             const priLabel = (s.nome_primaria||s.anello_primaria||'—') + (s.anello_primaria&&s.nome_primaria?' ('+s.anello_primaria+')':'');
             const tipoLabel = {rilegamento:'🔗 Rilegamento',giunzione:'⚡ Giunzione',collaudo:'✅ Collaudo',chiusura:'🔒 Chiusura Anello',bypass:'⚠️ Bypass',sopralluogo:'🔍 Sopralluogo',manutenzione:'🔧 Manutenzione',altro:'📝 Altro'};
             const sortedCabs = [...(s.cabine_secondarie||[])].sort((a,b)=>(Number(a.numero)||9999)-(Number(b.numero)||9999));
-            const cabineOggi = sortedCabs.filter(c=>(c.eventi||[]).some(e=>e.data===data));
+            const cabineOggi = sortedCabs.filter(c=>(c.eventi||[]).some(e=>e.data===oggi));
             if(!cabineOggi.length){ this.showToast('Nessuna attività per oggi'); return; }
             let msg = `*📅 ATTIVITÀ GIORNALIERE — ${dataLabel.toUpperCase()}*\n`;
             msg += `🏭 ${priLabel}`;
@@ -2694,15 +3130,15 @@ createApp({
             cabineOggi.forEach((cab,i)=>{
                 const numStr = cab.numero ? `#${cab.numero}` : `#${i+1}`;
                 msg += `*${numStr} — ${cab.nome||'—'}*${cab.codice?' ('+cab.codice+')':''}\n`;
-                const eventiOggi = (cab.eventi||[]).filter(e=>e.data===data);
-                eventiOggi.forEach(ev=>{
+                (cab.eventi||[]).filter(e=>e.data===oggi).forEach(ev=>{
                     msg += `  ${tipoLabel[ev.tipo]||ev.tipo}\n`;
                     if(ev.desc) msg += `  ${ev.desc}\n`;
                 });
                 msg += '─────\n';
             });
             msg += `\n_${cabineOggi.length} cabin${cabineOggi.length===1?'a':'e'} lavorate_`;
-            await this.triggerWa(msg);
+            const ok = await this._copyTextSmart(msg);
+            this.showToast(ok ? '✓ Attività giornaliero copiato!' : '⚠️ Copia non consentita dal browser');
         },
         // ── MIGRAZIONE VECCHI STATI CABINA ──
         migrateCabineStato(sheet){
@@ -2834,7 +3270,8 @@ createApp({
                 creation: 'Creation',
                 cabine: 'Cabine',
                 bretellaggio: 'Bretellaggio',
-                srb: 'Instradamento Fibre'
+                srb: 'Instradamento Fibre',
+                collaudi: 'Collaudi'
             };
             return map[type] || (type || '');
         },
@@ -2970,6 +3407,24 @@ createApp({
                     }))
                 };
                 this.rapp.localita = clean(fs2.srb_antenna||'');
+            } else if(type==='collaudi'){
+                // Importa nel rapportino come righe works (una per scheda)
+                const rows = sheets.flatMap(s=>s.rows||[]);
+                this.rapp.works = rows.map(r=>{
+                    const loc=[this.smartFormat(r.localita||''), this.smartFormat(r.via||'')].filter(Boolean).join(' – ');
+                    const dp=[];
+                    if(r.nome_pfs)          dp.push(`PFS: ${this.smartFormat(r.nome_pfs)}`);
+                    if(r.porta_olt)         dp.push(`OLT: ${r.porta_olt}`);
+                    if(r.porta_gpon)        dp.push(`GPON/OTDR: ${r.porta_gpon}`);
+                    if(r.porta_odf)         dp.push(`ODF: ${r.porta_odf}`);
+                    if(r.porta_pp)          dp.push(`PP/Semi: ${r.porta_pp}`);
+                    if(r.id_gpon)           dp.push(`Id Gpon: ${r.id_gpon}`);
+                    if(r.porta_pte)         dp.push(`Pte: ${r.porta_pte}`);
+                    if(r.porta_permutatore) dp.push(`Perm: ${r.porta_permutatore}`);
+                    if(r.note)              dp.push(this.smartFormat(r.note));
+                    return {address: loc||'—', desc: dp.join(' | '), qty:'1'};
+                });
+                this.rapp.localita = clean(fs.nome_pop||'');
             }
             if(locRef) this.rapp.localita = locRef;
             this.showToast(`✓ Dati importati da ${type}`);
@@ -2993,6 +3448,8 @@ createApp({
             this.showToast('⏳ Generazione PDF...');
             const isMobilePdf = window.innerWidth <= 900;
             let tempHost = null;
+            let captureTarget = el;
+            const replacements = [];
             const dateFile = (this.rapp.displayDate||'report').replace(/\//g,'-');
             const opt = {
                 margin: 0,
@@ -3003,16 +3460,18 @@ createApp({
                 pagebreak: { mode:['css','legacy'], avoid:['.tech-box'] }
             };
             try {
-                // Clona la pagina A4 in un contenitore neutro per evitare PDF bianchi su desktop
-                // quando il nodo originale e dentro un pannello fixed/transform.
+                document.body.classList.add('pdf-capture-desktop');
+                // Cattura sempre da clone off-screen per evitare PDF bianchi su desktop.
                 tempHost = document.createElement('div');
-                tempHost.style.position = 'absolute';
+                tempHost.style.position = 'fixed';
                 tempHost.style.left = '0';
-                tempHost.style.top = '-10000px';
+                tempHost.style.top = '0';
                 tempHost.style.width = '794px';
                 tempHost.style.background = '#ffffff';
+                tempHost.style.opacity = '0';
                 tempHost.style.zIndex = '-1';
                 tempHost.style.pointerEvents = 'none';
+                tempHost.style.overflow = 'visible';
 
                 const clone = el.cloneNode(true);
                 clone.style.margin = '0';
@@ -3020,39 +3479,41 @@ createApp({
                 clone.style.transform = 'none';
                 clone.style.visibility = 'visible';
                 clone.style.opacity = '1';
+                clone.style.background = '#ffffff';
                 clone.style.width = '794px';
                 clone.style.maxWidth = '794px';
                 clone.style.minWidth = '794px';
+                clone.style.position = 'relative';
+                captureTarget = clone;
 
-                // Se il contenuto e lungo, passa a layout multipage per evitare taglio del footer.
-                const isLong = (el.scrollHeight - el.clientHeight) > 8;
-                if(isLong){
-                    clone.classList.add('a4-multipage');
-                    clone.style.height = 'auto';
-                    clone.style.minHeight = '296mm';
-                    clone.style.overflow = 'visible';
-                    const cloneInner = clone.querySelector('.rapp-inner');
-                    if(cloneInner) cloneInner.style.paddingBottom = '8mm';
-                    const cloneFooter = clone.querySelector('.rapp-footer');
-                    if(cloneFooter){
-                        cloneFooter.style.position = 'relative';
-                        cloneFooter.style.bottom = 'auto';
-                        cloneFooter.style.left = 'auto';
-                        cloneFooter.style.right = 'auto';
-                        cloneFooter.style.marginTop = '8px';
-                    }
-                }
                 tempHost.appendChild(clone);
                 document.body.appendChild(tempHost);
                 opt.html2canvas.windowWidth = Math.ceil(clone.scrollWidth || 794);
                 opt.html2canvas.width = Math.ceil(clone.scrollWidth || 794);
 
-                // In clone: nasconde elementi no-print e converte input/textarea/select in testo statico.
-                const cloneNoPrint = clone.querySelectorAll('.no-print');
-                cloneNoPrint.forEach(b => b.style.setProperty('display','none','important'));
+                const isLong = (el.scrollHeight - el.clientHeight) > 8;
+                if(isLong){
+                    captureTarget.classList.add('a4-multipage');
+                    captureTarget.style.height = 'auto';
+                    captureTarget.style.minHeight = '296mm';
+                    captureTarget.style.overflow = 'visible';
+                    const ci = captureTarget.querySelector('.rapp-inner');
+                    if(ci) ci.style.paddingBottom = '8mm';
+                    const cf = captureTarget.querySelector('.rapp-footer');
+                    if(cf){
+                        cf.style.position = 'relative';
+                        cf.style.bottom = 'auto';
+                        cf.style.left = 'auto';
+                        cf.style.right = 'auto';
+                        cf.style.marginTop = '8px';
+                    }
+                }
 
-                const cloneInputs = Array.from(clone.querySelectorAll('input:not([type="checkbox"]):not([type="file"]):not([type="radio"]),textarea,select'));
-                cloneInputs.forEach(inp => {
+                const noPrint = captureTarget.querySelectorAll('.no-print');
+                noPrint.forEach(b => b.style.setProperty('display','none','important'));
+
+                const nodes = Array.from(captureTarget.querySelectorAll('input:not([type="checkbox"]):not([type="file"]):not([type="radio"]),textarea,select'));
+                nodes.forEach(inp => {
                     let val = '';
                     if(inp.tagName==='SELECT') val = inp.options[inp.selectedIndex]?.text||'';
                     else val = inp.value||'';
@@ -3077,16 +3538,60 @@ createApp({
                     div.style.textTransform = cs.textTransform;
                     div.style.lineHeight = '1.25';
                     inp.parentNode.insertBefore(div, inp);
-                    inp.remove();
+                    replacements.push({ inp, div });
+                    inp.style.display = 'none';
                 });
 
                 await new Promise(r => setTimeout(r, 80));
-                await html2pdf().set(opt).from(clone).save();
+                if(isMobilePdf){
+                    await html2pdf().set(opt).from(captureTarget).save();
+                } else {
+                    // Se html2canvas non è disponibile globalmente, fallback su html2pdf bundle.
+                    if(typeof window.html2canvas !== 'function'){
+                        await html2pdf().set(opt).from(captureTarget).save();
+                        this.showToast('✅ PDF scaricato!');
+                        return;
+                    }
+                    if(!window.jspdf){ throw new Error('jsPDF non disponibile'); }
+                    const { jsPDF } = window.jspdf;
+                    const canvas = await window.html2canvas(captureTarget, {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        letterRendering: true,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: Math.ceil(captureTarget.scrollWidth || 794),
+                        width: Math.ceil(captureTarget.scrollWidth || 794)
+                    });
+                    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                    const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+                    const pageW = 210;
+                    const pageH = 297;
+                    const imgW = pageW;
+                    const imgH = (canvas.height * imgW) / canvas.width;
+                    let heightLeft = imgH;
+                    let position = 0;
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+                    heightLeft -= pageH;
+                    while(heightLeft > 0){
+                        position = heightLeft - imgH;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+                        heightLeft -= pageH;
+                    }
+                    pdf.save(`Rapportino_${dateFile}.pdf`);
+                }
                 this.showToast('✅ PDF scaricato!');
             } catch(err){
                 console.error('PDF error:', err);
                 this.showToast('❌ Errore PDF: '+err.message);
             } finally {
+                replacements.forEach(({ inp, div }) => {
+                    if(div && div.parentNode) div.parentNode.removeChild(div);
+                    if(inp) inp.style.display = '';
+                });
+                document.body.classList.remove('pdf-capture-desktop');
                 if(tempHost && tempHost.parentNode) tempHost.parentNode.removeChild(tempHost);
                 this.pdfGenerating = false;
             }
@@ -4500,10 +5005,19 @@ createApp({
 
                 exportWhatsapp(){
             if(this.sheetType==='magazzino'){ this.exportMagazzinoWhatsapp(); return; }
+            if(this.sheetType==='collaudi'){ this.exportCollaudiWhatsapp(); return; }
             const s=this.currentSheet; if(!s) return;
             const date=this.formatDateIT(s.date);
             const team=this.smartFormat(s.team||'');
-            let msg=`*FIBER REPORT · ${(this.sheetType||'').toUpperCase()}*\n📅 ${date} | 👷 ${team}\n`;
+            const typeLabel = this.reportTypeLabel(this.sheetType||'');
+            let msg=`*FIBER REPORT · ${String(typeLabel||'').toUpperCase()}*\n📅 ${date} | 👷 ${team}\n`;
+            if(s.assistente) msg+=`🧑‍💼 Assistente: ${this.smartFormat(s.assistente)}\n`;
+            if(s.localita_ref) msg+=`📍 Località: ${this.smartFormat(s.localita_ref)}\n`;
+            if(s.mezzo||s.targa){
+                msg+=`🚐 Mezzo: ${this.smartFormat(s.mezzo||'—')}`;
+                if(s.targa) msg+=` | Targa: ${String(s.targa).toUpperCase()}`;
+                msg+=`\n`;
+            }
             // Ore lavorate
             if(s.h_ord||s.h_str||s.h_vg){
                 msg+=`⏱ Ore: `;
@@ -4620,14 +5134,104 @@ createApp({
             this.triggerWa(msg);
         },
 
+        // ── COLLAUDI: WhatsApp ──
+        exportCollaudiWhatsapp(){
+            const s=this.currentSheet; if(!s) return;
+            const date=this.formatDateIT(s.date);
+            const team=this.smartFormat(s.team||'');
+            const pop=this.smartFormat(s.nome_pop||'—');
+            let msg=`*✅ FIBER REPORT · COLLAUDI*\n📅 ${date} | 👷 ${team}\n`;
+            if(s.h_ord||s.h_str||s.h_vg){
+                msg+=`⏱ Ore: `;
+                if(s.h_ord) msg+=`Ord. ${s.h_ord}h `;
+                if(s.h_str) msg+=`Str. ${s.h_str}h `;
+                if(s.h_vg)  msg+=`Viaggio ${s.h_vg}h`;
+                msg+=`\n`;
+            }
+            msg+=`📡 POP/PCN: *${pop}*\n\n`;
+            const rows=s.rows||[];
+            if(!rows.length){ msg+=`_Nessuna scheda inserita_`; }
+            else {
+                rows.forEach((r,i)=>{
+                    msg+=`*#${i+1}`;
+                    if(r.nome_pfs) msg+=` — ${this.smartFormat(r.nome_pfs)}`;
+                    msg+=`*\n`;
+                    if(r.localita||r.via) msg+=`📍 ${[this.smartFormat(r.localita),this.smartFormat(r.via)].filter(Boolean).join(' – ')}\n`;
+                    if(r.porta_olt)        msg+=`🔌 OLT: ${r.porta_olt}\n`;
+                    if(r.porta_gpon)       msg+=`📶 GPON/OTDR: ${r.porta_gpon}\n`;
+                    if(r.porta_odf)        msg+=`📦 ODF: ${r.porta_odf}\n`;
+                    if(r.porta_pp)         msg+=`🔗 PP/Semi: ${r.porta_pp}\n`;
+                    if(r.id_gpon)          msg+=`🆔 Id Gpon: ${r.id_gpon}\n`;
+                    if(r.porta_pte)        msg+=`🔀 Porta Pte: ${r.porta_pte}\n`;
+                    if(r.porta_permutatore)msg+=`🔄 Permutatore: ${r.porta_permutatore}\n`;
+                    if(r.note)             msg+=`📝 ${this.smartFormat(r.note)}\n`;
+                    msg+=`─────\n`;
+                });
+                msg+=`\n_Totale: ${rows.length} collaudo${rows.length!==1?'i':''}_`;
+            }
+            this.triggerWa(msg);
+        },
+
+        // ── COLLAUDI: PDF ──
+        exportCollaudiPDF(){
+            if(!window.jspdf){ this.showToast('❌ jsPDF non disponibile'); return; }
+            const{jsPDF}=window.jspdf; const doc=new jsPDF('landscape');
+            const s=this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
+            const accent=[20,184,166]; // teal-500
+            doc.setFillColor(...accent); doc.rect(0,0,297,18,'F');
+            doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
+            doc.text('FIBER REPORT · COLLAUDI',8,12);
+            doc.setFontSize(8);
+            const pop=this._pdfCleanText(s.nome_pop||'');
+            doc.text(`${this._pdfCleanText(s.team||'')}  ${this.formatDateIT(s.date)}  ${pop?'| POP: '+pop:''}`,170,12);
+            const rows=s.rows||[];
+            if(!rows.length){ this.showToast('Nessuna scheda da esportare'); return; }
+            const body=rows.map((r,i)=>[
+                i+1,
+                this._pdfCleanText(r.nome_pfs||'—'),
+                [this._pdfCleanText(r.localita),this._pdfCleanText(r.via)].filter(Boolean).join('\n')||'—',
+                r.porta_olt||'—',
+                r.porta_gpon||'—',
+                r.porta_odf||'—',
+                r.porta_pp||'—',
+                r.id_gpon||'—',
+                r.porta_pte||'—',
+                r.porta_permutatore||'—',
+                this._pdfCleanText(r.note||'')
+            ]);
+            doc.autoTable({
+                head:[['N.','PFS','LOC/VIA','OLT','GPON/OTDR','ODF','PP/SEMI','ID GPON','Pte','PERM.','NOTE']],
+                body, startY:22, theme:'grid',
+                headStyles:{fillColor:accent,textColor:255,fontSize:6.5,fontStyle:'bold'},
+                styles:{fontSize:6,cellPadding:2,valign:'middle'},
+                columnStyles:{
+                    0:{cellWidth:8,halign:'center'},
+                    1:{cellWidth:28},
+                    2:{cellWidth:32},
+                    3:{cellWidth:18,halign:'center'},
+                    4:{cellWidth:22,halign:'center'},
+                    5:{cellWidth:18,halign:'center'},
+                    6:{cellWidth:20,halign:'center'},
+                    7:{cellWidth:22,halign:'center'},
+                    8:{cellWidth:16,halign:'center'},
+                    9:{cellWidth:18,halign:'center'},
+                    10:{cellWidth:'auto'}
+                },
+                didParseCell:(d)=>{ if(d.row.index%2===0&&d.section==='body') d.cell.styles.fillColor=[236,253,245]; }
+            });
+            doc.save(`Collaudi_${this._pdfCleanText(s.nome_pop||s.team||'export')}_${(s.date||'').split('-').reverse().join('-')}.pdf`);
+            this.showToast('PDF Collaudi scaricato!');
+        },
+
         // ── PDF editor (rapido, tutte le schede) ──
         exportPDF(){
             if(this.sheetType==='srb'){ this.exportSrbPDF(); return; }
+            if(this.sheetType==='collaudi'){ this.exportCollaudiPDF(); return; }
             if(!window.jspdf){ this.showToast('❌ jsPDF non disponibile'); return; }
             const{jsPDF}=window.jspdf; const doc=new jsPDF();
             const s=this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
             const type=this.sheetType;
-            const accentRGB=type==='guasti'?[255,128,0]:type==='creation'?[6,182,212]:type==='bretellaggio'?[234,179,8]:type==='magazzino'?[5,150,105]:[168,85,247];
+            const accentRGB=type==='guasti'?[255,128,0]:type==='creation'?[6,182,212]:type==='bretellaggio'?[234,179,8]:type==='magazzino'?[5,150,105]:type==='collaudi'?[20,184,166]:[168,85,247];
             doc.setFillColor(...accentRGB); doc.rect(0,0,210,18,'F');
             doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
             doc.text(`FIBER REPORT · ${type.toUpperCase()}`,8,12);
@@ -4807,6 +5411,24 @@ createApp({
                     doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','bold');
                     doc.text(`Totale: ${items.length} voci  |  ${items.reduce((a,i)=>a+(Number(i.qty)||1),0)} pezzi totali`, 12, fy+5);
                 }
+            } else if(type==='collaudi'){
+                data=(s.rows||[]).map((r,i)=>({
+                    ...base,
+                    'N°': i+1,
+                    'POP/PCN': s.nome_pop||'',
+                    'Nome PFS': this.smartFormat(r.nome_pfs||''),
+                    'Località': this.smartFormat(r.localita||''),
+                    'Via': this.smartFormat(r.via||''),
+                    'Porta OLT': r.porta_olt||'',
+                    'Porta GPON/OTDR': r.porta_gpon||'',
+                    'Porta ODF': r.porta_odf||'',
+                    'Porta PP/Semianello': r.porta_pp||'',
+                    'Id Gpon Rete/Splitter': r.id_gpon||'',
+                    'Porta Pte': r.porta_pte||'',
+                    'Porta Permutatore': r.porta_permutatore||'',
+                    'Note': this.smartFormat(r.note||'')
+                }));
+                sheetName='Collaudi';
             } else if(type==='bretellaggio'){
                 const r=s.rows?.[0]||{};
                 const pfsRows=(r.pfs_list||[]).map((p,i)=>({...base,'PFS N°':i+1,'PFS Nome':p.nome||'','Att.Sec.(dB)':p.att||'','N°Spl.Sec.':p.n_sec||'','Seriale Spl.Sec.':p.seriale||'',POP:r.pop||'',Splitter:r.splitter_num||'',PFP:r.pfp_appartenenza||'','Att.OTDR(dB)':r.att_otdr||'','Istruzioni Telaio':r.istruzioni_telaio||'','Spl.Pri.Att.(dB)':r.spl_pri_att||'','N°Spl.Pri.':r.spl_pri_n||'','Seriale Spl.Pri.':r.spl_pri_seriale||''}));
