@@ -467,6 +467,15 @@
                 <span v-for="f in ['OLT','GPON','ODF','PFS','Pte']" :key="f" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-teal-500/10 text-teal-400">{{ f }}</span>
             </div>
         </div>
+        <!-- BONIFICA PFS -->
+        <div class="type-card" :class="darkMode?'bg-[#121212] border-rose-500/30 hover:border-rose-400 hover:bg-rose-950/30':'bg-white border-rose-200 hover:border-rose-400 hover:bg-rose-50'" @click="selectType('bonifica_pfs')">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-700 text-white flex items-center justify-center mb-3 shadow-lg"><i class="ph ph-git-merge text-2xl"></i></div>
+            <h3 class="font-black text-sm" :class="darkMode?'text-white':'text-gray-900'">Bonifica PFS</h3>
+            <p class="text-xs mt-1" :class="darkMode?'text-gray-400':'text-gray-500'">Permutatore splitter, innesto cavi, mappatura fibre 1-256</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+                <span v-for="f in ['Splitter','Fila','Porta','Cavi']" :key="f" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400">{{ f }}</span>
+            </div>
+        </div>
     </div>
 
     <div class="flex gap-4 mt-10 items-center">
@@ -1265,8 +1274,7 @@
         </div><!-- /bretellaggio -->
 
         <!-- ══ GUASTI + CREATION: summary chips + card grid ══ -->
-        <template v-if="sheetType!=='cabine' && sheetType!=='bretellaggio' && sheetType!=='magazzino' && sheetType!=='srb' && sheetType!=='collaudi'">
-        <div v-if="currentSheet.rows.length>0" class="mb-5 flex flex-wrap gap-3 text-[11px] font-bold">
+        <template v-if="sheetType!=='cabine' && sheetType!=='bretellaggio' && sheetType!=='magazzino' && sheetType!=='srb' && sheetType!=='collaudi' && sheetType!=='bonifica_pfs'">        <div v-if="currentSheet.rows.length>0" class="mb-5 flex flex-wrap gap-3 text-[11px] font-bold">
             <div v-for="(count,stato) in statsSummary" :key="stato" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" :class="statoChipClass(stato)">
                 <span>{{ statoEmoji(stato) }}</span><span>{{ statoLabel(stato) }}: {{ count }}</span>
             </div>
@@ -1657,9 +1665,9 @@
                 </div>
                 <div class="mt-3">
                     <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">📝 Note POP / PCN</label>
-                    <textarea v-model="currentSheet.note_pop" rows="2" class="f-textarea text-sm"
-                              :class="darkMode?'text-white border-teal-800 bg-transparent':'text-gray-900 border-teal-300'"
-                              placeholder="Note generali sul POP o PCN..."></textarea>
+                    <input v-model="currentSheet.note_pop" class="f-input text-sm smart-caps"
+                           :class="darkMode?'text-white border-teal-800 bg-transparent':'text-gray-900 border-teal-300'"
+                           placeholder="Note generali sul POP o PCN...">
                 </div>
             </div>
 
@@ -1745,9 +1753,9 @@
                             <!-- Porta ODF (campo lungo) -->
                             <div>
                                 <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Porta ODF</label>
-                                <textarea v-model="row.porta_odf" rows="2" class="f-textarea font-mono font-black text-xs"
-                                          :class="darkMode?'text-white border-teal-900 bg-transparent':'text-black border-teal-200'"
-                                          placeholder="Es. ODF-A3 / Modulo 12 / slot 4"></textarea>
+                                <input v-model="row.porta_odf" class="f-input font-mono font-black text-xs"
+                                       :class="darkMode?'text-white border-teal-900 bg-transparent':'text-black border-teal-200'"
+                                       placeholder="Es. ODF-A3 / Modulo 12 / slot 4">
                             </div>
                             <!-- Porta PP/Semianello -->
                             <div>
@@ -1773,9 +1781,9 @@
                             <!-- Porta Pte (campo lungo) -->
                             <div>
                                 <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">Porta Pte</label>
-                                <textarea v-model="row.porta_pte" rows="2" class="f-textarea font-mono font-black text-xs"
-                                          :class="darkMode?'text-white border-teal-900 bg-transparent':'text-black border-teal-200'"
-                                          placeholder="Es. PTE-5 / derivazione 2 / montante B"></textarea>
+                                <input v-model="row.porta_pte" class="f-input font-mono font-black text-xs"
+                                       :class="darkMode?'text-white border-teal-900 bg-transparent':'text-black border-teal-200'"
+                                       placeholder="Es. PTE-5 / derivazione 2 / montante B">
                             </div>
                             <!-- Porta Permutatore -->
                             <div>
@@ -1787,15 +1795,307 @@
                             <!-- Note (full width) -->
                             <div class="col-span-2">
                                 <label class="field-label" :class="darkMode?'text-teal-400':'text-teal-700'">📝 Note</label>
-                                <textarea v-model="row.note" rows="2" class="f-textarea smart-caps text-sm"
-                                          :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
-                                          placeholder="Note tecniche, anomalie, osservazioni..."></textarea>
+                                <input v-model="row.note" class="f-input smart-caps text-sm"
+                                       :class="darkMode?'text-white border-teal-900':'text-black border-teal-200'"
+                                       placeholder="Note tecniche, anomalie, osservazioni...">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div><!-- /collaudi -->
+
+        <!-- ══ BONIFICA PFS ══ -->
+        <div v-if="sheetType==='bonifica_pfs' && currentSheet" class="space-y-6 px-3 pt-4 pb-36">
+
+            <!-- Nome PFS + Meta -->
+            <div class="rounded-2xl p-4 border-2 space-y-3" :class="darkMode?'bg-[#121212] border-rose-800':'bg-white border-rose-300'">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="text-[10px] font-black uppercase tracking-wider" :class="darkMode?'text-rose-400':'text-rose-700'">🔀 Bonifica PFS</div>
+                    <div class="flex items-center gap-2 text-[10px] font-mono font-bold px-2 py-1 rounded-full border"
+                         :class="darkMode?'border-rose-900/60 text-rose-300 bg-rose-950/20':'border-rose-200 text-rose-700 bg-rose-50'">
+                        <span>Splitter installati:</span>
+                        <input v-model.number="currentSheet.pfs_splitter_installati" type="number" min="0" max="24"
+                               class="w-12 bg-transparent font-mono font-black text-[11px] outline-none border rounded-md px-2 py-1 text-center"
+                               :class="darkMode?'border-rose-900/60 text-rose-300':'border-rose-200 text-rose-700'"
+                               placeholder="0">
+                    </div>
+                </div>
+                <input v-model="currentSheet.pfs_nome" class="f-input font-black text-xl uppercase" :class="darkMode?'text-white border-rose-800':'text-black border-rose-300'" placeholder="Es. PFS-001 / Via Roma">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="field-label text-[9px]" :class="darkMode?'text-gray-400':'text-gray-500'">Bonifica</label>
+                        <select v-model="currentSheet.pfs_bonifica_tipo" class="f-input font-mono font-black"
+                                :class="darkMode?'text-white border-rose-900 bg-transparent':'text-black border-rose-200 bg-white'">
+                            <option value="">—</option>
+                            <option value="completa">Completa</option>
+                            <option value="parziale">Parziale</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label text-[9px]" :class="darkMode?'text-gray-400':'text-gray-500'">PFS (1-4)</label>
+                        <select v-model.number="currentSheet.pfs_num" class="f-input font-mono font-black"
+                                :class="darkMode?'text-white border-rose-900 bg-transparent':'text-black border-rose-200 bg-white'">
+                            <option :value="1">PFS 1</option>
+                            <option :value="2">PFS 2</option>
+                            <option :value="3">PFS 3</option>
+                            <option :value="4">PFS 4</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="field-label text-[9px]" :class="darkMode?'text-gray-400':'text-gray-500'">Note</label>
+                        <input v-model="currentSheet.pfs_note" class="f-input font-mono font-black"
+                               :class="darkMode?'text-white border-rose-900 bg-transparent':'text-black border-rose-200 bg-white'"
+                               placeholder="Es. PFS3 Modulo Nero / PFS4 Cassetto Grigio">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERMUTATORE (Mappa 1–256) -->
+            <div class="rounded-2xl border-2 overflow-hidden" :class="darkMode?'bg-[#121212] border-rose-900':'bg-white border-rose-200'">
+                <div class="flex items-center justify-between px-4 py-3 border-b" :class="darkMode?'border-rose-900/60 bg-rose-950/20':'border-rose-100 bg-rose-50'">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="font-black text-sm uppercase truncate" :class="darkMode?'text-rose-300':'text-rose-700'">Permutatore — Mappatura Porte 1→256</span>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full flex-shrink-0" :class="darkMode?'bg-rose-900/50 text-rose-400':'bg-rose-100 text-rose-700'">{{ pfsPortsFilled }} / 256 compilate</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button @click="backupBonificaPfs()" class="px-3 py-1.5 rounded-xl text-xs font-bold"
+                                :class="darkMode?'bg-gray-900/50 text-gray-300 border border-gray-700':'bg-white text-gray-700 border border-gray-300'">
+                            Backup
+                        </button>
+                        <label class="px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer"
+                               :class="darkMode?'bg-gray-900/50 text-gray-300 border border-gray-700':'bg-white text-gray-700 border border-gray-300'">
+                            Ripristina
+                            <input ref="bonificaRestoreInput" type="file" accept="application/json" class="hidden" @change="restoreBonificaPfs">
+                        </label>
+                        <button @click="resetBonificaPorts()" class="px-3 py-1.5 rounded-xl text-xs font-bold"
+                                :class="darkMode?'bg-rose-900/50 text-rose-300 border border-rose-700':'bg-rose-50 text-rose-700 border border-rose-300'">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtro splitter -->
+                <div class="px-4 pt-3 pb-2 flex flex-wrap gap-2">
+                    <button @click="pfsViewSplitter=0" class="px-3 py-1 rounded-full text-xs font-bold border"
+                            :class="pfsViewSplitter===0?(darkMode?'bg-rose-600 text-white border-rose-500':'bg-rose-600 text-white border-rose-600'):(darkMode?'border-gray-700 text-gray-400':'border-gray-300 text-gray-500')">Tutti</button>
+                    <button v-for="sp in pfsPortsUniqueSplitter" :key="sp" @click="pfsViewSplitter=sp" class="px-3 py-1 rounded-full text-xs font-bold border"
+                            :class="pfsViewSplitter===sp?(darkMode?'bg-rose-600 text-white border-rose-500':'bg-rose-600 text-white border-rose-600'):(darkMode?'border-rose-900 text-rose-400':'border-rose-200 text-rose-600')">SP{{ sp }}</button>
+                </div>
+
+                <!-- Griglia porte (Desktop) + Editor riga (Mobile) -->
+                <div class="px-4 pb-4">
+                    <div class="text-[10px] font-mono mb-2" :class="darkMode?'text-gray-400':'text-gray-500'">
+                        Riga = 1..22 · Casella = 1..12 · Totale porte = 256
+                    </div>
+
+                    <!-- Mobile: editor per una riga alla volta (ID sempre visibile) -->
+                    <div class="sm:hidden rounded-xl border p-3" :class="darkMode?'border-gray-800 bg-black/20':'border-gray-200 bg-gray-50'">
+                        <div class="flex items-end gap-3 mb-3">
+                            <div class="flex-1">
+                                <label class="field-label text-[9px]" :class="darkMode?'text-rose-400':'text-rose-700'">Riga</label>
+                                <select v-model.number="pfsMobileRiga" class="f-input font-mono font-black"
+                                        :class="darkMode?'text-white border-rose-900 bg-transparent':'text-black border-rose-200 bg-white'">
+                                    <option v-for="r in 22" :key="'mobR'+r" :value="r">R{{ r }}</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label class="field-label text-[9px]" :class="darkMode?'text-gray-400':'text-gray-500'">Info</label>
+                                <div class="text-[10px] font-mono px-3 py-2 rounded-lg border"
+                                     :class="darkMode?'border-gray-800 text-gray-400':'border-gray-200 text-gray-600'">
+                                    C1→C12
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div v-for="c in 12" :key="'mobCell'+c" class="rounded-lg border p-2"
+                                 :class="darkMode?'border-gray-800 bg-[#0b0b0b]':'border-gray-200 bg-white'">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="font-black font-mono text-[11px]" :class="darkMode?'text-rose-300':'text-rose-700'">R{{ pfsMobileRiga }} · C{{ c }}</div>
+                                    <div class="text-[9px] font-mono" :class="darkMode?'text-gray-500':'text-gray-400'">P{{ pfsPortIndex(pfsMobileRiga,c) }}</div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input v-model.number="pfsPorts[pfsPortIndex(pfsMobileRiga,c)-1].splitter"
+                                           type="number" min="1" max="24"
+                                           class="w-14 f-input font-mono font-black text-center"
+                                           :class="darkMode?'text-rose-300 border-rose-900 bg-transparent':'text-rose-700 border-rose-200 bg-white'"
+                                           placeholder="SP">
+                                    <input v-model="pfsPorts[pfsPortIndex(pfsMobileRiga,c)-1].id"
+                                           class="flex-1 f-input font-mono font-black"
+                                           :class="darkMode?'text-white border-gray-800 bg-transparent':'text-gray-900 border-gray-200 bg-white'"
+                                           placeholder="ID">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Desktop: griglia completa senza scroll orizzontale -->
+                    <div class="hidden sm:block rounded-xl border p-3" :class="darkMode?'border-gray-800 bg-black/20':'border-gray-200 bg-gray-50'">
+                        <div class="space-y-2">
+                            <div v-for="r in 22" :key="'pfsrow'+r" class="grid gap-2 items-stretch" style="grid-template-columns: 44px repeat(12, minmax(0, 1fr));">
+                                <div class="text-[10px] font-black font-mono uppercase flex items-center justify-center rounded-lg border"
+                                     :class="darkMode?'border-rose-900/60 bg-rose-950/20 text-rose-300':'border-rose-200 bg-rose-50 text-rose-700'">R{{ r }}</div>
+                                <div v-for="c in 12" :key="'pfscell'+r+'_'+c" class="rounded-lg border p-2"
+                                     :style="(pfsPortIndex(r,c)<=256 && pfsViewSplitter && pfsPorts[pfsPortIndex(r,c)-1] && Number(pfsPorts[pfsPortIndex(r,c)-1].splitter||0)!==Number(pfsViewSplitter)) ? 'opacity:0.22' : ''"
+                                     :class="pfsPortIndex(r,c)>256 ? (darkMode?'border-gray-900 bg-gray-900/20 opacity-40':'border-gray-200 bg-gray-100 opacity-50') : (darkMode?'border-gray-800 bg-[#0b0b0b]':'border-gray-200 bg-white')">
+                                    <div class="flex items-center justify-between gap-2 mb-1">
+                                        <span class="text-[10px] font-mono font-black" :class="darkMode?'text-rose-300':'text-rose-700'">C{{ c }}</span>
+                                        <span class="text-[9px] font-mono" :class="darkMode?'text-gray-500':'text-gray-400'">P{{ pfsPortIndex(r,c) }}</span>
+                                    </div>
+                                    <div v-if="pfsPortIndex(r,c)<=256" class="grid gap-1.5" style="grid-template-columns: 1fr;">
+                                        <input v-model.number="pfsPorts[pfsPortIndex(r,c)-1].splitter"
+                                               type="number" min="1" max="24"
+                                               class="w-full bg-transparent font-mono font-black text-[11px] outline-none border rounded-md px-2 py-1 text-center"
+                                               :class="darkMode?'border-rose-900/60 text-rose-300':'border-rose-200 text-rose-700'"
+                                               placeholder="Splitter (1-24)">
+                                        <input v-model="pfsPorts[pfsPortIndex(r,c)-1].id"
+                                               class="w-full bg-transparent font-mono font-black text-[11px] outline-none border rounded-md px-2 py-1"
+                                               :class="darkMode?'border-gray-800 text-white':'border-gray-200 text-gray-900'"
+                                               placeholder="ID">
+                                    </div>
+                                    <div v-else class="text-[10px] font-mono italic px-2 py-1 rounded-md border w-full text-center"
+                                         :class="darkMode?'border-gray-800 text-gray-600':'border-gray-200 text-gray-400'">
+                                        —
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats splitter -->
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <div v-for="stat in pfsPortsSplitterStats" :key="stat.sp"
+                             class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold"
+                             :class="darkMode?'border-rose-900 bg-rose-950/30 text-rose-300':'border-rose-200 bg-rose-50 text-rose-700'">
+                            SP{{ stat.sp }} · {{ stat.count }} porte
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INNESTO CAVI -->
+            <div class="rounded-2xl border-2 overflow-hidden" :class="darkMode?'bg-[#121212] border-orange-900':'bg-white border-orange-200'">
+                <div class="flex items-center justify-between px-4 py-3 border-b" :class="darkMode?'border-orange-900/60 bg-orange-950/20':'border-orange-100 bg-orange-50'">
+                    <div class="flex items-center gap-2">
+                        <span class="font-black text-sm uppercase" :class="darkMode?'text-orange-300':'text-orange-700'">Innesto Cavi</span>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full" :class="darkMode?'bg-orange-900/50 text-orange-400':'bg-orange-100 text-orange-700'">{{ (currentSheet.pfs_cavi||[]).length }} cavi · {{ pfsFibreTotali }}/256</span>
+                    </div>
+                    <button @click="addPfsCavo()" class="px-3 py-1.5 rounded-xl text-xs font-bold" :class="darkMode?'bg-orange-900/50 text-orange-300 border border-orange-700':'bg-orange-50 text-orange-700 border border-orange-300'">+ Aggiungi</button>
+                </div>
+                <!-- Progress -->
+                <div class="px-4 pt-3 pb-2">
+                    <div class="flex justify-between text-[10px] font-mono mb-1" :class="darkMode?'text-gray-400':'text-gray-500'">
+                        <span>Fibre assegnate</span><span class="font-bold" :class="pfsFibreTotali>=256?(darkMode?'text-green-400':'text-green-600'):(darkMode?'text-orange-400':'text-orange-600')">{{ pfsFibreTotali }} / 256</span>
+                    </div>
+                    <div class="h-2 rounded-full" :class="darkMode?'bg-gray-800':'bg-gray-200'">
+                        <div class="h-full rounded-full transition-all" :style="'width:'+Math.min(100,(pfsFibreTotali/256)*100)+'%'" :class="pfsFibreTotali>=256?'bg-green-500':'bg-orange-500'"></div>
+                    </div>
+                </div>
+                <!-- Cavi -->
+                <div class="px-4 pb-4 pt-1 space-y-3">
+                    <div v-for="(cavo,cIdx) in (currentSheet.pfs_cavi||[])" :key="cavo.id" class="rounded-xl border p-3" :class="darkMode?'border-orange-900/60 bg-orange-950/10':'border-orange-100 bg-orange-50/50'">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="font-black font-mono text-sm px-2 py-0.5 rounded-lg" :class="darkMode?'bg-orange-900/60 text-orange-300':'bg-orange-100 text-orange-700'">{{ cavo.nome||('CAVO '+(cIdx+1)) }}</span>
+                            <button @click="currentSheet.pfs_cavi.splice(cIdx,1)" class="ml-auto text-gray-500 hover:text-red-500 p-1"><i class="ph ph-trash text-sm"></i></button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="field-label text-[9px]" :class="darkMode?'text-orange-400':'text-orange-600'">Tipo Cavo</label><input v-model="cavo.tipo" class="f-input font-mono font-black text-sm uppercase" :class="darkMode?'text-white border-orange-900':'text-black border-orange-200'" placeholder="Es. PD / PDI / PTA"></div>
+                            <div><label class="field-label text-[9px]" :class="darkMode?'text-orange-400':'text-orange-600'">Nome Cavo</label><input v-model="cavo.nome" class="f-input font-mono font-black text-sm uppercase" :class="darkMode?'text-white border-orange-900':'text-black border-orange-200'" placeholder="Es. PD01"></div>
+                            <div><label class="field-label text-[9px]" :class="darkMode?'text-orange-400':'text-orange-600'">N° Fibre giuntate</label><input v-model.number="cavo.num_fibre" type="number" min="1" max="256" class="f-input font-mono font-black text-sm" :class="darkMode?'text-white border-orange-900':'text-black border-orange-200'" placeholder="48" @input="aggiornaFibreCavo(cIdx)"></div>
+                            <div><label class="field-label text-[9px]" :class="darkMode?'text-orange-400':'text-orange-600'">Fibra DA</label><input v-model.number="cavo.fibra_da" type="number" min="1" max="256" class="f-input font-mono font-black text-sm" :class="darkMode?'text-white border-orange-900':'text-black border-orange-200'" placeholder="1"></div>
+                            <div><label class="field-label text-[9px]" :class="darkMode?'text-orange-400':'text-orange-600'">Fibra A</label><input v-model.number="cavo.fibra_a" type="number" min="1" max="256" class="f-input font-mono font-black text-sm" :class="darkMode?'text-white border-orange-900':'text-black border-orange-200'" placeholder="56"></div>
+                            <div class="col-span-2"><label class="field-label text-[9px]" :class="darkMode?'text-orange-400':'text-orange-600'">Note</label><input v-model="cavo.note" class="f-input text-sm smart-caps" :class="darkMode?'text-white border-orange-900':'text-black border-orange-200'" placeholder="Provenienza, tratta..."></div>
+                        </div>
+                        <div v-if="cavo.fibra_da&&cavo.fibra_a" class="mt-2 text-[10px] font-mono flex items-center gap-1" :class="darkMode?'text-orange-300':'text-orange-600'">
+                            <i class="ph ph-arrows-left-right"></i> Fibre {{ cavo.fibra_da }}:{{ cavo.fibra_a }} — totale {{ cavo.fibra_a-cavo.fibra_da+1 }} fibre
+                        </div>
+                    </div>
+                    <div v-if="!(currentSheet.pfs_cavi&&currentSheet.pfs_cavi.length)" class="py-8 text-center" :class="darkMode?'text-gray-600':'text-gray-400'">
+                        <i class="ph ph-cable-car text-3xl block mb-2"></i>
+                        <span class="text-sm">Nessun cavo — aggiungi con il pulsante sopra</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GIUNZIONI CABINE (ENEL) -->
+            <div class="rounded-2xl border-2 overflow-hidden" :class="darkMode?'bg-[#121212] border-blue-900':'bg-white border-blue-200'">
+                <div class="flex items-center justify-between px-4 py-3 border-b" :class="darkMode?'border-blue-900/60 bg-blue-950/20':'border-blue-100 bg-blue-50'">
+                    <div class="flex items-center gap-2">
+                        <span class="font-black text-sm uppercase" :class="darkMode?'text-blue-300':'text-blue-700'">Giunzioni Cabine (ENEL)</span>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full" :class="darkMode?'bg-blue-900/50 text-blue-300':'bg-blue-100 text-blue-700'">{{ (currentSheet.giunzioni||[]).length }} giunzioni</span>
+                    </div>
+                    <button @click="addGiunzione()" class="px-3 py-1.5 rounded-xl text-xs font-bold"
+                            :class="darkMode?'bg-blue-900/50 text-blue-300 border border-blue-700':'bg-blue-50 text-blue-700 border border-blue-300'">+ Aggiungi</button>
+                </div>
+                <div class="p-4 space-y-3">
+                    <div>
+                        <label class="field-label text-[9px]" :class="darkMode?'text-blue-300':'text-blue-700'">ID/Nome Anello</label>
+                        <input v-model="currentSheet.giunzioni_anello" class="f-input font-mono font-black"
+                               :class="darkMode?'text-white border-blue-900 bg-transparent':'text-black border-blue-200 bg-white'"
+                               placeholder="Es. ANELLO-123 / Via Roma">
+                    </div>
+                    <div v-if="!(currentSheet.giunzioni&&currentSheet.giunzioni.length)" class="py-8 text-center" :class="darkMode?'text-gray-600':'text-gray-400'">
+                        <i class="ph ph-link-simple text-3xl block mb-2"></i>
+                        <span class="text-sm">Nessuna giunzione — aggiungi con il pulsante sopra</span>
+                    </div>
+                    <div v-for="(g,gIdx) in (currentSheet.giunzioni||[])" :key="g.id" class="rounded-xl border p-3"
+                         :class="darkMode?'border-blue-900/50 bg-blue-950/10':'border-blue-100 bg-blue-50/40'">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="font-black font-mono text-sm px-2 py-0.5 rounded-lg"
+                                  :class="darkMode?'bg-blue-900/60 text-blue-200':'bg-blue-100 text-blue-700'">G{{ gIdx+1 }}</span>
+                            <button @click="currentSheet.giunzioni.splice(gIdx,1)" class="ml-auto text-gray-500 hover:text-red-500 p-1"><i class="ph ph-trash text-sm"></i></button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="field-label text-[9px]" :class="darkMode?'text-blue-300':'text-blue-700'">Fibra</label>
+                                <input v-model.number="g.fibra_a" type="number" min="1" max="256" class="f-input font-mono font-black"
+                                       :class="darkMode?'text-white border-blue-900 bg-transparent':'text-black border-blue-200 bg-white'"
+                                       placeholder="Es. 122">
+                                <div v-if="g.fibra_a && inlineFibra(g.fibra_a,currentSheet)" class="mt-1 flex items-center gap-2 text-[10px] font-mono"
+                                     :class="darkMode?'text-gray-300':'text-gray-700'">
+                                    <span class="px-2 py-0.5 rounded-full border"
+                                          :class="darkMode?'border-gray-800':'border-gray-200'">
+                                        {{ inlineFibra(g.fibra_a,currentSheet).tubettoLabel }} · {{ inlineFibra(g.fibra_a,currentSheet).colore }} · {{ inlineFibra(g.fibra_a,currentSheet).tipo }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="field-label text-[9px]" :class="darkMode?'text-blue-300':'text-blue-700'">Cavo</label>
+                                <input v-model="g.cavo_a" class="f-input font-mono font-black uppercase"
+                                       :class="darkMode?'text-white border-blue-900 bg-transparent':'text-black border-blue-200 bg-white'"
+                                       placeholder="Es. PD1 / Alimentazione PFS">
+                            </div>
+                            <div>
+                                <label class="field-label text-[9px]" :class="darkMode?'text-blue-300':'text-blue-700'">Fibra</label>
+                                <input v-model.number="g.fibra_b" type="number" min="1" max="256" class="f-input font-mono font-black"
+                                       :class="darkMode?'text-white border-blue-900 bg-transparent':'text-black border-blue-200 bg-white'"
+                                       placeholder="Es. 144">
+                                <div v-if="g.fibra_b && inlineFibra(g.fibra_b,currentSheet)" class="mt-1 flex items-center gap-2 text-[10px] font-mono"
+                                     :class="darkMode?'text-gray-300':'text-gray-700'">
+                                    <span class="px-2 py-0.5 rounded-full border"
+                                          :class="darkMode?'border-gray-800':'border-gray-200'">
+                                        {{ inlineFibra(g.fibra_b,currentSheet).tubettoLabel }} · {{ inlineFibra(g.fibra_b,currentSheet).colore }} · {{ inlineFibra(g.fibra_b,currentSheet).tipo }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="field-label text-[9px]" :class="darkMode?'text-blue-300':'text-blue-700'">Cavo</label>
+                                <input v-model="g.cavo_b" class="f-input font-mono font-black uppercase"
+                                       :class="darkMode?'text-white border-blue-900 bg-transparent':'text-black border-blue-200 bg-white'"
+                                       placeholder="Es. PD2 / Derivazione">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="field-label text-[9px]" :class="darkMode?'text-gray-400':'text-gray-500'">Note</label>
+                                <input v-model="g.note" class="f-input text-sm smart-caps"
+                                       :class="darkMode?'text-white border-blue-900 bg-transparent':'text-black border-blue-200 bg-white'"
+                                       placeholder="Es. Alimentazione PFS / Cabina...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /bonifica_pfs -->
 
         <!-- BOTTOM BAR – mobile native -->
     <div class="bottom-bar" :class="darkMode?'bg-[#111]/96 border-t border-gray-800':'bg-white/96 border-t border-gray-200'" style="backdrop-filter:blur(20px);">
@@ -2537,7 +2837,10 @@ createApp({
             sheetType: null,
             srbPdfStyle: 'design',
             tipiElementoOttico: ['PFP','PFS','PDA','PDI','PTA','PD','PAC/PAL','POP/PCN'],
-            allSheets: { guasti:[], creation:[], cabine:[], bretellaggio:[], magazzino:[], srb:[], collaudi:[] },
+            allSheets: { guasti:[], creation:[], cabine:[], bretellaggio:[], magazzino:[], srb:[], collaudi:[], bonifica_pfs:[] },
+            pfsViewSplitter: 0,
+            pfsMobileRiga: 1,
+            batchRiga: { da:'', portaDa:1, portaA:16, splitter:1 },
             currentSheetIdx: 0,
             recognition: null,
             dictationMemory: JSON.parse(localStorage.getItem('fiber_memory')) || { 'tubo r k':'Tubo Rame', 'fibra uno':'Fibra 1Gb' },
@@ -2594,6 +2897,28 @@ createApp({
                 const na=Number(a.numero)||9999, nb=Number(b.numero)||9999;
                 return na-nb;
             });
+        },
+        pfsPorts(){
+            if(!this.currentSheet) return [];
+            if(!this.currentSheet.pfs_ports || !Array.isArray(this.currentSheet.pfs_ports) || this.currentSheet.pfs_ports.length!==256){
+                this.currentSheet.pfs_ports = Array.from({length:256},()=>({splitter:null,id:''}));
+            }
+            return this.currentSheet.pfs_ports;
+        },
+        pfsPortsFilled(){
+            return (this.pfsPorts||[]).reduce((t,p)=>t+((p&&p.splitter&&String(p.id||'').trim())?1:0),0);
+        },
+        pfsPortsUniqueSplitter(){
+            const set=new Set((this.pfsPorts||[]).map(p=>p?.splitter).filter(v=>v>=1&&v<=24));
+            return [...set].sort((a,b)=>a-b);
+        },
+        pfsPortsSplitterStats(){
+            const map={};
+            (this.pfsPorts||[]).forEach(p=>{ const sp=Number(p?.splitter||0); if(sp>=1&&sp<=24) map[sp]=(map[sp]||0)+1; });
+            return Object.entries(map).sort((a,b)=>Number(a[0])-Number(b[0])).map(([sp,count])=>({sp:Number(sp),count}));
+        },
+        pfsFibreTotali(){
+            return (this.currentSheet?.pfs_cavi||[]).reduce((t,c)=>t+(c.fibra_da&&c.fibra_a?c.fibra_a-c.fibra_da+1:0),0);
         }
     },
     mounted() {
@@ -2601,9 +2926,32 @@ createApp({
         document.body.classList.remove('pdf-capture-desktop');
         if(localStorage.getItem('fiber_theme')==='light') this.darkMode=false;
         const saved=localStorage.getItem('fiber_all_sheets');
-        if(saved){ try{ this.allSheets=JSON.parse(saved); }catch(e){} }
-        // Assicura che collaudi esista (migrazione da versioni precedenti)
+        if(saved){
+            try{
+                const parsed=JSON.parse(saved);
+                // Usa Object.assign per garantire che Vue veda tutte le chiavi come reattive
+                this.allSheets = Object.assign(
+                    { guasti:[], creation:[], cabine:[], bretellaggio:[], magazzino:[], srb:[], collaudi:[], bonifica_pfs:[] },
+                    parsed
+                );
+            }catch(e){}
+        }
+        // Assicura che collaudi e bonifica_pfs esistano (migrazione da versioni precedenti)
         if(!this.allSheets.collaudi) this.allSheets.collaudi=[];
+        if(!this.allSheets.bonifica_pfs) this.allSheets.bonifica_pfs=[];
+        // ── MIGRAZIONE BONIFICA PFS: aggiungi nuovi campi se mancanti
+        (this.allSheets.bonifica_pfs||[]).forEach(sh=>{
+            if(!Array.isArray(sh.pfs_ports) || sh.pfs_ports.length!==256){
+                sh.pfs_ports = Array.from({length:256},()=>({splitter:null,id:''}));
+            }
+            if(sh.pfs_splitter_installati===undefined) sh.pfs_splitter_installati=0;
+            if(sh.pfs_bonifica_tipo===undefined) sh.pfs_bonifica_tipo='';
+            if(sh.pfs_num===undefined) sh.pfs_num=1;
+            if(sh.pfs_note===undefined) sh.pfs_note='';
+            if(sh.giunzioni_anello===undefined) sh.giunzioni_anello='';
+            if(!Array.isArray(sh.giunzioni)) sh.giunzioni=[];
+            (sh.pfs_cavi||[]).forEach(c=>{ if(c.tipo===undefined) c.tipo=''; });
+        });
         // ── MIGRAZIONE: non toccare anello_nome (ora è campo visibile), ma assicura che esista in tutti i fogli
         (this.allSheets.cabine||[]).forEach(sh=>{ if(sh.anello_nome===undefined) sh.anello_nome=''; this.migrateCabineStato(sh); });
         const savedType=localStorage.getItem('fiber_sheet_type');
@@ -2670,6 +3018,14 @@ createApp({
         toggleTheme(){ this.darkMode=!this.darkMode; },
 
         // ── WELCOME ──
+        debugSelect(type){
+            try{
+                this.showToast('Click: '+type);
+                this.selectType(type);
+            }catch(e){
+                alert('Errore click '+type+':\n\n'+(e&&e.stack?e.stack:String(e)));
+            }
+        },
         selectType(type){
             if(type==='srb'){
                 if(!this.allSheets.srb) this.allSheets.srb=[];
@@ -2680,6 +3036,17 @@ createApp({
                 if(!this.allSheets.collaudi) this.allSheets.collaudi=[];
                 if(!this.allSheets.collaudi.length) this.allSheets.collaudi.push(this.makeCollaudiSheet(1));
                 this.sheetType='collaudi'; this.currentSheetIdx=0; this.view='editor'; return;
+            }
+            if(type==='bonifica_pfs'){
+                // Importante: inizializza prima lo store, poi cambia sheetType (evita render con array undefined)
+                if(!this.allSheets.bonifica_pfs) this.allSheets.bonifica_pfs = [];
+                if(this.allSheets.bonifica_pfs.length === 0) {
+                    this.allSheets.bonifica_pfs.push(this.makeBonificaPfsSheet(1));
+                }
+                this.sheetType = 'bonifica_pfs';
+                this.currentSheetIdx = 0;
+                this.view = 'editor';
+                return;
             }
             this.sheetType=type;
             if(!this.allSheets[type]) this.allSheets[type]=[];
@@ -2695,6 +3062,101 @@ createApp({
         makeSrbSheet(n){ return{id:Date.now()+Math.random(),name:'Instradamento '+n,date:new Date().toISOString().split('T')[0],team:'',localita_ref:'',assistente:'',mezzo:'',targa:'',srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[],srb_telai:[],h_ord:'',h_str:'',h_vg:''}; },
         makeCollaudiSheet(n){ return{id:Date.now()+Math.random(),name:'Collaudo '+n,date:new Date().toISOString().split('T')[0],team:'',matricola:'',h_ord:'',h_str:'',h_vg:'',nome_pop:'',note_pop:'',rows:[]}; },
         newCollaudiRow(){ return{id:Date.now()+Math.random(),localita:'',via:'',porta_olt:'',porta_gpon:'',porta_odf:'',porta_pp:'',nome_pfs:'',id_gpon:'',porta_pte:'',porta_permutatore:'',note:''}; },
+        makeBonificaPfsSheet(n){
+            return{
+                id:Date.now()+Math.random(),
+                name:'PFS '+n,
+                date:new Date().toISOString().split('T')[0],
+                team:'',matricola:'',h_ord:'',h_str:'',h_vg:'',
+                pfs_nome:'',
+                pfs_splitter_installati: 0,
+                pfs_bonifica_tipo:'',      // completa|parziale
+                pfs_num: 1,                // 1..4
+                pfs_note:'',
+                pfs_ports:Array.from({length:256},()=>({splitter:null,id:''})),
+                pfs_righe:[],
+                pfs_cavi:[],
+                giunzioni_anello:'',
+                giunzioni:[]
+            };
+        },
+        pfsPortIndex(r,c){ return ((Number(r)-1)*12)+Number(c); },
+        resetBonificaPorts(){
+            if(!this.currentSheet) return;
+            const ok = confirm('Confermi RESET completo della mappa porte (256) per questo PFS?\n\nQuesta operazione non si può annullare.\nConsiglio: fai prima Backup.');
+            if(!ok) return;
+            this.currentSheet.pfs_ports = Array.from({length:256},()=>({splitter:null,id:''}));
+            this.showToast('✓ Mappa porte azzerata');
+        },
+        backupBonificaPfs(){
+            const s=this.currentSheet; if(!s) return;
+            if(this.sheetType!=='bonifica_pfs'){ this.showToast('Apri Bonifica PFS prima'); return; }
+            const payload={
+                version:1,
+                exportedAt:new Date().toISOString(),
+                sheet:s
+            };
+            const name=(this._pdfCleanText(s.pfs_nome||s.name||'bonifica_pfs')||'bonifica_pfs').replace(/\s+/g,'_');
+            const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+            const a=document.createElement('a');
+            a.href=URL.createObjectURL(blob);
+            a.download=`backup_${name}_${(s.date||'').replace(/-/g,'')||''}.json`;
+            a.click();
+            this.showToast('✓ Backup Bonifica PFS scaricato');
+        },
+        restoreBonificaPfs(e){
+            const f=e.target.files?.[0];
+            if(!f) return;
+            const r=new FileReader();
+            r.onload=ev=>{
+                try{
+                    const data=JSON.parse(ev.target.result);
+                    const sheet = data.sheet||data;
+                    if(!sheet || (!sheet.pfs_ports && !sheet.pfs_cavi && !sheet.giunzioni)){
+                        alert('Backup non valido'); return;
+                    }
+                    // Ripristino nel foglio corrente (stesso tab)
+                    Object.assign(this.currentSheet, sheet);
+                    this.showToast('✓ Backup ripristinato');
+                }catch(err){
+                    alert('File non valido');
+                }finally{
+                    e.target.value='';
+                }
+            };
+            r.readAsText(f);
+        },
+        addGiunzione(){
+            if(!this.currentSheet) return;
+            if(!this.currentSheet.giunzioni) this.currentSheet.giunzioni=[];
+            this.currentSheet.giunzioni.push({id:Date.now()+Math.random(), fibra_a:null, cavo_a:'', fibra_b:null, cavo_b:'', note:''});
+        },
+        addPfsRiga(){
+            if(!this.currentSheet) return;
+            if(!this.currentSheet.pfs_righe) this.currentSheet.pfs_righe=[];
+            this.currentSheet.pfs_righe.push({id:Date.now()+Math.random(),fila:'',porta:null,splitter:null,note:''});
+        },
+        addPfsBatch(){
+            if(!this.currentSheet) return;
+            if(!this.currentSheet.pfs_righe) this.currentSheet.pfs_righe=[];
+            const {da,portaDa,portaA,splitter}=this.batchRiga;
+            if(!da||!portaDa||!portaA||!splitter){this.showToast('⚠️ Compila tutti i campi');return;}
+            const pDa=Math.min(portaDa,portaA),pA=Math.max(portaDa,portaA);
+            for(let p=pDa;p<=pA;p++) this.currentSheet.pfs_righe.push({id:Date.now()+Math.random(),fila:da.toUpperCase(),porta:p,splitter:Number(splitter),note:''});
+            this.showToast('✓ '+( pA-pDa+1)+' righe generate per SP'+splitter);
+        },
+        addPfsCavo(){
+            if(!this.currentSheet) return;
+            if(!this.currentSheet.pfs_cavi) this.currentSheet.pfs_cavi=[];
+            const idx=this.currentSheet.pfs_cavi.length+1;
+            const prev=this.currentSheet.pfs_cavi[this.currentSheet.pfs_cavi.length-1];
+            const newDa=prev?(prev.fibra_a||0)+1:1;
+            this.currentSheet.pfs_cavi.push({id:Date.now()+Math.random(),nome:'PD'+String(idx).padStart(2,'0'),num_fibre:null,fibra_da:newDa,fibra_a:null,note:''});
+        },
+        aggiornaFibreCavo(idx){
+            const cavo=(this.currentSheet.pfs_cavi||[])[idx];
+            if(cavo&&cavo.fibra_da&&cavo.num_fibre) cavo.fibra_a=cavo.fibra_da+cavo.num_fibre-1;
+        },
         makeSheet(n){ return{id:Date.now()+Math.random(),name:`Foglio ${n}`,date:new Date().toISOString().split('T')[0],team:'',matricola:'',localita_ref:'',assistente:'',mezzo:'',targa:'',h_ord:'',h_str:'',h_vg:'',rows:[],magazzino_items:[],magazzino_assistente:'',anello_primaria:'',nome_primaria:'',id_anello:'',anello_nome:'',stato_anello:'',cabine_secondarie:[],sw1_porta:'',pp_andata:'',sw2_porta:'',pp_ritorno:'',note_primaria:'',bretellaggio:[],brtratte:[],br_fibre_uscita:[{sw:'SW1',porta:'',fibre:'',note:''},{sw:'SW2',porta:'',fibre:'',note:''}],brtratte_sez:[{tipo:'andata',righe:[]},{tipo:'ritorno',righe:[]},{tipo:'interpop',righe:[]}],br_counter:0,srb_antenna:'',srb_pop_start:'',srb_tipo_arrivo:'POP',srb_tipo_partenza:'POP',srb_tratte:[]}; },
         newRow(){ return{id:Date.now()+Math.random(),localita:'',indirizzo:'',pop_pfs:'',elemento_ottico:'',tipo_elemento_ottico:'',ui_servite:'',permuta:'',note:'',stato:'',desc_problema:'',intervento:'',num_giunzioni:'',materiale_list:[],tempMaterial:'',extras:[],
             /* bretellaggio */ pop:'',splitter_num:'',istruzioni_telaio:'',pfp_appartenenza:'',att_otdr:'',spl_pri_att:'',spl_pri_n:'',spl_pri_seriale:'',spl_sec_att:'',spl_sec_n:'',spl_sec_seriali:'',pfs_list:[{nome:''},{nome:''},{nome:''},{nome:''}]
@@ -2855,6 +3317,8 @@ createApp({
                 s=this.makeSrbSheet(l.length+1);
             } else if(this.sheetType==='collaudi'){
                 s=this.makeCollaudiSheet(l.length+1);
+            } else if(this.sheetType==='bonifica_pfs'){
+                s=this.makeBonificaPfsSheet(l.length+1);
             } else {
                 s=this.makeSheet(l.length+1);
                 s.rows.push(this.newRow());
@@ -5006,6 +5470,7 @@ createApp({
                 exportWhatsapp(){
             if(this.sheetType==='magazzino'){ this.exportMagazzinoWhatsapp(); return; }
             if(this.sheetType==='collaudi'){ this.exportCollaudiWhatsapp(); return; }
+            if(this.sheetType==='bonifica_pfs'){ this.exportBonificaPfsWhatsapp(); return; }
             const s=this.currentSheet; if(!s) return;
             const date=this.formatDateIT(s.date);
             const team=this.smartFormat(s.team||'');
@@ -5227,6 +5692,7 @@ createApp({
         exportPDF(){
             if(this.sheetType==='srb'){ this.exportSrbPDF(); return; }
             if(this.sheetType==='collaudi'){ this.exportCollaudiPDF(); return; }
+            if(this.sheetType==='bonifica_pfs'){ this.exportBonificaPfsPDF(); return; }
             if(!window.jspdf){ this.showToast('❌ jsPDF non disponibile'); return; }
             const{jsPDF}=window.jspdf; const doc=new jsPDF();
             const s=this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
@@ -5429,6 +5895,11 @@ createApp({
                     'Note': this.smartFormat(r.note||'')
                 }));
                 sheetName='Collaudi';
+            } else if(type==='bonifica_pfs'){
+                const righe=s.pfs_righe||[];
+                data=righe.map(r=>({...base,'Nome PFS':s.pfs_nome||'','Fila':r.fila||'','Porta':r.porta||'','Splitter':r.splitter?'SP'+r.splitter:'','Note':r.note||''}));
+                (s.pfs_cavi||[]).forEach(c=>{data.push({...base,'Nome PFS':c.nome||'','Fila':'CAVO','Porta':c.fibra_da?(c.fibra_da+'-'+c.fibra_a):'','Splitter':'','Note':c.note||''});});
+                sheetName='BonificaPFS';
             } else if(type==='bretellaggio'){
                 const r=s.rows?.[0]||{};
                 const pfsRows=(r.pfs_list||[]).map((p,i)=>({...base,'PFS N°':i+1,'PFS Nome':p.nome||'','Att.Sec.(dB)':p.att||'','N°Spl.Sec.':p.n_sec||'','Seriale Spl.Sec.':p.seriale||'',POP:r.pop||'',Splitter:r.splitter_num||'',PFP:r.pfp_appartenenza||'','Att.OTDR(dB)':r.att_otdr||'','Istruzioni Telaio':r.istruzioni_telaio||'','Spl.Pri.Att.(dB)':r.spl_pri_att||'','N°Spl.Pri.':r.spl_pri_n||'','Seriale Spl.Pri.':r.spl_pri_seriale||''}));
@@ -5441,6 +5912,159 @@ createApp({
             const wb=XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb,ws,sheetName);
             XLSX.writeFile(wb,`${type}_${s.name||'export'}.xlsx`);
+        },
+
+
+        // ── BONIFICA PFS: WhatsApp ──
+        exportBonificaPfsWhatsapp(){
+            const s=this.currentSheet; if(!s) return;
+            const pfsNome=s.pfs_nome||'—';
+            let msg=`*🔀 BONIFICA PFS — ${pfsNome.toUpperCase()}*\n📅 ${this.formatDateIT(s.date)} | 👷 ${this.smartFormat(s.team||'')}\n\n`;
+            const ports = (s.pfs_ports && Array.isArray(s.pfs_ports) && s.pfs_ports.length===256) ? s.pfs_ports : Array.from({length:256},()=>({splitter:null,id:''}));
+            const splitterMap={};
+            ports.forEach((p,i)=>{
+                const sp=Number(p?.splitter||0);
+                const id=String(p?.id||'').trim();
+                if(!(sp>=1&&sp<=24)) return;
+                if(!id) return;
+                if(!splitterMap[sp]) splitterMap[sp]=[];
+                const porta=i+1;
+                const riga=Math.ceil(porta/12);
+                const casella=((porta-1)%12)+1;
+                splitterMap[sp].push({porta,riga,casella,id});
+            });
+            Object.keys(splitterMap).map(Number).sort((a,b)=>a-b).forEach(sp=>{
+                msg+=`\n🔷 *SP${sp}* (${splitterMap[sp].length} porte)\n`;
+                splitterMap[sp]
+                    .sort((a,b)=>a.riga-b.riga || a.casella-b.casella)
+                    .forEach(x=>{ msg+=`  R${x.riga} C${x.casella} — ${x.id}\n`; });
+            });
+            const cavi=s.pfs_cavi||[];
+            if(cavi.length){
+                msg+=`\n*📦 INNESTO CAVI*\n`;
+                cavi.forEach(c=>{ msg+=`🔸 *${c.nome||'—'}* — Fibre ${c.fibra_da||'?'}:${c.fibra_a||'?'}`; if(c.note) msg+=` — ${c.note}`; msg+=`\n`; });
+                msg+=`\n_Totale: ${this.pfsFibreTotali}/256 fibre assegnate_`;
+            }
+            this.triggerWa(msg);
+        },
+
+        // ── BONIFICA PFS: PDF ──
+        exportBonificaPfsPDF(){
+            if(!window.jspdf){ this.showToast('❌ jsPDF non disponibile'); return; }
+            const{jsPDF}=window.jspdf;
+            const s=this.currentSheet; if(!s){ this.showToast('Nessun foglio attivo'); return; }
+            const clean=t=>this._pdfCleanText(t||'');
+            const ROSE=[225,29,72]; const INK=[18,22,42]; const ORANGE=[220,100,0];
+            const ports = (s.pfs_ports && Array.isArray(s.pfs_ports) && s.pfs_ports.length===256) ? s.pfs_ports : Array.from({length:256},()=>({splitter:null,id:''}));
+            const cavi=s.pfs_cavi||[];
+            const splitterMap={};
+            ports.forEach((p,i)=>{
+                const sp=Number(p?.splitter||0);
+                if(!(sp>=1&&sp<=24)) return;
+                if(!splitterMap[sp]) splitterMap[sp]=[];
+                const porta=i+1;
+                const riga=Math.ceil(porta/12);
+                const casella=((porta-1)%12)+1;
+                const id=String(p?.id||'').trim();
+                splitterMap[sp].push({porta,riga,casella,id});
+            });
+            const splitters=Object.keys(splitterMap).map(Number).sort((a,b)=>a-b);
+            if(!splitters.length && !cavi.length){ this.showToast('Nessun dato da esportare'); return; }
+            let doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+            const hdr=(title,sub)=>{
+                const W=210,PX=14;
+                doc.setFillColor(252,242,248); doc.rect(0,0,W,297,'F');
+                doc.setFillColor(...ROSE); doc.rect(0,0,W,2.5,'F');
+                doc.setFillColor(252,242,248); doc.rect(0,0,W,20,'F');
+                doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...INK);
+                doc.text('FIBER',PX,13); doc.setTextColor(...ROSE); doc.text('REPORT',PX+18,13);
+                doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...ROSE);
+                doc.text(title,W-PX,10,{align:'right'});
+                doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(150,80,100);
+                doc.text(sub,W-PX,17,{align:'right'});
+            };
+            const meta=[clean(s.pfs_nome||'—'),this.formatDateIT(s.date)||'',clean(this.smartFormat(s.team||''))].filter(Boolean).join('   |   ');
+            const W=210,PX=14;
+            hdr('BONIFICA PFS — PERMUTATORE',meta);
+            let y=26;
+            doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...ROSE);
+            doc.text('SPLITTER (ordine crescente)',PX,y); y+=6;
+            doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...INK);
+
+            const lineH=4.2;
+            const ensureSpace=(need=10)=>{
+                if(y+need > 285){ doc.addPage('a4','portrait'); hdr('BONIFICA PFS — PERMUTATORE',meta); y=26; }
+            };
+
+            splitters.forEach(sp=>{
+                const items=(splitterMap[sp]||[]).sort((a,b)=>a.riga-b.riga || a.casella-b.casella);
+                ensureSpace(10);
+                doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...ROSE);
+                const count=items.length;
+                const saturo = count>=16;
+                doc.text('Splitter SP'+sp+(saturo?'  (SATURO 16/16)':'  ('+count+'/16)'), PX, y); y+=6;
+                doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...INK);
+                items.forEach(it=>{
+                    ensureSpace(8);
+                    const left=`R${it.riga}  C${it.casella}`;
+                    const right=clean(it.id||'—');
+                    doc.setFont('courier','bold'); doc.text(left, PX, y);
+                    doc.setFont('courier','normal');
+                    const maxW = W-PX*2-40;
+                    const lines = doc.splitTextToSize(right, maxW);
+                    doc.text(lines, PX+40, y);
+                    y += Math.max(1, lines.length)*lineH;
+                });
+                y += 2;
+            });
+
+            // (opzionale) Append innesto cavi alla fine, nello stesso PDF
+            if(cavi.length){
+                ensureSpace(14);
+                doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...ORANGE);
+                doc.text('INNESTO CAVI',PX,y); y+=6;
+                doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...INK);
+                cavi.forEach(c=>{
+                    ensureSpace(8);
+                    const tipo=clean(c.tipo||'');
+                    const name=clean(c.nome||'—');
+                    const rng=(c.fibra_da&&c.fibra_a)?(`${c.fibra_da}:${c.fibra_a}`):'—';
+                    const note=clean(c.note||'');
+                    const line=`${[tipo,name].filter(Boolean).join(' ')}  Fibre ${rng}${note?('  '+note):''}`;
+                    const lines=doc.splitTextToSize(line, W-PX*2);
+                    doc.text(lines,PX,y);
+                    y += Math.max(1, lines.length)*lineH;
+                });
+            }
+
+            // Giunzioni cabine (ultima sezione, dopo schema)
+            const giunzioni = s.giunzioni||[];
+            if(giunzioni.length){
+                ensureSpace(14);
+                doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(30,64,175);
+                doc.text('GIUNZIONI CABINE (ENEL)',PX,y); y+=6;
+                doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...INK);
+                if(s.giunzioni_anello){
+                    const aLine = doc.splitTextToSize('Anello: '+clean(s.giunzioni_anello), W-PX*2);
+                    doc.text(aLine,PX,y); y+=Math.max(1,aLine.length)*lineH;
+                }
+                giunzioni.forEach((g,i)=>{
+                    ensureSpace(10);
+                    const fa=g.fibra_a?('F'+g.fibra_a):'F—';
+                    const fb=g.fibra_b?('F'+g.fibra_b):'F—';
+                    const ca=clean(g.cavo_a||'');
+                    const cb=clean(g.cavo_b||'');
+                    const n=clean(g.note||'');
+                    const base=`G${i+1}  ${fa} ${ca?('('+ca+')'):''}  ⇄  ${fb} ${cb?('('+cb+')'):''}${n?('  '+n):''}`;
+                    const lines=doc.splitTextToSize(base, W-PX*2);
+                    doc.text(lines,PX,y);
+                    y+=Math.max(1,lines.length)*lineH;
+                });
+            }
+
+            this._pdfFooter(doc,ROSE);
+            doc.save('BonificaPFS_'+clean(s.pfs_nome||s.team||'pfs')+'_'+((s.date||'').replace(/-/g,''))+'.pdf');
+            this.showToast('✅ PDF Bonifica PFS esportato!');
         },
 
         // ── Backup / Restore ──
